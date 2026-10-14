@@ -4,3 +4,4 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 
 | Code | Tool | Severity | Meaning |
 |---|---|---|---|
+| `EVAL_CLASS_ABSENT` | eval | warn | A class has no pixels in the labels or the predictions, so it's excluded from mIoU. Expected only on small subsets. |

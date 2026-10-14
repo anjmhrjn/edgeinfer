@@ -5,6 +5,7 @@ description = "Validate, profile and gate PyTorch segmentation models on their w
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "jsonschema>=4.26.0",
     "numpy>=2.2.6",
     "pillow>=12.3.0",
     "pyyaml>=6.0.3",
