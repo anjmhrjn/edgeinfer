@@ -33,7 +33,7 @@ All four reports: `artifacts/reports/eval__<model>__torch_ref__eval_val__<H>x<W>
 3. The Hugging Face port of the original mmsegmentation checkpoint.
 A sliding-window run would test cause 1 (logged in `docs/ideas.md`). It doesn't change C1: the reference for later checkpoints is our FP32 number at 512×1024, under the same protocol every later backend uses.
 
-**Resolution cost.** Going from 1024×2048 to 512×1024 costs DeepLabV3+ 4.98 points and SegFormer 3.85. The largest per-class drops are thin or small classes: pole, traffic light, traffic sign, rider, motorcycle, bicycle. `wall` improves at the lower resolution for both models (DeepLab 0.46→0.52, SegFormer 0.52→0.57).
+**Resolution cost.** Going from 1024×2048 to 512×1024 costs DeepLabV3+ 4.98 points and SegFormer 3.85. For both models the seven largest per-class drops are the thin or small classes: traffic light (−13.0 / −12.7), pole (−10.2 / −11.0), traffic sign, bicycle, person, rider, motorcycle (each −6 to −10). Large flat classes (road, sky, building) lose under 2.5. `wall` improves at the lower resolution for both (+6.1 / +4.5). Figures are IoU points, DeepLab / SegFormer.
 
 **Golden outputs.** 32 images × 2 models; hashes in `data/golden_hashes/`. Regenerating them reproduced every hash bit for bit (CPU, 4 threads). Reports: `artifacts/reports/golden__<model>__8677951.json`.
 
