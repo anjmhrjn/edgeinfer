@@ -1,0 +1,27 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.0
+    hooks:
+      - id: ruff-check
+      - id: ruff-format
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: local
+    hooks:
+      # Cityscapes license: no images, labels or derived tensors in git.
+      - id: no-dataset-files
+        name: block Cityscapes data and derived tensors
+        language: fail
+        entry: "Cityscapes data, derived tensors and engines must not be committed"
+        files: '(_leftImg8bit|_gtFine_)|\.(npz|npy|engine|plan)$|calib_cache'
+      - id: no-private-files
+        name: block private files
+        language: fail
+        entry: "Private files must not be committed"
+        files: '^(private/|CLAUDE\.local\.md$)'
