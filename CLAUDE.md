@@ -89,7 +89,7 @@ docs/              roadmap.md, progress.md, decisions.md, results.md, report-cod
 ```python
 class Backend(Protocol):
     name: str                                    # "torch_ref" | "ort_cpu" | "trt"
-    def load(self, artifact: Path, cfg: ModelConfig) -> None: ...
+    def load(self, artifact: Path | None, cfg: ModelConfig) -> None: ...  # torch_ref: None
     def infer(self, x: np.ndarray) -> np.ndarray: ...   # NCHW float32 in, logits out
     def layer_outputs(self, x: np.ndarray, names: list[str]) -> dict[str, np.ndarray]: ...
     def metadata(self) -> dict: ...              # precision, versions, device, artifact id

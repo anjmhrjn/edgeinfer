@@ -11,7 +11,9 @@ repos:
         args: ["--maxkb=1024"]
       - id: check-yaml
       - id: end-of-file-fixer
+        exclude: ^src/edgeinfer/models/third_party/
       - id: trailing-whitespace
+        exclude: ^src/edgeinfer/models/third_party/
   - repo: local
     hooks:
       # Cityscapes license: no images, labels or derived tensors in git.
