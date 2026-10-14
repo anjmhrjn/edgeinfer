@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "Validate, profile and gate PyTorch segmentation models on their way to TensorRT."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "numpy>=2.2.6",
+    "pillow>=12.3.0",
+]
 
 [project.scripts]
 edgeinfer = "edgeinfer.cli:main"
