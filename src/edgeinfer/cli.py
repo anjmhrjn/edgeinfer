@@ -81,6 +81,52 @@ def cmd_eval(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_golden(args: argparse.Namespace) -> int:
+    from edgeinfer.backends import get_backend
+    from edgeinfer.config import load_model_config
+    from edgeinfer.data.cityscapes import cityscapes_root, iter_samples
+    from edgeinfer.data.manifests import load_manifest
+    from edgeinfer.golden import GOLDEN_DIR, HASH_DIR, format_hashes, write_golden
+    from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
+
+    cfg = load_model_config(args.model)
+    entries = load_manifest(args.manifest)
+    root = cityscapes_root(args.root)
+    sha, dirty = git_state()
+    if dirty:
+        print("warning: uncommitted changes; these outputs must not be the committed golden set")
+    backend = get_backend("torch_ref")
+    backend.load(None, cfg)
+    out_dir = Path(args.out) if args.out else GOLDEN_DIR / cfg.name
+    print(f"golden {cfg.name}: {len(entries)} images -> {out_dir}")
+    hashes = write_golden(cfg, backend, iter_samples(root, entries), out_dir)
+    text = format_hashes(hashes)
+
+    hash_path = Path(args.hashes) if args.hashes else HASH_DIR / f"{cfg.name}.sha256"
+    if hash_path.exists() and hash_path.read_text() != text:
+        # Committed hashes are the reference. A mismatch means the outputs changed
+        # (code, weights, library or thread-count differences) and needs a look.
+        if not args.force:
+            print(f"error: outputs differ from committed {hash_path}; investigate, or --force")
+            return 1
+        print(f"warning: overwriting differing hashes in {hash_path} (--force)")
+    hash_path.parent.mkdir(parents=True, exist_ok=True)
+    hash_path.write_text(text)
+    report = make_report(
+        tool="golden",
+        model=cfg.name,
+        backend_meta=backend.metadata(),
+        inputs={
+            "manifest": Path(args.manifest).stem,
+            "input_hw": [cfg.input.height, cfg.input.width],
+        },
+        metrics={"n_images": len(hashes), "hash_file": str(hash_path.name)},
+    )
+    write_report(report, REPORTS_DIR / f"golden__{cfg.name}__{sha[:7]}.json")
+    print(f"wrote {len(hashes)} files; hashes in {hash_path}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="edgeinfer")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -101,6 +147,15 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--limit", type=int, help="first N images only (smoke runs)")
     p.add_argument("--out", help="report path (default: artifacts/reports/...)")
     p.set_defaults(func=cmd_eval)
+
+    p = sub.add_parser("golden", help="FP32 reference inputs + logits for parity (torch_ref)")
+    p.add_argument("--model", required=True)
+    p.add_argument("--manifest", default="golden_val32")
+    p.add_argument("--root", help="Cityscapes root (default: $CITYSCAPES_ROOT)")
+    p.add_argument("--out", help="output dir (default: artifacts/golden/<model>)")
+    p.add_argument("--hashes", help="hash file (default: data/golden_hashes/<model>.sha256)")
+    p.add_argument("--force", action="store_true", help="overwrite differing committed hashes")
+    p.set_defaults(func=cmd_golden)
 
     return parser
 
