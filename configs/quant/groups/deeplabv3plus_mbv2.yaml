@@ -1,0 +1,17 @@
+# Layer groups for sensitivity analysis and exclusion lists (D-017).
+# Each rule's regex must fully match a node's innermost module scope (the exporter's
+# pkg.torch.onnx.name_scopes metadata); the first matching rule wins, and every
+# quantizable node (Conv/MatMul/Gemm) must match a rule.
+# MobileNetV2 features grouped by stage (output channels), then the DeepLabV3+ head.
+model: deeplabv3plus_mbv2
+rules:
+  - {name: bb.stem_16, match: 'net\.backbone\.low_level_features\.[01](\..*)?'}
+  - {name: bb.s24, match: 'net\.backbone\.low_level_features\.[23]\..*'}
+  - {name: bb.s32, match: 'net\.backbone\.high_level_features\.[456]\..*'}
+  - {name: bb.s64, match: 'net\.backbone\.high_level_features\.(7|8|9|10)\..*'}
+  - {name: bb.s96, match: 'net\.backbone\.high_level_features\.(11|12|13)\..*'}
+  - {name: bb.s160, match: 'net\.backbone\.high_level_features\.(14|15|16)\..*'}
+  - {name: bb.s320, match: 'net\.backbone\.high_level_features\.17\..*'}
+  - {name: aspp, match: 'net\.classifier\.aspp\..*'}
+  - {name: lowlevel_proj, match: 'net\.classifier\.project\..*'}
+  - {name: head, match: 'net\.classifier\.classifier\..*'}

@@ -30,6 +30,15 @@ def test_different_seed_gives_different_sample():
     assert a != b
 
 
+def test_complement_manifest_is_disjoint_and_complete():
+    sub = build_manifest(ManifestSpec("sub", "val", 40, seed=2), TRAIN_IDS)
+    rest = build_manifest(ManifestSpec("rest", "val", None, None, exclude="sub"), TRAIN_IDS, sub)
+    assert not {e.image_id for e in sub} & {e.image_id for e in rest}
+    assert len(sub) + len(rest) == len(TRAIN_IDS)
+    with pytest.raises(ValueError, match="needs exactly"):
+        build_manifest(ManifestSpec("rest", "val", None, None, exclude="sub"), TRAIN_IDS)
+
+
 def test_full_split_manifest_keeps_everything():
     spec = ManifestSpec("t", split="val", size=None, seed=None)
     assert len(build_manifest(spec, TRAIN_IDS)) == len(TRAIN_IDS)
@@ -82,10 +91,12 @@ def test_cli_writes_manifests_and_refuses_silent_changes(fake_cityscapes, tmp_pa
         MANIFEST_SPECS, "calib_train200", ManifestSpec("calib_train200", "train", 4, 0)
     )
     monkeypatch.setitem(MANIFEST_SPECS, "golden_val32", ManifestSpec("golden_val32", "val", 2, 1))
+    monkeypatch.setitem(MANIFEST_SPECS, "sens_val100", ManifestSpec("sens_val100", "val", 2, 2))
     out = tmp_path / "manifests"
     args = ["manifests", "--root", str(fake_cityscapes), "--out", str(out)]
     assert main(args) == 0
     assert len(load_manifest(out / "eval_val.txt")) == 6
+    assert len(load_manifest(out / "val_minus_sens100.txt")) == 4
     assert main(args) == 0  # identical regeneration is fine
     (out / "eval_val.txt").write_text("val/zurich_000000_000019\n")
     assert main(args) == 1

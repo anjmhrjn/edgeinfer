@@ -21,6 +21,7 @@ class ManifestSpec:
     split: str
     size: int | None  # None = every image in the split
     seed: int | None
+    exclude: str | None = None  # name of an earlier manifest whose images are left out
 
 
 MANIFEST_SPECS: dict[str, ManifestSpec] = {
@@ -30,6 +31,10 @@ MANIFEST_SPECS: dict[str, ManifestSpec] = {
         # Calibration comes from train: calibrating on val would leak eval data.
         ManifestSpec("calib_train200", split="train", size=200, seed=0),
         ManifestSpec("golden_val32", split="val", size=32, seed=1),
+        # Sensitivity analysis scores configurations on this subset; the other 400 val
+        # images are the held-out check for whatever it selects.
+        ManifestSpec("sens_val100", split="val", size=100, seed=2),
+        ManifestSpec("val_minus_sens100", split="val", size=None, seed=None, exclude="sens_val100"),
     )
 }
 
@@ -47,11 +52,21 @@ class ManifestEntry:
         return f"{self.split}/{self.image_id}"
 
 
-def build_manifest(spec: ManifestSpec, image_ids: list[str]) -> list[ManifestEntry]:
-    """Select entries for `spec` from all image IDs of its split. Output is sorted."""
+def build_manifest(
+    spec: ManifestSpec, image_ids: list[str], excluded: list[ManifestEntry] | None = None
+) -> list[ManifestEntry]:
+    """Select entries for `spec` from all image IDs of its split, minus `excluded` (the
+    entries of manifest `spec.exclude`). Output is sorted."""
     ids = sorted(set(image_ids))
     if len(ids) != len(image_ids):
         raise ValueError(f"{spec.name}: duplicate image IDs in {spec.split}")
+    if (spec.exclude is None) != (excluded is None):
+        raise ValueError(f"{spec.name}: exclude={spec.exclude!r} needs exactly its entries")
+    if excluded is not None:
+        drop = {e.image_id for e in excluded if e.split == spec.split}
+        if len(drop) != len(excluded):
+            raise ValueError(f"{spec.name}: excluded entries are not all from {spec.split}")
+        ids = [i for i in ids if i not in drop]
     if spec.size is not None:
         if spec.size > len(ids):
             raise ValueError(f"{spec.name}: needs {spec.size} images, split has {len(ids)}")

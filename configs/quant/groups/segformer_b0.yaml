@@ -1,0 +1,26 @@
+# Layer groups for sensitivity analysis and exclusion lists (D-017).
+# Each rule's regex must fully match a node's innermost module scope (the exporter's
+# pkg.torch.onnx.name_scopes metadata); the first matching rule wins, and every
+# quantizable node (Conv/MatMul/Gemm) must match a rule.
+# Per stage: patch embedding, attention projections (q/k/v/o + sequence-reduction conv),
+# attention matmuls (QK^T and attn x V, whose inputs include the softmax output), MLP.
+model: segformer_b0
+rules:
+  - {name: s0.patch_embed, match: 'model\.segformer\.stages\.0\.patch_embeddings\..*'}
+  - {name: s0.attn_matmul, match: 'model\.segformer\.stages\.0\.blocks\.\d+\.attention'}
+  - {name: s0.attn_proj, match: 'model\.segformer\.stages\.0\.blocks\.\d+\.attention\..*'}
+  - {name: s0.mlp, match: 'model\.segformer\.stages\.0\.blocks\.\d+\.mlp\..*'}
+  - {name: s1.patch_embed, match: 'model\.segformer\.stages\.1\.patch_embeddings\..*'}
+  - {name: s1.attn_matmul, match: 'model\.segformer\.stages\.1\.blocks\.\d+\.attention'}
+  - {name: s1.attn_proj, match: 'model\.segformer\.stages\.1\.blocks\.\d+\.attention\..*'}
+  - {name: s1.mlp, match: 'model\.segformer\.stages\.1\.blocks\.\d+\.mlp\..*'}
+  - {name: s2.patch_embed, match: 'model\.segformer\.stages\.2\.patch_embeddings\..*'}
+  - {name: s2.attn_matmul, match: 'model\.segformer\.stages\.2\.blocks\.\d+\.attention'}
+  - {name: s2.attn_proj, match: 'model\.segformer\.stages\.2\.blocks\.\d+\.attention\..*'}
+  - {name: s2.mlp, match: 'model\.segformer\.stages\.2\.blocks\.\d+\.mlp\..*'}
+  - {name: s3.patch_embed, match: 'model\.segformer\.stages\.3\.patch_embeddings\..*'}
+  - {name: s3.attn_matmul, match: 'model\.segformer\.stages\.3\.blocks\.\d+\.attention'}
+  - {name: s3.attn_proj, match: 'model\.segformer\.stages\.3\.blocks\.\d+\.attention\..*'}
+  - {name: s3.mlp, match: 'model\.segformer\.stages\.3\.blocks\.\d+\.mlp\..*'}
+  - {name: head.proj, match: 'model\.decode_head\.linear_projections\..*'}
+  - {name: head.fuse_cls, match: 'model\.decode_head\.(batch_norm|classifier)'}

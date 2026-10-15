@@ -1,0 +1,20 @@
+# INT8 PTQ for TensorRT explicit quantization (D-016): signed int8, symmetric (zero point 0),
+# per-channel weights, per-tensor activations, Q/DQ on the inputs of Conv/MatMul/Gemm only,
+# FP32 bias. Calibration: minmax.
+name: int8_minmax
+activation_type: int8
+weight_type: int8
+activation_symmetric: true
+weight_symmetric: true
+per_channel: true
+op_types: [Conv, MatMul, Gemm]
+quantize_outputs: false
+quantize_bias: false
+calibration:
+  manifest: calib_train200  # train split only: calibrating on val would leak eval data
+  limit: null
+  method: minmax
+  num_bins: null
+  num_quantized_bins: null
+  percentile: null
+  chunk_images: 2  # SegFormer intermediates are >1 GB per image at 512x1024

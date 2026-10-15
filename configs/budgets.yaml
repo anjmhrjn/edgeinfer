@@ -1,0 +1,5 @@
+# Deployment budgets. Gates and the sensitivity analyzer read them from here.
+# Accuracy is from the project brief and provisional (D-017); latency and memory budgets
+# are added in C4 from measured T4 baselines.
+accuracy:
+  miou_drop_max_points: 1.0  # vs FP32 at the same resolution, full val (500 images)

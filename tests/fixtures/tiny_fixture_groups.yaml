@@ -1,0 +1,6 @@
+# Layer groups for the tiny fixture model (tests only).
+model: tiny_fixture
+rules:
+  - {name: stem, match: 'stem\..*'}
+  - {name: attn, match: 'attn(\..*)?'}
+  - {name: head, match: '(down|classifier)(\..*)?'}

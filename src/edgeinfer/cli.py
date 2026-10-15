@@ -14,10 +14,13 @@ def cmd_manifests(args: argparse.Namespace) -> int:
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
     ids_by_split: dict[str, list[str]] = {}
-    for spec in MANIFEST_SPECS.values():
+    built: dict[str, list] = {}
+    for spec in MANIFEST_SPECS.values():  # in order: an excluded manifest comes first
         if spec.split not in ids_by_split:
             ids_by_split[spec.split] = list_image_ids(root, spec.split)
-        text = format_manifest(build_manifest(spec, ids_by_split[spec.split]))
+        excluded = built[spec.exclude] if spec.exclude else None
+        built[spec.name] = build_manifest(spec, ids_by_split[spec.split], excluded)
+        text = format_manifest(built[spec.name])
         path = out_dir / f"{spec.name}.txt"
         # Manifests are frozen once committed; a silent change would invalidate every report.
         if path.exists() and path.read_text() != text and not args.force:

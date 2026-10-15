@@ -26,7 +26,8 @@ def fake_cityscapes(tmp_path: Path) -> Path:
     return tmp_path
 
 
-TINY_CONFIG = Path(__file__).parent / "fixtures" / "tiny_fixture.yaml"
+FIXTURES = Path(__file__).parent / "fixtures"
+TINY_CONFIG = FIXTURES / "tiny_fixture.yaml"
 
 
 @pytest.fixture(scope="session")
