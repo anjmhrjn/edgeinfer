@@ -40,7 +40,12 @@ class TorchRefBackend:
             return self._model(torch.from_numpy(x)).numpy()
 
     def layer_outputs(self, x: np.ndarray, names: list[str]) -> dict[str, np.ndarray]:
-        raise NotImplementedError("per-layer outputs arrive in C2")
+        # D-012: per-layer tensors are keyed by ONNX tensor names, which PyTorch modules
+        # don't have. The per-layer reference is the FP32 ONNX model run in ORT.
+        raise NotImplementedError(
+            "torch_ref has no per-layer outputs (D-012); use ort_cpu on the FP32 ONNX model "
+            "as the per-layer reference"
+        )
 
     def metadata(self) -> dict[str, Any]:
         if self._cfg is None:

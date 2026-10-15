@@ -27,3 +27,13 @@ def fake_cityscapes(tmp_path: Path) -> Path:
 
 
 TINY_CONFIG = Path(__file__).parent / "fixtures" / "tiny_fixture.yaml"
+
+
+@pytest.fixture(scope="session")
+def tiny_onnx(tmp_path_factory) -> Path:
+    """The tiny fixture model exported to ONNX once per test session."""
+    from edgeinfer.config import load_model_config
+    from edgeinfer.export.onnx_export import export_model
+
+    path, _ = export_model(load_model_config(TINY_CONFIG), tmp_path_factory.mktemp("onnx"))
+    return path

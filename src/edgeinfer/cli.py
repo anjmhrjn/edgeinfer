@@ -54,7 +54,7 @@ def cmd_eval(args: argparse.Namespace) -> int:
         print("warning: uncommitted changes; this report must not back any published number")
 
     backend = get_backend(args.backend)
-    backend.load(None, cfg)
+    backend.load(Path(args.artifact) if args.artifact else None, cfg)
     h, w = cfg.input.height, cfg.input.width
     print(f"eval {cfg.name} on {args.backend}, {len(entries)} images at {h}x{w}")
     metrics, findings = evaluate(
@@ -66,6 +66,7 @@ def cmd_eval(args: argparse.Namespace) -> int:
         backend_meta=backend.metadata(),
         inputs={
             "manifest": Path(args.manifest).stem,
+            "artifact": Path(args.artifact).name if args.artifact else None,
             "limit": args.limit,
             "input_hw": [h, w],
             "eval_resolution": "label (full)",
@@ -184,6 +185,7 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("eval", help="mIoU of a model/backend on a manifest; writes a JSON report")
     p.add_argument("--model", required=True, help="config name, e.g. segformer_b0")
     p.add_argument("--backend", default="torch_ref")
+    p.add_argument("--artifact", help="model file for the backend (e.g. ONNX for ort_cpu)")
     p.add_argument("--manifest", default="eval_val")
     p.add_argument("--root", help="Cityscapes root (default: $CITYSCAPES_ROOT)")
     p.add_argument("--height", type=int, help="override the config input height")
