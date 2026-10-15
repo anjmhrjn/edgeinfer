@@ -1,7 +1,43 @@
 # Progress
 
 **Current checkpoint:** C2 — ONNX export, validator, ORT backend, parity (CPU)
-**Next step:** C2 step 1 — dependencies and Python floor (plan approved 2026-10-15).
+**Next step:** Anuj reviews C2 (D-011..D-014 rationales, teach-back) and signs off; then plan C3 in plan mode.
+
+## C2 — ONNX export, validator, ORT backend, parity
+- [x] Python floor 3.11; `onnx`, `onnxruntime`, `onnxscript` added (D-011)
+- [x] Export: dynamo exporter, opset 20, static 1×3×512×1024, content-addressed, I/O contract embedded in ONNX metadata; byte-identical re-exports (D-013)
+- [x] `ort_cpu` backend with memory-bounded `layer_outputs`; per-layer reference is ORT FP32 (D-012)
+- [x] Validator: 11 finding codes, each unit-tested; `configs/supported_ops.yaml` seeded from onnx-tensorrt (TensorRT 11.4, provisional until C4)
+- [x] Parity analyzer: `images` / `golden` / `npz` modes, preprocessing-fault diagnosis, per-layer first-drift, golden hash verification
+- [x] FP32 tolerances from measured variation (D-014)
+- [x] Deliberate break (RGB→BGR) caught by validator and parity on both models
+- [x] CI fixture pipeline (export → validate → ORT eval → golden → parity → breaks) in the CI subset
+- [x] Teach-back: model answers in `private/teach-back-C2.md`
+- [ ] CI green on GitHub (3.11 + 3.12)
+- [ ] Sign-off (Anuj)
+
+### C2 results — ORT CPU FP32 vs PyTorch FP32
+**Export and validation** (`export__<model>__ad46490.json`, `validate__<model>__71edac0.json`): both models export without the fallback and pass the validator with 0 errors and 0 warnings.
+
+| Model | ONNX nodes | Size | Post-export ORT vs torch (max abs) |
+|---|---|---|---|
+| DeepLabV3+ MobileNetV2 | 117 | 21.1 MB | 2.2e-5 |
+| SegFormer-B0 | 400 | 15.6 MB | 1.8e-5 |
+
+**Parity on `golden_val32`** (`parity__<model>__ort_cpu__fp32__golden_val32__{images,golden}__71edac0.json`; identical in both modes because the re-preprocessed input matches golden bit for bit):
+
+| Model | Logits max abs | 1 − cosine (worst) | Argmax agreement (stride 4) | mIoU delta (32 images) |
+|---|---|---|---|---|
+| DeepLabV3+ MobileNetV2 | 8.2e-5 | 2.9e-12 | 1.0 | −1e-5 points |
+| SegFormer-B0 | 8.8e-5 | 1.5e-13 | 1.0 | −2e-5 points |
+
+**Full val, 500 images, 512×1024** (`eval__<model>__ort_cpu__eval_val__512x1024__e264b0b.json` vs the C1 `torch_ref` reports): DeepLabV3+ 67.0863 (delta +2.0e-6 points), SegFormer-B0 70.5770 (delta −6.6e-8 points). Per-class IoUs differ by up to 7e-5 points, which confirms the ORT run computed its own outputs.
+
+**Deliberate break** (config `channel_order: BGR`; `validate__<model>__break-bgr__e264b0b.json`, `parity__<model>__…__layers__break-bgr__e264b0b.json`): the validator fails with `VALIDATE_PREPROC_MISMATCH` on `input.channel_order`. Parity fails (exit 1) with `PARITY_INPUT_MISMATCH` ("channels are reversed … check input.channel_order"), output drift, argmax disagreement and an mIoU drop on the golden images of −11.27 points (DeepLabV3+) and −5.15 (SegFormer). Per-layer mode names the first Conv (#0 in graph order) as the first drifting tensor. With the original config, the same runs pass (reports above).
+
+**Tolerance evidence** (`tolerance_study__<model>__71edac0.json`): ORT with graph optimizations off or one thread stays within 6.5e-5 of golden; per-layer drift between ORT optimization levels ≤ 1.5e-5 relative; near-tie pixels ≤ 4.3e-4 per image.
+
+**Sign-off:** _pending_
 
 ## C1 — Baseline and eval harness
 - [x] Repo skeleton: uv (Python 3.12), pytest, ruff, pre-commit, GitHub Actions
