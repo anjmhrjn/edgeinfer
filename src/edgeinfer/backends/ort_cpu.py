@@ -11,7 +11,7 @@ import onnx
 import onnxruntime as ort
 
 from edgeinfer.config import ModelConfig
-from edgeinfer.export.onnx_export import INPUT_NAME, OUTPUT_NAME, load_sidecar, sha256_file
+from edgeinfer.export.onnx_export import INPUT_NAME, OUTPUT_NAME, artifact_identity
 from edgeinfer.onnx_utils import tensor_nbytes, tensor_types, with_outputs
 
 # Same thread count as the torch_ref golden run (C1).
@@ -48,19 +48,14 @@ class OrtCpuBackend:
         if artifact is None:
             raise ValueError("ort_cpu needs an ONNX artifact (--artifact path/to/model.onnx)")
         artifact = Path(artifact)
-        try:
-            sidecar = load_sidecar(artifact)
-        except FileNotFoundError:
-            # Derived models (e.g. a modified copy in a test) may have no sidecar;
-            # identify them by content instead.
-            sidecar = {"artifact_id": f"sha256:{sha256_file(artifact)}", "precision": "unknown"}
+        identity = artifact_identity(artifact)
         self._model = onnx.load(str(artifact))
         self._session = self._session_for(self._model)
         self._layer_sessions = {}
         self._meta = {
             "artifact": artifact.name,
-            "artifact_id": sidecar["artifact_id"],
-            "precision": sidecar["precision"],
+            "artifact_id": identity["artifact_id"],
+            "precision": identity["precision"],
         }
 
     def infer(self, x: np.ndarray) -> np.ndarray:

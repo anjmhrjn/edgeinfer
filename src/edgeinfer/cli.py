@@ -172,6 +172,61 @@ def cmd_export(args: argparse.Namespace) -> int:
     return 0
 
 
+def _print_findings(findings: list[dict[str, str]]) -> None:
+    for f in findings:
+        where = f" [{f['where']}]" if f.get("where") else ""
+        print(f"  {f['severity'].upper():5} {f['code']}{where}: {f['message']}")
+
+
+def cmd_validate(args: argparse.Namespace) -> int:
+    import platform
+
+    from edgeinfer.config import load_model_config
+    from edgeinfer.export.onnx_export import artifact_identity
+    from edgeinfer.reports import (
+        REPORTS_DIR,
+        git_state,
+        make_report,
+        package_versions,
+        write_report,
+    )
+    from edgeinfer.validate.onnx_validator import (
+        load_supported_ops,
+        supported_ops_ref,
+        validate_onnx,
+    )
+
+    cfg = load_model_config(args.model)
+    artifact = Path(args.artifact)
+    sha, dirty = git_state()
+    if dirty:
+        print("warning: uncommitted changes; this report must not back any published number")
+    supported = load_supported_ops()
+    metrics, findings = validate_onnx(artifact, cfg, supported)
+    passed = metrics["n_errors"] == 0
+    report = make_report(
+        tool="validate",
+        model=cfg.name,
+        backend_meta={
+            "backend": "onnx",
+            "device": f"cpu ({platform.machine()})",
+            **artifact_identity(artifact),
+            "versions": package_versions("onnx"),
+        },
+        inputs={"artifact": artifact.name, "config": Path(args.model).name},
+        thresholds={"supported_ops": supported_ops_ref(supported)},
+        metrics=metrics,
+        findings=findings,
+        passed=passed,
+    )
+    out = Path(args.out) if args.out else REPORTS_DIR / f"validate__{cfg.name}__{sha[:7]}.json"
+    write_report(report, out)
+    _print_findings(findings)
+    status = "PASS" if passed else "FAIL"
+    print(f"{status}: {metrics['n_errors']} errors, {metrics['n_warnings']} warnings -> {out}")
+    return 0 if passed else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="edgeinfer")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -209,6 +264,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--report-dir", help="report directory (default: artifacts/reports)")
     p.add_argument("--force", action="store_true", help="re-export even if the artifact exists")
     p.set_defaults(func=cmd_export)
+
+    p = sub.add_parser("validate", help="check an ONNX model against its config; writes a report")
+    p.add_argument("--model", required=True, help="config name or path")
+    p.add_argument("--artifact", required=True, help="ONNX file")
+    p.add_argument("--out", help="report path (default: artifacts/reports/...)")
+    p.set_defaults(func=cmd_validate)
 
     return parser
 

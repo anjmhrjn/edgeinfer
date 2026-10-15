@@ -119,6 +119,16 @@ def load_sidecar(path: Path) -> dict[str, Any]:
     return meta
 
 
+def artifact_identity(path: Path) -> dict[str, str]:
+    """artifact_id and precision of a model file: from its sidecar, or by content for
+    derived files without one (e.g. a modified copy made by a test)."""
+    try:
+        meta = load_sidecar(path)
+    except FileNotFoundError:
+        return {"artifact_id": f"sha256:{sha256_file(path)}", "precision": "unknown"}
+    return {"artifact_id": meta["artifact_id"], "precision": meta["precision"]}
+
+
 def _strip_and_annotate(model: onnx.ModelProto, cfg: ModelConfig, art_id: str) -> None:
     for node in model.graph.node:
         keep = [p for p in node.metadata_props if p.key not in _STRIP_NODE_METADATA]
