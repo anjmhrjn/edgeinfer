@@ -107,3 +107,13 @@ One entry per non-trivial decision. Newest at the bottom.
 **Rationale:** The C++/CUDA runtime has to reproduce preprocessing bit-for-bit, so the resize must have a definition simple enough to write down in one line. Half-pixel bilinear without antialiasing has that, and the test against PyTorch proves our implementation matches it; PIL's antialiasing filter has no such easy definition.
 **Evidence:** `tests/test_preprocess.py::test_resize_matches_torch_half_pixel_bilinear`.
 **Consequences / revisit if:** Neither model was trained on resized images, so resolution is a domain shift either way (see D-002).
+
+## D-010: Commit JSON reports to git  (C1, 2026-10-15)
+**Context:** The integrity rules require every published number to trace to a JSON report with the git SHA and environment. `artifacts/` was fully gitignored, so a reader of the repo couldn't follow a number back to its report.
+**Options:**
+1. Commit `artifacts/reports/*.json`; keep golden outputs, ONNX models and engines ignored — numbers traceable from a clone / reports expose the hostname and library versions; repo grows by a few KB per report.
+2. Keep reports local; rely on reruns for reproduction — nothing extra in git / numbers in docs can't be checked without the dataset and hours of compute.
+**Decision:** Option 1. Reports contain metrics only, no Cityscapes images, labels or tensors, so the license allows it.
+**Rationale:** TODO(Anuj)
+**Evidence:** —
+**Consequences / revisit if:** Smoke runs (`--limit`) should write outside `artifacts/reports/` (or be deleted) so only reports that back documented numbers get committed. Reports from before this decision lack the `transformers` version in `env`; it's recoverable from `uv.lock` at the report's git SHA.

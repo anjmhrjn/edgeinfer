@@ -8,6 +8,7 @@ from typing import Any
 
 import numpy as np
 import torch
+import transformers
 
 from edgeinfer.config import ModelConfig
 from edgeinfer.models.registry import build_model, weights_id
@@ -50,5 +51,5 @@ class TorchRefBackend:
             "device": f"cpu ({platform.machine()})",
             "artifact_id": weights_id(self._cfg),
             "threads": torch.get_num_threads(),
-            "versions": {"torch": torch.__version__},
+            "versions": {"torch": torch.__version__, "transformers": transformers.__version__},
         }

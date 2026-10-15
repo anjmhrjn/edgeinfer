@@ -75,7 +75,7 @@ pipelines/airflow/dags/deploy_model.py
 scripts/           gpu-*.sh, remote.sh, make_results.py
 docker/Dockerfile.trt
 tests/             unit + integration; GPU tests marked @pytest.mark.gpu
-artifacts/         gitignored: golden/, onnx/, engines/, reports/
+artifacts/         golden/, onnx/, engines/ gitignored; reports/ committed (D-010)
 docs/              roadmap.md, progress.md, decisions.md, results.md, report-codes.md, ideas.md
 ```
 

@@ -4,7 +4,9 @@ private/
 
 # Cityscapes data and derived tensors (license forbids redistribution)
 data/raw/
-artifacts/
+artifacts/*
+# Reports hold metrics only (no data) and are committed for traceability (D-010).
+!artifacts/reports/
 *.npz
 *.engine
 *.plan
