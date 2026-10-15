@@ -41,3 +41,18 @@ def test_pretrained_models_load_and_run(name):
     assert out.dtype == np.float32
     assert np.isfinite(out).all()
     assert backend.metadata()["precision"] == "fp32"
+
+
+def test_tiny_fixture_is_seeded_and_outputs_stride4_logits():
+    from tests.conftest import TINY_CONFIG
+
+    cfg = load_model_config(TINY_CONFIG)
+    x = np.random.default_rng(0).standard_normal((1, 3, 32, 64)).astype(np.float32)
+    outs = []
+    for _ in range(2):
+        backend = get_backend("torch_ref")
+        backend.load(None, cfg)
+        outs.append(backend.infer(x))
+    assert outs[0].shape == (1, 19, 8, 16)
+    np.testing.assert_array_equal(outs[0], outs[1])
+    assert backend.metadata()["artifact_id"] == "seed:0"

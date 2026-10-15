@@ -24,3 +24,6 @@ def fake_cityscapes(tmp_path: Path) -> Path:
                 Image.fromarray(image, "RGB").save(img_dir / f"{image_id}{IMAGE_SUFFIX}")
                 Image.fromarray(label, "L").save(lbl_dir / f"{image_id}{LABEL_SUFFIX}")
     return tmp_path
+
+
+TINY_CONFIG = Path(__file__).parent / "fixtures" / "tiny_fixture.yaml"

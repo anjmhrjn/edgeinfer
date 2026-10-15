@@ -15,6 +15,8 @@ def weights_id(cfg: ModelConfig) -> str:
         return f"hf:{w['repo']}@{w['revision']}"
     if w["source"] == "url":
         return f"sha256:{w['sha256']}"
+    if w["source"] == "seeded":
+        return f"seed:{w['seed']}"
     raise ValueError(f"{cfg.name}: unknown weights source {w['source']!r}")
 
 
@@ -40,6 +42,11 @@ def build_model(cfg: ModelConfig) -> nn.Module:
         model.load_checkpoint(
             fetch_url_weights(cfg.weights["url"], cfg.weights["filename"], cfg.weights["sha256"])
         )
+    elif cfg.architecture == "tiny_fixture":
+        from edgeinfer.models.tiny import build_tiny
+
+        _require(cfg, "seed")
+        model = build_tiny(cfg.num_classes, int(cfg.weights["seed"]))
     else:
         raise ValueError(f"{cfg.name}: unknown architecture {cfg.architecture!r}")
     return model.eval()
