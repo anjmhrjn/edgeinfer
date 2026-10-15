@@ -1,10 +1,12 @@
-# Parity tolerances by candidate precision, used by `edgeinfer parity`.
-# PROVISIONAL (loose) values for the C2 measurement run; replaced by D-014.
+# Parity tolerances by candidate precision, used by `edgeinfer parity` (D-014).
+# fp32: 10x headroom over the worst legitimate FP32 variation measured on the Mac
+# (ORT vs PyTorch golden, ORT optimization levels and thread counts), 100x on 1-cosine
+# because 1-cos grows with the square of the error. Revisit for TensorRT FP32 in C4.
 fp32:
-  input_max_abs: 1.0e-4
-  logits_max_abs: 1.0e-2
-  logits_cosine_min: 0.9999
-  argmax_agreement_min: 0.999
-  miou_delta_max: 0.1
-  layer_cosine_min: 0.9999
-  layer_rel_max_abs: 1.0e-3
+  input_max_abs: 1.0e-5          # ~40 float32 ulps; one 8-bit intensity step is ~0.017
+  logits_max_abs: 1.0e-3         # worst observed 8.8e-5
+  logits_cosine_min: 0.999999999 # worst observed 1-cos 2.9e-12
+  argmax_agreement_min: 0.999    # at 1e-3 drift, <= 4.3e-4 of pixels/image are near-ties
+  miou_delta_max: 0.001          # points on the golden images; worst observed 2e-5
+  layer_cosine_min: 0.99999999   # worst observed per-layer 1-cos 2.4e-11
+  layer_rel_max_abs: 2.0e-4      # worst observed per-layer 1.5e-5
