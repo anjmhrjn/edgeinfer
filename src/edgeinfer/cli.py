@@ -352,6 +352,82 @@ def cmd_parity(args: argparse.Namespace) -> int:
     return 0 if passed else 1
 
 
+def cmd_quantize(args: argparse.Namespace) -> int:
+    import platform
+
+    from edgeinfer.config import load_model_config
+    from edgeinfer.data.cityscapes import cityscapes_root
+    from edgeinfer.export.onnx_export import artifact_identity
+    from edgeinfer.quant import QuantError
+    from edgeinfer.quant.calib import CALIB_DIR, calibrate, calibration_entries
+    from edgeinfer.quant.config import (
+        load_exclusions,
+        load_group_rules,
+        load_quant_config,
+        no_exclusions,
+    )
+    from edgeinfer.quant.ptq import PRECISION, quantize
+    from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
+
+    cfg = load_model_config(args.model)
+    qcfg = load_quant_config(args.quant_config)
+    rules = load_group_rules(cfg.name, args.groups)
+    exclusions = (load_exclusions(args.exclusions, cfg.name) if args.exclusions
+                  else no_exclusions(cfg.name))  # fmt: skip
+    fp32_path = Path(args.artifact)
+    sha, dirty = git_state()
+    if dirty:
+        print("warning: uncommitted changes; this report must not back any published number")
+
+    inputs = {
+        "artifact": fp32_path.name, "config": Path(args.model).name, "quant_config": qcfg.to_dict(),
+        "exclusions": exclusions.to_dict(), "groups": Path(args.groups).name if args.groups
+        else f"{cfg.name}.yaml",
+    }  # fmt: skip
+    backend_meta = {"backend": "onnxruntime.quantization", "precision": PRECISION,
+                    "device": f"cpu ({platform.machine()})", "versions": {}}  # fmt: skip
+    metrics: dict = {}
+    findings = []
+    try:
+        calibration_entries(qcfg.calibration)  # refuse a bad manifest before loading data
+        cal = calibrate(fp32_path, cfg, qcfg, cityscapes_root(args.root),
+                        Path(args.calib_dir) if args.calib_dir else CALIB_DIR)  # fmt: skip
+        out_root = Path(args.out_root) if args.out_root else None
+        path, meta = quantize(fp32_path, cfg, qcfg, cal, rules, exclusions,
+                              **({"out_root": out_root} if out_root else {}))  # fmt: skip
+        backend_meta |= {"artifact_id": meta["artifact_id"], "versions": meta["versions"]}
+        metrics = {
+            "file": meta["file"], "sha256": meta["sha256"], "size_bytes": meta["size_bytes"],
+            "parent_artifact_id": meta["parent_artifact_id"], "calibration": meta["calibration"],
+            "calibration_dev": {k: cal[1][k] for k in ("seconds", "peak_rss_bytes", "n_tensors")},
+            "placement": meta["placement"], "excluded_nodes": meta["excluded_nodes"],
+        }  # fmt: skip
+        print(f"{path} ({meta['size_bytes'] / 1e6:.1f} MB), quantized "
+              f"{meta['placement']['quantized_nodes']}, excluded "
+              f"{meta['placement']['excluded_nodes'] or 'none'}")  # fmt: skip
+    except QuantError as e:
+        backend_meta["artifact_id"] = "none"
+        findings.append({"severity": "error", "code": e.code, "message": str(e)})
+    if findings:
+        # The FP32 input is still identified, so a failed report says what it refused.
+        inputs["artifact_id"] = artifact_identity(fp32_path)["artifact_id"]
+
+    passed = not findings
+    report = make_report(
+        tool="quantize", model=cfg.name, backend_meta=backend_meta, inputs=inputs,
+        metrics=metrics, findings=findings, passed=passed,
+    )  # fmt: skip
+    if args.out:
+        out = Path(args.out)
+    else:
+        report_dir = Path(args.report_dir) if args.report_dir else REPORTS_DIR
+        out = report_dir / f"quantize__{cfg.name}__{qcfg.name}__{exclusions.name}__{sha[:7]}.json"
+    write_report(report, out)
+    _print_findings(findings)
+    print(f"{'PASS' if passed else 'FAIL'} -> {out}")
+    return 0 if passed else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="edgeinfer")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -418,6 +494,19 @@ def build_parser() -> argparse.ArgumentParser:
                    help="max MB of intermediate tensors fetched per run")  # fmt: skip
     p.add_argument("--out", help="report path (default: artifacts/reports/...)")
     p.set_defaults(func=cmd_parity)
+
+    p = sub.add_parser("quantize", help="FP32 ONNX -> INT8 QDQ ONNX (ORT PTQ); writes a report")
+    p.add_argument("--model", required=True, help="config name or path")
+    p.add_argument("--artifact", required=True, help="FP32 ONNX file (from `edgeinfer export`)")
+    p.add_argument("--quant-config", required=True, help="configs/quant/<name>.yaml, or a path")
+    p.add_argument("--exclusions", help="groups/nodes kept in float (configs/quant/exclusions/)")
+    p.add_argument("--groups", help="group rules (default: configs/quant/groups/<model>.yaml)")
+    p.add_argument("--root", help="Cityscapes root (default: $CITYSCAPES_ROOT)")
+    p.add_argument("--calib-dir", help="calibration cache root (default: artifacts/calib)")
+    p.add_argument("--out-root", help="artifact root (default: artifacts/onnx)")
+    p.add_argument("--report-dir", help="report directory (default: artifacts/reports)")
+    p.add_argument("--out", help="report path")
+    p.set_defaults(func=cmd_quantize)
 
     return parser
 
