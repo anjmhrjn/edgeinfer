@@ -1,0 +1,1016 @@
+{
+  "schema_version": "1",
+  "tool": "parity",
+  "created_at": "2026-10-15T16:11:55+00:00",
+  "git_sha": "e264b0beab9cfd7b6a5e2b84a455d06a75d63bc9",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": 4,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "onnxruntime": "1.31.0",
+      "onnx": "1.23.2"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "ort_cpu",
+  "precision": "fp32",
+  "artifact_id": "98b5428431cd9bbe3b80354b251010db60b811b0a081b59afad424b477bfaa4b",
+  "inputs": {
+    "manifest": "golden_val32",
+    "limit": null,
+    "mode": "images",
+    "artifact": "deeplabv3plus_mbv2__fp32__98b5428431cd.onnx",
+    "config": "deeplabv3plus_mbv2_bgr.yaml",
+    "golden_verified": true,
+    "tolerances": "fp32",
+    "ref_artifact": "deeplabv3plus_mbv2__fp32__98b5428431cd.onnx",
+    "ref_artifact_id": "98b5428431cd9bbe3b80354b251010db60b811b0a081b59afad424b477bfaa4b"
+  },
+  "thresholds": {
+    "input_max_abs": 1e-05,
+    "logits_max_abs": 0.001,
+    "logits_cosine_min": 0.999999999,
+    "argmax_agreement_min": 0.999,
+    "miou_delta_max": 0.001,
+    "layer_cosine_min": 0.99999999,
+    "layer_rel_max_abs": 0.0002
+  },
+  "metrics": {
+    "n_images": 32,
+    "mode": "images",
+    "logits_max_abs": 10.024605631828308,
+    "logits_mean_abs": 0.7343770709231144,
+    "logits_cosine_min": 0.9055692870604622,
+    "argmax_agreement_min": 0.84869384765625,
+    "argmax_agreement_mean": 0.9441127777099609,
+    "input_max_abs": 4.444444537162781,
+    "argmax_agreement_label_res_min": 0.8478288650512695,
+    "miou_reference": 0.6753207793476206,
+    "miou_candidate": 0.562611963440675,
+    "miou_delta_points": -11.27088159069456,
+    "per_image": [
+      {
+        "image_id": "frankfurt_000000_000576",
+        "input_max_abs": 2.980392336845398,
+        "nonfinite": 0,
+        "max_abs": 7.638148307800293,
+        "mean_abs": 0.6577005111645128,
+        "cosine": 0.9643715133143709,
+        "argmax_agreement": 0.97210693359375,
+        "argmax_agreement_label_res": 0.972780704498291
+      },
+      {
+        "image_id": "frankfurt_000000_007365",
+        "input_max_abs": 2.8671024441719055,
+        "nonfinite": 0,
+        "max_abs": 9.491670608520508,
+        "mean_abs": 1.0242882579617152,
+        "cosine": 0.9055692870604622,
+        "argmax_agreement": 0.9144287109375,
+        "argmax_agreement_label_res": 0.9158902168273926
+      },
+      {
+        "image_id": "frankfurt_000000_013382",
+        "input_max_abs": 2.880174398422241,
+        "nonfinite": 0,
+        "max_abs": 6.179640769958496,
+        "mean_abs": 0.7463888850882752,
+        "cosine": 0.9519675369758519,
+        "argmax_agreement": 0.97296142578125,
+        "argmax_agreement_label_res": 0.9737443923950195
+      },
+      {
+        "image_id": "frankfurt_000000_022254",
+        "input_max_abs": 3.3464053869247437,
+        "nonfinite": 0,
+        "max_abs": 7.6155054569244385,
+        "mean_abs": 0.6343097859152627,
+        "cosine": 0.9698889094691778,
+        "argmax_agreement": 0.95947265625,
+        "argmax_agreement_label_res": 0.9599995613098145
+      },
+      {
+        "image_id": "frankfurt_000001_005184",
+        "input_max_abs": 3.0544663667678833,
+        "nonfinite": 0,
+        "max_abs": 8.33458662033081,
+        "mean_abs": 0.7837856081404122,
+        "cosine": 0.9390313973670419,
+        "argmax_agreement": 0.84869384765625,
+        "argmax_agreement_label_res": 0.8478288650512695
+      },
+      {
+        "image_id": "frankfurt_000001_007973",
+        "input_max_abs": 2.4836601614952087,
+        "nonfinite": 0,
+        "max_abs": 7.736735820770264,
+        "mean_abs": 0.7160811288470071,
+        "cosine": 0.9564955915058537,
+        "argmax_agreement": 0.931976318359375,
+        "argmax_agreement_label_res": 0.9342174530029297
+      },
+      {
+        "image_id": "frankfurt_000001_020287",
+        "input_max_abs": 2.7886711955070496,
+        "nonfinite": 0,
+        "max_abs": 8.014580488204956,
+        "mean_abs": 0.7502481068790166,
+        "cosine": 0.9551675124916019,
+        "argmax_agreement": 0.95269775390625,
+        "argmax_agreement_label_res": 0.9535326957702637
+      },
+      {
+        "image_id": "frankfurt_000001_025921",
+        "input_max_abs": 3.4204792976379395,
+        "nonfinite": 0,
+        "max_abs": 7.605526924133301,
+        "mean_abs": 0.9489826948302562,
+        "cosine": 0.9160224923188953,
+        "argmax_agreement": 0.915679931640625,
+        "argmax_agreement_label_res": 0.9170079231262207
+      },
+      {
+        "image_id": "frankfurt_000001_031416",
+        "input_max_abs": 3.150326728820801,
+        "nonfinite": 0,
+        "max_abs": 7.946352958679199,
+        "mean_abs": 0.8762927922136661,
+        "cosine": 0.9363842270553399,
+        "argmax_agreement": 0.965789794921875,
+        "argmax_agreement_label_res": 0.9674243927001953
+      },
+      {
+        "image_id": "frankfurt_000001_034047",
+        "input_max_abs": 3.3594772815704346,
+        "nonfinite": 0,
+        "max_abs": 7.871124505996704,
+        "mean_abs": 0.8127182585110674,
+        "cosine": 0.943250157806277,
+        "argmax_agreement": 0.927703857421875,
+        "argmax_agreement_label_res": 0.9294619560241699
+      },
+      {
+        "image_id": "frankfurt_000001_055603",
+        "input_max_abs": 3.285402774810791,
+        "nonfinite": 0,
+        "max_abs": 7.656711280345917,
+        "mean_abs": 0.7023425269214025,
+        "cosine": 0.9568873003923919,
+        "argmax_agreement": 0.91424560546875,
+        "argmax_agreement_label_res": 0.9147586822509766
+      },
+      {
+        "image_id": "frankfurt_000001_057954",
+        "input_max_abs": 2.745098054409027,
+        "nonfinite": 0,
+        "max_abs": 7.6826491355896,
+        "mean_abs": 0.6752689923602544,
+        "cosine": 0.9645640918424662,
+        "argmax_agreement": 0.9522705078125,
+        "argmax_agreement_label_res": 0.9542222023010254
+      },
+      {
+        "image_id": "frankfurt_000001_064305",
+        "input_max_abs": 1.7734204791486263,
+        "nonfinite": 0,
+        "max_abs": 7.729062795639038,
+        "mean_abs": 0.7066215696702378,
+        "cosine": 0.9611766396362771,
+        "argmax_agreement": 0.957916259765625,
+        "argmax_agreement_label_res": 0.959284782409668
+      },
+      {
+        "image_id": "frankfurt_000001_066092",
+        "input_max_abs": 4.444444537162781,
+        "nonfinite": 0,
+        "max_abs": 8.379637241363525,
+        "mean_abs": 0.8418720677371583,
+        "cosine": 0.9322811664144574,
+        "argmax_agreement": 0.866424560546875,
+        "argmax_agreement_label_res": 0.867067813873291
+      },
+      {
+        "image_id": "frankfurt_000001_066574",
+        "input_max_abs": 2.422658085823059,
+        "nonfinite": 0,
+        "max_abs": 7.021377205848694,
+        "mean_abs": 0.8540266591435592,
+        "cosine": 0.9354318187744377,
+        "argmax_agreement": 0.87921142578125,
+        "argmax_agreement_label_res": 0.8814740180969238
+      },
+      {
+        "image_id": "frankfurt_000001_069633",
+        "input_max_abs": 2.4923747181892395,
+        "nonfinite": 0,
+        "max_abs": 7.461463451385498,
+        "mean_abs": 0.6954037932447288,
+        "cosine": 0.9577906818806918,
+        "argmax_agreement": 0.953582763671875,
+        "argmax_agreement_label_res": 0.9539942741394043
+      },
+      {
+        "image_id": "frankfurt_000001_073464",
+        "input_max_abs": 3.57734215259552,
+        "nonfinite": 0,
+        "max_abs": 8.73169094324112,
+        "mean_abs": 0.791867315606069,
+        "cosine": 0.9479008980913174,
+        "argmax_agreement": 0.9649658203125,
+        "argmax_agreement_label_res": 0.9650230407714844
+      },
+      {
+        "image_id": "frankfurt_000001_076502",
+        "input_max_abs": 3.2941176891326904,
+        "nonfinite": 0,
+        "max_abs": 10.024605631828308,
+        "mean_abs": 0.7953734468259511,
+        "cosine": 0.9469358054248056,
+        "argmax_agreement": 0.923248291015625,
+        "argmax_agreement_label_res": 0.9239091873168945
+      },
+      {
+        "image_id": "lindau_000024_000019",
+        "input_max_abs": 1.6470588445663452,
+        "nonfinite": 0,
+        "max_abs": 8.310966968536377,
+        "mean_abs": 0.7809946341893462,
+        "cosine": 0.9445572189925632,
+        "argmax_agreement": 0.939056396484375,
+        "argmax_agreement_label_res": 0.9405994415283203
+      },
+      {
+        "image_id": "lindau_000044_000019",
+        "input_max_abs": 1.773420661687851,
+        "nonfinite": 0,
+        "max_abs": 7.997747898101807,
+        "mean_abs": 0.8721265044825288,
+        "cosine": 0.9349756976266085,
+        "argmax_agreement": 0.987579345703125,
+        "argmax_agreement_label_res": 0.9879550933837891
+      },
+      {
+        "image_id": "munster_000007_000019",
+        "input_max_abs": 2.6492374539375305,
+        "nonfinite": 0,
+        "max_abs": 5.641416549682617,
+        "mean_abs": 0.6485492649151746,
+        "cosine": 0.9649644046839022,
+        "argmax_agreement": 0.962554931640625,
+        "argmax_agreement_label_res": 0.9627890586853027
+      },
+      {
+        "image_id": "munster_000030_000019",
+        "input_max_abs": 1.9172115474939346,
+        "nonfinite": 0,
+        "max_abs": 6.28058123588562,
+        "mean_abs": 0.6347740442450567,
+        "cosine": 0.9682917284567092,
+        "argmax_agreement": 0.969482421875,
+        "argmax_agreement_label_res": 0.9708461761474609
+      },
+      {
+        "image_id": "munster_000043_000019",
+        "input_max_abs": 1.8518520444631577,
+        "nonfinite": 0,
+        "max_abs": 9.698949307203293,
+        "mean_abs": 0.6145782556005491,
+        "cosine": 0.9681019568391788,
+        "argmax_agreement": 0.977569580078125,
+        "argmax_agreement_label_res": 0.9786286354064941
+      },
+      {
+        "image_id": "munster_000063_000019",
+        "input_max_abs": 1.9128541350364685,
+        "nonfinite": 0,
+        "max_abs": 6.359283924102783,
+        "mean_abs": 0.6871149286197543,
+        "cosine": 0.9587102299330051,
+        "argmax_agreement": 0.94573974609375,
+        "argmax_agreement_label_res": 0.9462924003601074
+      },
+      {
+        "image_id": "munster_000064_000019",
+        "input_max_abs": 1.2810457050800323,
+        "nonfinite": 0,
+        "max_abs": 7.210804998874664,
+        "mean_abs": 0.7299495451547586,
+        "cosine": 0.9587340107260565,
+        "argmax_agreement": 0.95159912109375,
+        "argmax_agreement_label_res": 0.9532127380371094
+      },
+      {
+        "image_id": "munster_000065_000019",
+        "input_max_abs": 1.9477125145494938,
+        "nonfinite": 0,
+        "max_abs": 5.228277865797281,
+        "mean_abs": 0.5896244096449897,
+        "cosine": 0.9708555282826852,
+        "argmax_agreement": 0.96905517578125,
+        "argmax_agreement_label_res": 0.9701886177062988
+      },
+      {
+        "image_id": "munster_000066_000019",
+        "input_max_abs": 2.1568627655506134,
+        "nonfinite": 0,
+        "max_abs": 5.828303217887878,
+        "mean_abs": 0.6165516349249979,
+        "cosine": 0.9679357911292455,
+        "argmax_agreement": 0.97540283203125,
+        "argmax_agreement_label_res": 0.9763989448547363
+      },
+      {
+        "image_id": "munster_000077_000019",
+        "input_max_abs": 1.721132755279541,
+        "nonfinite": 0,
+        "max_abs": 6.941248178482056,
+        "mean_abs": 0.6249667767824271,
+        "cosine": 0.9691025261783103,
+        "argmax_agreement": 0.948028564453125,
+        "argmax_agreement_label_res": 0.9496140480041504
+      },
+      {
+        "image_id": "munster_000084_000019",
+        "input_max_abs": 2.5185185074806213,
+        "nonfinite": 0,
+        "max_abs": 6.594713449478149,
+        "mean_abs": 0.6956341747509878,
+        "cosine": 0.9579164968733548,
+        "argmax_agreement": 0.931182861328125,
+        "argmax_agreement_label_res": 0.9322052001953125
+      },
+      {
+        "image_id": "munster_000101_000019",
+        "input_max_abs": 1.6034857630729675,
+        "nonfinite": 0,
+        "max_abs": 5.82677686214447,
+        "mean_abs": 0.7007897590991675,
+        "cosine": 0.9593144476520441,
+        "argmax_agreement": 0.962249755859375,
+        "argmax_agreement_label_res": 0.9624366760253906
+      },
+      {
+        "image_id": "munster_000107_000019",
+        "input_max_abs": 1.516339749097824,
+        "nonfinite": 0,
+        "max_abs": 6.869433328509331,
+        "mean_abs": 0.649644247970955,
+        "cosine": 0.9643749122143312,
+        "argmax_agreement": 0.97344970703125,
+        "argmax_agreement_label_res": 0.974156379699707
+      },
+      {
+        "image_id": "munster_000131_000019",
+        "input_max_abs": 2.76252743601799,
+        "nonfinite": 0,
+        "max_abs": 8.334972858428955,
+        "mean_abs": 0.6411956880984147,
+        "cosine": 0.9640326636707619,
+        "argmax_agreement": 0.945281982421875,
+        "argmax_agreement_label_res": 0.9457955360412598
+      }
+    ],
+    "per_layer": {
+      "n_tensors": 73,
+      "n_images": 2,
+      "n_over_tolerance": 73,
+      "first_over_tolerance": {
+        "index": 0,
+        "tensor": "getitem",
+        "op": "Conv",
+        "cosine_min": 0.8523871488771039,
+        "rel_max_abs": 1.1262866267148872
+      },
+      "worst_by_cosine": [
+        {
+          "index": 67,
+          "tensor": "upsample_bilinear2d",
+          "op": "Resize",
+          "cosine_min": 0.5914507308742426,
+          "rel_max_abs": 0.8261729983463414
+        },
+        {
+          "index": 66,
+          "tensor": "getitem_168",
+          "op": "Conv",
+          "cosine_min": 0.6350144777067345,
+          "rel_max_abs": 0.8218382019564805
+        },
+        {
+          "index": 60,
+          "tensor": "getitem_150",
+          "op": "Conv",
+          "cosine_min": 0.733834598972938,
+          "rel_max_abs": 0.7842523233112226
+        },
+        {
+          "index": 25,
+          "tensor": "getitem_66",
+          "op": "Conv",
+          "cosine_min": 0.7501958803080417,
+          "rel_max_abs": 2.053572094104444
+        },
+        {
+          "index": 26,
+          "tensor": "getitem_69",
+          "op": "Conv",
+          "cosine_min": 0.7543783006951755,
+          "rel_max_abs": 0.6597233742630715
+        },
+        {
+          "index": 68,
+          "tensor": "cat",
+          "op": "Concat",
+          "cosine_min": 0.7684019809011228,
+          "rel_max_abs": 0.6462337710520039
+        },
+        {
+          "index": 30,
+          "tensor": "getitem_78",
+          "op": "Conv",
+          "cosine_min": 0.7723486798466552,
+          "rel_max_abs": 0.9728183190704278
+        },
+        {
+          "index": 70,
+          "tensor": "upsample_bilinear2d_1",
+          "op": "Resize",
+          "cosine_min": 0.7745412191688796,
+          "rel_max_abs": 0.6575420324751553
+        },
+        {
+          "index": 62,
+          "tensor": "getitem_156",
+          "op": "Conv",
+          "cosine_min": 0.7825385022835485,
+          "rel_max_abs": 0.6504725073612099
+        },
+        {
+          "index": 65,
+          "tensor": "getitem_165",
+          "op": "Conv",
+          "cosine_min": 0.7853950084871693,
+          "rel_max_abs": 0.5565607954091272
+        }
+      ],
+      "tensors": [
+        {
+          "index": 0,
+          "tensor": "getitem",
+          "op": "Conv",
+          "cosine_min": 0.8523871488771039,
+          "rel_max_abs": 1.1262866267148872
+        },
+        {
+          "index": 1,
+          "tensor": "getitem_3",
+          "op": "Conv",
+          "cosine_min": 0.9742820232659196,
+          "rel_max_abs": 0.3649102733913699
+        },
+        {
+          "index": 2,
+          "tensor": "getitem_6",
+          "op": "Conv",
+          "cosine_min": 0.8882788624496933,
+          "rel_max_abs": 0.6869172912391723
+        },
+        {
+          "index": 3,
+          "tensor": "getitem_9",
+          "op": "Conv",
+          "cosine_min": 0.9358223774536896,
+          "rel_max_abs": 0.8780112762685802
+        },
+        {
+          "index": 4,
+          "tensor": "getitem_12",
+          "op": "Conv",
+          "cosine_min": 0.9451852745297596,
+          "rel_max_abs": 0.42880878021713514
+        },
+        {
+          "index": 5,
+          "tensor": "getitem_15",
+          "op": "Conv",
+          "cosine_min": 0.8930633958657243,
+          "rel_max_abs": 0.7540176641431857
+        },
+        {
+          "index": 6,
+          "tensor": "getitem_18",
+          "op": "Conv",
+          "cosine_min": 0.9303101374101633,
+          "rel_max_abs": 0.2877165391144386
+        },
+        {
+          "index": 7,
+          "tensor": "getitem_21",
+          "op": "Conv",
+          "cosine_min": 0.8537418835475143,
+          "rel_max_abs": 0.8323495844688137
+        },
+        {
+          "index": 8,
+          "tensor": "getitem_24",
+          "op": "Conv",
+          "cosine_min": 0.8082350999616917,
+          "rel_max_abs": 0.9214285381299502
+        },
+        {
+          "index": 9,
+          "tensor": "add",
+          "op": "Add",
+          "cosine_min": 0.8157515644082045,
+          "rel_max_abs": 0.8162465719955633
+        },
+        {
+          "index": 10,
+          "tensor": "getitem_27",
+          "op": "Conv",
+          "cosine_min": 0.859601781341086,
+          "rel_max_abs": 0.9549274905695762
+        },
+        {
+          "index": 11,
+          "tensor": "getitem_30",
+          "op": "Conv",
+          "cosine_min": 0.8872114915759659,
+          "rel_max_abs": 0.8817241320543358
+        },
+        {
+          "index": 12,
+          "tensor": "getitem_33",
+          "op": "Conv",
+          "cosine_min": 0.7966045301227763,
+          "rel_max_abs": 0.7652235584102979
+        },
+        {
+          "index": 13,
+          "tensor": "getitem_36",
+          "op": "Conv",
+          "cosine_min": 0.8990023632245248,
+          "rel_max_abs": 0.6023812830445303
+        },
+        {
+          "index": 14,
+          "tensor": "getitem_39",
+          "op": "Conv",
+          "cosine_min": 0.7974385799075981,
+          "rel_max_abs": 1.190163169061003
+        },
+        {
+          "index": 15,
+          "tensor": "getitem_42",
+          "op": "Conv",
+          "cosine_min": 0.8849822939834561,
+          "rel_max_abs": 0.4358829883135362
+        },
+        {
+          "index": 16,
+          "tensor": "add_1",
+          "op": "Add",
+          "cosine_min": 0.8134632818168517,
+          "rel_max_abs": 0.677608383982491
+        },
+        {
+          "index": 17,
+          "tensor": "getitem_45",
+          "op": "Conv",
+          "cosine_min": 0.9273725163037928,
+          "rel_max_abs": 0.82615355617009
+        },
+        {
+          "index": 18,
+          "tensor": "getitem_48",
+          "op": "Conv",
+          "cosine_min": 0.8826131440857107,
+          "rel_max_abs": 0.9139104171813095
+        },
+        {
+          "index": 19,
+          "tensor": "getitem_51",
+          "op": "Conv",
+          "cosine_min": 0.8772746933325365,
+          "rel_max_abs": 0.3954851749456602
+        },
+        {
+          "index": 20,
+          "tensor": "add_2",
+          "op": "Add",
+          "cosine_min": 0.8332318732480716,
+          "rel_max_abs": 0.6169675852030316
+        },
+        {
+          "index": 21,
+          "tensor": "getitem_54",
+          "op": "Conv",
+          "cosine_min": 0.8708257281248358,
+          "rel_max_abs": 0.6961486135285031
+        },
+        {
+          "index": 22,
+          "tensor": "getitem_57",
+          "op": "Conv",
+          "cosine_min": 0.9159883100437654,
+          "rel_max_abs": 0.503840538187306
+        },
+        {
+          "index": 23,
+          "tensor": "getitem_60",
+          "op": "Conv",
+          "cosine_min": 0.8015054535536573,
+          "rel_max_abs": 0.6456349544776191
+        },
+        {
+          "index": 24,
+          "tensor": "getitem_63",
+          "op": "Conv",
+          "cosine_min": 0.8313247686642578,
+          "rel_max_abs": 1.0325761369573745
+        },
+        {
+          "index": 25,
+          "tensor": "getitem_66",
+          "op": "Conv",
+          "cosine_min": 0.7501958803080417,
+          "rel_max_abs": 2.053572094104444
+        },
+        {
+          "index": 26,
+          "tensor": "getitem_69",
+          "op": "Conv",
+          "cosine_min": 0.7543783006951755,
+          "rel_max_abs": 0.6597233742630715
+        },
+        {
+          "index": 27,
+          "tensor": "add_3",
+          "op": "Add",
+          "cosine_min": 0.7928165068272497,
+          "rel_max_abs": 0.7247297308488085
+        },
+        {
+          "index": 28,
+          "tensor": "getitem_72",
+          "op": "Conv",
+          "cosine_min": 0.8475315480119746,
+          "rel_max_abs": 0.907607711944835
+        },
+        {
+          "index": 29,
+          "tensor": "getitem_75",
+          "op": "Conv",
+          "cosine_min": 0.8280856969946819,
+          "rel_max_abs": 0.9775765876340048
+        },
+        {
+          "index": 30,
+          "tensor": "getitem_78",
+          "op": "Conv",
+          "cosine_min": 0.7723486798466552,
+          "rel_max_abs": 0.9728183190704278
+        },
+        {
+          "index": 31,
+          "tensor": "add_4",
+          "op": "Add",
+          "cosine_min": 0.8049068941342009,
+          "rel_max_abs": 0.7518137255233404
+        },
+        {
+          "index": 32,
+          "tensor": "getitem_81",
+          "op": "Conv",
+          "cosine_min": 0.8976224217741909,
+          "rel_max_abs": 0.7865926099067738
+        },
+        {
+          "index": 33,
+          "tensor": "getitem_84",
+          "op": "Conv",
+          "cosine_min": 0.8817105399425583,
+          "rel_max_abs": 0.8224630940669132
+        },
+        {
+          "index": 34,
+          "tensor": "getitem_87",
+          "op": "Conv",
+          "cosine_min": 0.8293450845184884,
+          "rel_max_abs": 0.5523173391098709
+        },
+        {
+          "index": 35,
+          "tensor": "add_5",
+          "op": "Add",
+          "cosine_min": 0.7990683933656061,
+          "rel_max_abs": 0.6886498615088722
+        },
+        {
+          "index": 36,
+          "tensor": "getitem_90",
+          "op": "Conv",
+          "cosine_min": 0.8793185148343943,
+          "rel_max_abs": 0.9943181309191502
+        },
+        {
+          "index": 37,
+          "tensor": "getitem_93",
+          "op": "Conv",
+          "cosine_min": 0.9006799607035902,
+          "rel_max_abs": 0.869508267506091
+        },
+        {
+          "index": 38,
+          "tensor": "getitem_96",
+          "op": "Conv",
+          "cosine_min": 0.8127775073216371,
+          "rel_max_abs": 0.8134066227302955
+        },
+        {
+          "index": 39,
+          "tensor": "getitem_99",
+          "op": "Conv",
+          "cosine_min": 0.9036621862784725,
+          "rel_max_abs": 1.0764484057128152
+        },
+        {
+          "index": 40,
+          "tensor": "getitem_102",
+          "op": "Conv",
+          "cosine_min": 0.8879848117204298,
+          "rel_max_abs": 0.9842628512177063
+        },
+        {
+          "index": 41,
+          "tensor": "getitem_105",
+          "op": "Conv",
+          "cosine_min": 0.8416774954880301,
+          "rel_max_abs": 0.5133245000693468
+        },
+        {
+          "index": 42,
+          "tensor": "add_6",
+          "op": "Add",
+          "cosine_min": 0.8313176174183674,
+          "rel_max_abs": 0.6910317211598351
+        },
+        {
+          "index": 43,
+          "tensor": "getitem_108",
+          "op": "Conv",
+          "cosine_min": 0.9101787963281782,
+          "rel_max_abs": 0.48708104593263607
+        },
+        {
+          "index": 44,
+          "tensor": "getitem_111",
+          "op": "Conv",
+          "cosine_min": 0.9028996853739963,
+          "rel_max_abs": 0.4276555603034383
+        },
+        {
+          "index": 45,
+          "tensor": "getitem_114",
+          "op": "Conv",
+          "cosine_min": 0.8071173936644797,
+          "rel_max_abs": 0.629734082792797
+        },
+        {
+          "index": 46,
+          "tensor": "add_7",
+          "op": "Add",
+          "cosine_min": 0.8271183602610167,
+          "rel_max_abs": 0.600097204454527
+        },
+        {
+          "index": 47,
+          "tensor": "getitem_117",
+          "op": "Conv",
+          "cosine_min": 0.8825000855722076,
+          "rel_max_abs": 0.9796373819253958
+        },
+        {
+          "index": 48,
+          "tensor": "getitem_120",
+          "op": "Conv",
+          "cosine_min": 0.9252640673674892,
+          "rel_max_abs": 0.5223050280031842
+        },
+        {
+          "index": 49,
+          "tensor": "getitem_123",
+          "op": "Conv",
+          "cosine_min": 0.818569287930765,
+          "rel_max_abs": 0.6426736732273074
+        },
+        {
+          "index": 50,
+          "tensor": "getitem_126",
+          "op": "Conv",
+          "cosine_min": 0.8919385905734534,
+          "rel_max_abs": 0.7346905226214898
+        },
+        {
+          "index": 51,
+          "tensor": "getitem_129",
+          "op": "Conv",
+          "cosine_min": 0.8628952273301087,
+          "rel_max_abs": 0.6155728027320324
+        },
+        {
+          "index": 52,
+          "tensor": "getitem_132",
+          "op": "Conv",
+          "cosine_min": 0.8116853921926618,
+          "rel_max_abs": 0.6735942857637989
+        },
+        {
+          "index": 53,
+          "tensor": "add_8",
+          "op": "Add",
+          "cosine_min": 0.8276259575249727,
+          "rel_max_abs": 0.72578509707771
+        },
+        {
+          "index": 54,
+          "tensor": "getitem_135",
+          "op": "Conv",
+          "cosine_min": 0.9080952430530145,
+          "rel_max_abs": 0.7238504836281188
+        },
+        {
+          "index": 55,
+          "tensor": "getitem_138",
+          "op": "Conv",
+          "cosine_min": 0.8942103907740927,
+          "rel_max_abs": 0.7179070132826445
+        },
+        {
+          "index": 56,
+          "tensor": "getitem_141",
+          "op": "Conv",
+          "cosine_min": 0.8220741072648953,
+          "rel_max_abs": 0.6611878256058698
+        },
+        {
+          "index": 57,
+          "tensor": "add_9",
+          "op": "Add",
+          "cosine_min": 0.8292105815666155,
+          "rel_max_abs": 0.6751568774646358
+        },
+        {
+          "index": 58,
+          "tensor": "getitem_144",
+          "op": "Conv",
+          "cosine_min": 0.8404514284020949,
+          "rel_max_abs": 0.6742764722603722
+        },
+        {
+          "index": 59,
+          "tensor": "getitem_147",
+          "op": "Conv",
+          "cosine_min": 0.8908698154361596,
+          "rel_max_abs": 0.6185154194631187
+        },
+        {
+          "index": 60,
+          "tensor": "getitem_150",
+          "op": "Conv",
+          "cosine_min": 0.733834598972938,
+          "rel_max_abs": 0.7842523233112226
+        },
+        {
+          "index": 61,
+          "tensor": "getitem_153",
+          "op": "Conv",
+          "cosine_min": 0.8050605284138027,
+          "rel_max_abs": 1.12875110411106
+        },
+        {
+          "index": 62,
+          "tensor": "getitem_156",
+          "op": "Conv",
+          "cosine_min": 0.7825385022835485,
+          "rel_max_abs": 0.6504725073612099
+        },
+        {
+          "index": 63,
+          "tensor": "getitem_159",
+          "op": "Conv",
+          "cosine_min": 0.800312797061088,
+          "rel_max_abs": 0.5773607316770254
+        },
+        {
+          "index": 64,
+          "tensor": "getitem_162",
+          "op": "Conv",
+          "cosine_min": 0.7874467082168015,
+          "rel_max_abs": 0.610574159310745
+        },
+        {
+          "index": 65,
+          "tensor": "getitem_165",
+          "op": "Conv",
+          "cosine_min": 0.7853950084871693,
+          "rel_max_abs": 0.5565607954091272
+        },
+        {
+          "index": 66,
+          "tensor": "getitem_168",
+          "op": "Conv",
+          "cosine_min": 0.6350144777067345,
+          "rel_max_abs": 0.8218382019564805
+        },
+        {
+          "index": 67,
+          "tensor": "upsample_bilinear2d",
+          "op": "Resize",
+          "cosine_min": 0.5914507308742426,
+          "rel_max_abs": 0.8261729983463414
+        },
+        {
+          "index": 68,
+          "tensor": "cat",
+          "op": "Concat",
+          "cosine_min": 0.7684019809011228,
+          "rel_max_abs": 0.6462337710520039
+        },
+        {
+          "index": 69,
+          "tensor": "getitem_171",
+          "op": "Conv",
+          "cosine_min": 0.8258825967548116,
+          "rel_max_abs": 0.5534901542337448
+        },
+        {
+          "index": 70,
+          "tensor": "upsample_bilinear2d_1",
+          "op": "Resize",
+          "cosine_min": 0.7745412191688796,
+          "rel_max_abs": 0.6575420324751553
+        },
+        {
+          "index": 71,
+          "tensor": "cat_1",
+          "op": "Concat",
+          "cosine_min": 0.8120843086096611,
+          "rel_max_abs": 0.7533776198789933
+        },
+        {
+          "index": 72,
+          "tensor": "getitem_174",
+          "op": "Conv",
+          "cosine_min": 0.8023463949738489,
+          "rel_max_abs": 0.683199552934623
+        }
+      ]
+    }
+  },
+  "passed": false,
+  "findings": [
+    {
+      "severity": "error",
+      "code": "PARITY_INPUT_MISMATCH",
+      "message": "preprocessed input differs from the golden input on 32/32 images (max abs 4.444 > 1e-05); channels are reversed relative to the golden input: check input.channel_order",
+      "where": "frankfurt_000001_066092"
+    },
+    {
+      "severity": "error",
+      "code": "PARITY_OUTPUT_DRIFT",
+      "message": "logits max abs error 10.02 > 0.001",
+      "where": "frankfurt_000001_076502"
+    },
+    {
+      "severity": "error",
+      "code": "PARITY_OUTPUT_DRIFT",
+      "message": "logits cosine similarity 0.90556929 < 0.999999999",
+      "where": "frankfurt_000000_007365"
+    },
+    {
+      "severity": "error",
+      "code": "PARITY_ARGMAX_DISAGREEMENT",
+      "message": "argmax agreement 0.848694 < 0.999 (15.131% of stride-4 pixels changed class)",
+      "where": "frankfurt_000001_005184"
+    },
+    {
+      "severity": "error",
+      "code": "PARITY_MIOU_DELTA",
+      "message": "mIoU on 32 golden images changed by -11.271 points (67.53 -> 56.26); limit \u00b10.001",
+      "where": "miou"
+    },
+    {
+      "severity": "error",
+      "code": "PARITY_LAYER_DRIFT",
+      "message": "first tensor over tolerance (#0 of 73 in graph order): Conv output 'getitem', cosine 0.852387, rel max abs 1.126; 73 tensors over tolerance in total",
+      "where": "getitem"
+    }
+  ]
+}
