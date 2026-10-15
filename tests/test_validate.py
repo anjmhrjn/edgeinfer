@@ -128,6 +128,49 @@ def test_asymmetric_quantization_zero_point(tmp_path):
     assert "VALIDATE_OP_RESTRICTION" in _codes(tmp_path, _graph_model(nodes=nodes, inits=inits))
 
 
+def _qdq_conv(act_dtype=np.int8, w_scale_shape=(19,), bias=None):
+    """input -> Q/DQ -> Conv(DQ(int8 weight), [bias]) -> logits."""
+    conv_in = ["dq", "wdq"] + ([bias[0]] if bias else [])
+    nodes = [
+        helper.make_node("QuantizeLinear", ["input", "s", "zp"], ["q"]),
+        helper.make_node("DequantizeLinear", ["q", "s", "zp"], ["dq"]),
+        helper.make_node("DequantizeLinear", ["wq", "ws", "wzp"], ["wdq"], axis=0),
+        helper.make_node("Conv", conv_in, ["logits"], strides=[4, 4]),
+    ]
+    inits = [
+        numpy_helper.from_array(np.array(0.1, np.float32), "s"),
+        numpy_helper.from_array(np.array(0, act_dtype), "zp"),
+        numpy_helper.from_array(np.ones((19, 3, 1, 1), np.int8), "wq"),
+        numpy_helper.from_array(np.full(w_scale_shape, 0.01, np.float32), "ws"),
+        numpy_helper.from_array(np.zeros(w_scale_shape, np.int8), "wzp"),
+    ]
+    if bias:
+        nodes[3:3] = bias[1]
+        inits += bias[2]
+    return _graph_model(nodes=nodes, inits=inits)
+
+
+def test_tensorrt_format_qdq_passes(tmp_path):
+    assert not _codes(tmp_path, _qdq_conv()) & {"VALIDATE_QDQ_DTYPE", "VALIDATE_QDQ_BIAS",
+                                                "VALIDATE_QDQ_WEIGHT_PER_TENSOR"}  # fmt: skip
+
+
+def test_unsigned_activations_are_an_error(tmp_path):
+    assert "VALIDATE_QDQ_DTYPE" in _codes(tmp_path, _qdq_conv(act_dtype=np.uint8))
+
+
+def test_per_tensor_weights_warn(tmp_path):
+    assert "VALIDATE_QDQ_WEIGHT_PER_TENSOR" in _codes(tmp_path, _qdq_conv(w_scale_shape=()))
+
+
+def test_quantized_bias_warns(tmp_path):
+    bias = ("bdq", [helper.make_node("DequantizeLinear", ["bq", "bs"], ["bdq"], axis=0)],
+            [numpy_helper.from_array(np.zeros(19, np.int32), "bq"),
+             numpy_helper.from_array(np.full(19, 0.001, np.float32), "bs")])  # fmt: skip
+    codes = _codes(tmp_path, _qdq_conv(bias=bias))
+    assert "VALIDATE_QDQ_BIAS" in codes and "VALIDATE_QDQ_DTYPE" not in codes
+
+
 def test_io_mismatch(tmp_path):
     assert "VALIDATE_IO_MISMATCH" in _codes(tmp_path, _graph_model(in_name="pixel_values"))
     other = replace(CFG, num_classes=20)

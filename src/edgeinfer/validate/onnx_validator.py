@@ -4,6 +4,7 @@ Each check emits findings with a stable code (docs/report-codes.md). The model i
 only read, never modified. Checks:
     structure     onnx.checker, strict shape inference, static shapes
     TensorRT      opset range, op support, coded op restrictions (configs/supported_ops.yaml)
+    Q/DQ          signed INT8, per-channel weights, float bias (D-016)
     I/O           input/output names, dtypes, shapes vs the model config
     weights       NaN/Inf, values outside the FP16 range
     contract      config preprocessing/input/postprocessing vs the copy embedded at export
@@ -159,6 +160,71 @@ def _check_restrictions(model: onnx.ModelProto) -> list[Finding]:
     return findings
 
 
+def _check_qdq(model: onnx.ModelProto) -> tuple[list[Finding], dict[str, Any]]:
+    """Q/DQ format for TensorRT explicit quantization (D-016): activations and weights in
+    signed INT8 (zero points are checked in _check_restrictions), weights per-channel,
+    bias not quantized."""
+    inits = {t.name: t for t in model.graph.initializer}
+    consumers: dict[str, list[tuple[onnx.NodeProto, int]]] = {}
+    for node in model.graph.node:
+        for i, name in enumerate(node.input):
+            consumers.setdefault(name, []).append((node, i))
+
+    def qtype(node: onnx.NodeProto) -> str:
+        """Quantized dtype of a Q output / DQ input. ONNX default without a zero point: uint8."""
+        if node.op_type == "DequantizeLinear" and node.input[0] in inits:
+            return onnx.TensorProto.DataType.Name(inits[node.input[0]].data_type)
+        if len(node.input) > 2 and node.input[2] in inits:
+            return onnx.TensorProto.DataType.Name(inits[node.input[2]].data_type)
+        out = _attrs(node).get("output_dtype", 0)
+        return onnx.TensorProto.DataType.Name(out) if out else "UINT8"
+
+    findings: list[Finding] = []
+    wrong: Counter[str] = Counter()
+    first_wrong: dict[str, str] = {}
+    per_tensor_weights: list[str] = []
+    n_q = n_dq = 0
+    for node in model.graph.node:
+        if node.op_type not in ("QuantizeLinear", "DequantizeLinear"):
+            continue
+        n_q += node.op_type == "QuantizeLinear"
+        n_dq += node.op_type == "DequantizeLinear"
+        dtype = qtype(node)
+        uses = consumers.get(node.output[0], [])
+        if dtype == "INT32" and all(c.op_type in ("Conv", "Gemm") and i == 2 for c, i in uses):
+            findings.append(_finding(
+                "warn", "VALIDATE_QDQ_BIAS",
+                f"{node.name}: bias is quantized to INT32; the TensorRT format keeps bias in "
+                "float (D-016)", node.name,
+            ))  # fmt: skip
+            continue
+        if dtype != "INT8":
+            wrong[dtype] += 1
+            first_wrong.setdefault(dtype, node.name or node.output[0])
+        is_weight = node.op_type == "DequantizeLinear" and node.input[0] in inits
+        scale = inits.get(node.input[1])
+        if (
+            is_weight
+            and scale is not None
+            and numpy_helper.to_array(scale).size == 1
+            and any(c.op_type in ("Conv", "MatMul", "Gemm") and i == 1 for c, i in uses)
+        ):
+            per_tensor_weights.append(node.name or node.output[0])  # fmt: skip
+    for dtype, n in sorted(wrong.items()):
+        findings.append(_finding(
+            "error", "VALIDATE_QDQ_DTYPE",
+            f"{n} Q/DQ nodes use {dtype}; TensorRT explicit quantization needs signed INT8 "
+            "(check activation_type/weight_type in the quant config)", first_wrong[dtype],
+        ))  # fmt: skip
+    if per_tensor_weights:
+        findings.append(_finding(
+            "warn", "VALIDATE_QDQ_WEIGHT_PER_TENSOR",
+            f"{len(per_tensor_weights)} weights are quantized per-tensor; per-channel keeps "
+            "small-magnitude output channels accurate", per_tensor_weights[0],
+        ))  # fmt: skip
+    return findings, {"n_quantize_linear": n_q, "n_dequantize_linear": n_dq}
+
+
 def _check_io(graph: onnx.GraphProto, cfg: ModelConfig) -> list[Finding]:
     h, w, s = cfg.input.height, cfg.input.width, cfg.output_stride
     expected = {
@@ -255,6 +321,8 @@ def validate_onnx(
     inferred, findings = _check_structure(model)
     findings += _check_ops(model, supported)
     findings += _check_restrictions(model)
+    qdq_findings, qdq_metrics = _check_qdq(model)
+    findings += qdq_findings
     findings += _check_io((inferred or model).graph, cfg)
     weight_findings, weight_metrics = _check_weights(model)
     findings += weight_findings
@@ -268,6 +336,7 @@ def validate_onnx(
         "inputs": {vi.name: _dims(vi) for vi in model.graph.input},
         "outputs": {vi.name: _dims(vi) for vi in model.graph.output},
         **weight_metrics,
+        **qdq_metrics,
         "n_errors": sum(f["severity"] == "error" for f in findings),
         "n_warnings": sum(f["severity"] == "warn" for f in findings),
     }

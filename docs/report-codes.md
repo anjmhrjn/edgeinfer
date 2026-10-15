@@ -24,3 +24,13 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 | `PARITY_MIOU_SKIPPED` | parity | info | No labels were available (dataset root not given), so the mIoU delta wasn't computed. |
 | `PARITY_GOLDEN_UNVERIFIED` | parity | info | Golden files weren't checked against committed hashes (no hash file, or golden files outside the repo, e.g. a test fixture). |
 | `PARITY_LAYER_DRIFT` | parity | error | Per-layer mode: at least one intermediate tensor exceeds the per-layer tolerance. `where` is the first such tensor in graph order. |
+| `VALIDATE_QDQ_DTYPE` | validate | error | A Quantize/DequantizeLinear uses a type other than signed INT8 (e.g. UINT8, or the ONNX default UINT8 when no zero point is given). TensorRT explicit quantization needs signed INT8 (D-016). `where` is the first such node. |
+| `VALIDATE_QDQ_BIAS` | validate | warn | A Conv/Gemm bias goes through an INT32 DequantizeLinear. Our TensorRT format keeps bias in float (D-016). |
+| `VALIDATE_QDQ_WEIGHT_PER_TENSOR` | validate | warn | A Conv/MatMul/Gemm weight is quantized with one scale for the whole tensor instead of per output channel. |
+| `QUANT_CALIB_ON_EVAL_SPLIT` | quantize | error | The calibration manifest contains images outside the train split. Calibrating on val would tune the quantizer on the evaluation images. |
+| `QUANT_CALIB_TOO_SMALL` | quantize | error | `calibration.limit` asks for more images than the calibration manifest has. |
+| `QUANT_CALIB_MISMATCH` | quantize | error | The calibration cache was computed on a different FP32 model. |
+| `QUANT_INPUT_NOT_FP32` | quantize | error | The input artifact isn't an FP32 export (e.g. an already-quantized model). |
+| `QUANT_GROUP_UNMATCHED` | quantize | error | A quantizable node matches no layer-group rule, a rule matches no node, or the model lacks the exporter's name-scope metadata (`configs/quant/groups/`). |
+| `QUANT_UNKNOWN_EXCLUSION` | quantize | error | An exclusion list names a group or node the model doesn't have. A typo must never silently quantize a layer meant to stay in float. |
+| `QUANT_PLACEMENT_MISMATCH` | quantize | error | After quantizing, a node meant to be INT8 reads a float input, or an excluded node reads a dequantized one. |
