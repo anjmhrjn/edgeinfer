@@ -191,3 +191,34 @@ Shapes: static 1×3×512×1024 vs dynamic batch/size.
 **Rationale:** The accuracy budget is the actual requirement; elementwise drift is how INT8 works, not a defect. Gating drift would mean picking numbers after seeing them, which is the circularity the integrity rules forbid. The drift is still in every report, and per-layer mode still ranks where it accumulates, which is what C3 needs it for.
 **Evidence:** The INT8 noise floor (same model, different thread count) is measured and reported by the sensitivity analyzer (D-017); results are in `docs/progress.md` C3.
 **Consequences / revisit if:** The golden set has only 32 images, so its mIoU delta is a noisy proxy; the budget is decided on full val (`eval` reports). `abs()` also fails an INT8 model that gains more than 1.0 point on the golden images, which deserves investigation rather than a pass. Revisit for FP16 in C4 (FP16 drift is small and can be gated like FP32).
+
+## D-019: Calibration — percentile 99.99 on 200 train images, for both models  (C3, 2026-10-15)
+**Context:** Static INT8 needs a range per activation tensor, taken from calibration data. The method that turns observed values into a range decides how much of the tail is clipped versus how coarse the steps are. ORT offers min/max, entropy (KL divergence, the method behind TensorRT's legacy calibrator) and percentile. ORT's entropy defaults (`num_bins=128`, `num_quantized_bins=128`) leave a single candidate threshold, so entropy with defaults is min/max under another name; our configs use 2048/128. The plan chose the method per model on `sens_val100` and checked it on full val and the held-out `val_minus_sens100`.
+**Options:**
+1. Min/max — no clipping; one outlier stretches the range and coarsens every step.
+2. Entropy, 2048 bins — clips to the threshold that keeps the INT8 histogram closest to FP32.
+3. Percentile 99.99 — clips the top 0.01% of values.
+For the set size: 200 images (the whole `calib_train200`) or a smaller prefix (25/50/100).
+**Decision:** Option 3 for both models, calibrated on all 200 images.
+**Rationale:** Percentile is best for both models on the scoring subset, on full val and on the held-out 400 images, and it is the only method that passes the golden parity gate for DeepLab. Entropy is worst for both, so TensorRT's calibrator default isn't the safe choice for these models. For the size, a 100-image calibration looked 0.6 points better than 200 on `sens_val100` but only 0.17 better held out, and 50 images went from best on the subset to worst held out. A size picked by its score is partly picked on sampling noise, so we keep the planned 200.
+**Evidence:** mIoU change vs ORT FP32 (points); full val / `sens_val100` / `val_minus_sens100` from `eval__<model>__ort_cpu__int8_<method>__<manifest>__512x1024__cb60f28.json` against the FP32 `eval__<model>__ort_cpu__<manifest>__…` reports; golden from `parity__<model>__ort_cpu__int8_<method>__golden_val32__images__layers__cb60f28.json`.
+
+| Model / method | Full val | sens_val100 | Held-out 400 | Golden parity (≤ 1.0) |
+|---|---|---|---|---|
+| SegFormer-B0 minmax | −0.53 | −0.30 | −0.61 | pass |
+| SegFormer-B0 entropy | −2.29 | −1.79 | −2.45 | fail |
+| SegFormer-B0 percentile | −0.16 | −0.28 | −0.07 | pass |
+| DeepLabV3+ minmax | −3.52 | −3.98 | −3.31 | fail |
+| DeepLabV3+ entropy | −6.53 | −6.27 | −6.72 | fail |
+| DeepLabV3+ percentile | −1.12 | −1.16 | −1.16 | pass |
+
+Calibration size, percentile (`eval__<model>__ort_cpu__int8_percentile_calib<N>__<manifest>__512x1024__cb60f28.json`; N = 200 is the row above):
+
+| Images | 25 | 50 | 100 | 200 |
+|---|---|---|---|---|
+| SegFormer-B0, sens_val100 | −0.20 | −0.29 | −0.27 | −0.28 |
+| DeepLabV3+, sens_val100 | −1.10 | −0.59 | −0.52 | −1.16 |
+| DeepLabV3+, held-out 400 | — | −1.29 | −0.99 | −1.16 |
+
+Across the four DeepLab calibration caches, no single activation tensor's range separates the good and bad sizes by more than 3%; 18 of 109 tensors move by up to 25% between sizes, and not in order of size.
+**Consequences / revisit if:** DeepLab's INT8 accuracy depends on which images calibrate it by roughly 0.3 points held out (0.6 on the 100-image subset); single-run differences of that size between calibration settings aren't meaningful. The gap between the scoring subset and held-out data reached 0.70 points (50 images), which set the sensitivity margin (D-017). Revisit in C5: TensorRT builds from these Q/DQ scales, so the method carries over, and ModelOpt's calibrators are compared there.
