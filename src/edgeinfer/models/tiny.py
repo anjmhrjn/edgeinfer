@@ -59,8 +59,10 @@ def build_tiny(num_classes: int, seed: int) -> TinySegNet:
     gen = torch.Generator().manual_seed(seed)
     model = TinySegNet(num_classes)
     with torch.no_grad():
+        # Scale chosen so max |logit| is ~16, like the real models (~10-15): absolute
+        # parity tolerances then mean the same thing for the fixture as for them.
         for p in model.parameters():
-            p.copy_(torch.randn(p.shape, generator=gen) * 0.5)
+            p.copy_(torch.randn(p.shape, generator=gen) * 0.35)
         for m in model.modules():
             if isinstance(m, nn.BatchNorm2d):
                 m.running_mean.copy_(torch.randn(m.num_features, generator=gen) * 0.1)

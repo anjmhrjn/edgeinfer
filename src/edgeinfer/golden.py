@@ -60,3 +60,26 @@ def format_hashes(hashes: dict[str, str]) -> str:
 def _rel(path: Path) -> str:
     path = path.resolve()
     return str(path.relative_to(REPO_ROOT)) if path.is_relative_to(REPO_ROOT) else str(path)
+
+
+def verify_golden(model: str, golden_dir: Path, image_ids: list[str]) -> bool:
+    """Check golden files against the committed hashes in data/golden_hashes/<model>.sha256.
+
+    Returns False if there is nothing to check against (no hash file, or golden files
+    outside the repo, e.g. a test fixture). Raises if a file differs: parity against a
+    changed reference would be meaningless."""
+    hash_path = HASH_DIR / f"{model}.sha256"
+    if not hash_path.is_file() or not golden_dir.resolve().is_relative_to(REPO_ROOT):
+        return False
+    committed = {}
+    for line in hash_path.read_text().splitlines():
+        digest, rel = line.split(maxsplit=1)
+        committed[rel] = digest
+    for image_id in image_ids:
+        path = golden_dir / f"{image_id}.npz"
+        rel = _rel(path)
+        if rel not in committed:
+            raise ValueError(f"{rel} has no committed hash in {hash_path.name}")
+        if hashlib.sha256(path.read_bytes()).hexdigest() != committed[rel]:
+            raise ValueError(f"{rel} differs from its committed hash; golden outputs changed")
+    return True

@@ -59,3 +59,21 @@ def with_outputs(model: onnx.ModelProto, names: list[str]) -> onnx.ModelProto:
         if name not in existing:
             out.graph.output.append(helper.make_value_info(name, types[name]))
     return out
+
+
+def layer_groups(model: onnx.ModelProto, names: list[str], max_bytes: int) -> list[list[str]]:
+    """Split `names` (in order) into groups whose tensors total at most `max_bytes`
+    (a single larger tensor gets a group of its own)."""
+    types = tensor_types(model)
+    groups: list[list[str]] = [[]]
+    size = 0
+    for name in names:
+        if name not in types:
+            raise KeyError(f"not node outputs in this model: [{name!r}]")
+        n = tensor_nbytes(types[name])
+        if groups[-1] and size + n > max_bytes:
+            groups.append([])
+            size = 0
+        groups[-1].append(name)
+        size += n
+    return groups

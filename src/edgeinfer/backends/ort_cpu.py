@@ -12,7 +12,7 @@ import onnxruntime as ort
 
 from edgeinfer.config import ModelConfig
 from edgeinfer.export.onnx_export import INPUT_NAME, OUTPUT_NAME, artifact_identity
-from edgeinfer.onnx_utils import tensor_nbytes, tensor_types, with_outputs
+from edgeinfer.onnx_utils import layer_groups, with_outputs
 
 # Same thread count as the torch_ref golden run (C1).
 THREADS = 4
@@ -67,19 +67,7 @@ class OrtCpuBackend:
 
     def _chunks(self, names: list[str]) -> list[list[str]]:
         assert self._model is not None
-        types = tensor_types(self._model)
-        chunks: list[list[str]] = [[]]
-        size = 0
-        for name in names:
-            if name not in types:
-                raise KeyError(f"not node outputs in this model: [{name!r}]")
-            n = tensor_nbytes(types[name])
-            if chunks[-1] and size + n > LAYER_CHUNK_BYTES:
-                chunks.append([])
-                size = 0
-            chunks[-1].append(name)
-            size += n
-        return chunks
+        return layer_groups(self._model, names, LAYER_CHUNK_BYTES)
 
     def layer_outputs(self, x: np.ndarray, names: list[str]) -> dict[str, np.ndarray]:
         """Intermediate tensors by ONNX name. Runs a copy of the model with the

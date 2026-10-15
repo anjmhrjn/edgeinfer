@@ -16,3 +16,11 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 | `VALIDATE_INITIALIZER_FP16_RANGE` | validate | warn | A weight's magnitude exceeds 65504, the FP16 maximum; it would overflow in an FP16 engine. |
 | `VALIDATE_METADATA_MISSING` | validate | error | The model has no embedded I/O contract (`edgeinfer.contract`), so config consistency can't be checked. |
 | `VALIDATE_PREPROC_MISMATCH` | validate | error | The config's input/preprocess/postprocess spec differs from the one embedded at export (e.g. `input.channel_order` RGB vs BGR). `where` names the field. |
+| `PARITY_INPUT_MISMATCH` | parity | error | In `images` mode, the input preprocessed with the given config differs from the golden input. The message diagnoses the likely cause from per-channel correlation: reversed channels (`input.channel_order`), a per-channel affine difference (`scale`/`mean`/`std`), or spatial differences (resize, wrong image). |
+| `PARITY_OUTPUT_NONFINITE` | parity | error | Candidate logits contain NaN or Inf. |
+| `PARITY_OUTPUT_DRIFT` | parity | error | Logits max abs error or cosine similarity vs golden is outside tolerance (`configs/tolerances.yaml`). `where` is the worst image. |
+| `PARITY_ARGMAX_DISAGREEMENT` | parity | error | The fraction of native-stride pixels whose argmax class matches golden is below tolerance. |
+| `PARITY_MIOU_DELTA` | parity | error | mIoU on the golden images (vs labels) changed by more than the tolerance in points. |
+| `PARITY_MIOU_SKIPPED` | parity | info | No labels were available (dataset root not given), so the mIoU delta wasn't computed. |
+| `PARITY_GOLDEN_UNVERIFIED` | parity | info | Golden files weren't checked against committed hashes (no hash file, or golden files outside the repo, e.g. a test fixture). |
+| `PARITY_LAYER_DRIFT` | parity | error | Per-layer mode: at least one intermediate tensor exceeds the per-layer tolerance. `where` is the first such tensor in graph order. |

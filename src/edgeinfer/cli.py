@@ -227,6 +227,128 @@ def cmd_validate(args: argparse.Namespace) -> int:
     return 0 if passed else 1
 
 
+def cmd_parity(args: argparse.Namespace) -> int:
+    import os
+    import platform
+
+    import onnx
+
+    from edgeinfer.analyze.parity import (
+        load_tolerances,
+        run_layer_parity,
+        run_parity,
+        tolerances_dict,
+    )
+    from edgeinfer.backends import get_backend
+    from edgeinfer.config import load_model_config
+    from edgeinfer.data.cityscapes import cityscapes_root, iter_samples
+    from edgeinfer.data.manifests import load_manifest
+    from edgeinfer.golden import GOLDEN_DIR, verify_golden
+    from edgeinfer.onnx_utils import layer_groups, layer_tensors
+    from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
+
+    cfg = load_model_config(args.model)
+    entries = load_manifest(args.manifest)
+    if args.limit:
+        entries = entries[: args.limit]
+    mode = "npz" if args.from_npz else args.inputs
+    if mode != "npz" and not args.artifact:
+        print("error: --artifact is required unless --from-npz is given")
+        return 2
+    if args.per_layer and mode == "npz":
+        print("error: --per-layer needs a backend; it can't use --from-npz")
+        return 2
+    sha, dirty = git_state()
+    if dirty:
+        print("warning: uncommitted changes; this report must not back any published number")
+
+    golden_dir = Path(args.golden_dir) if args.golden_dir else GOLDEN_DIR / cfg.name
+    verified = verify_golden(cfg.name, golden_dir, [e.image_id for e in entries])
+    # The dataset is needed in images mode and optional otherwise (labels -> mIoU delta).
+    root = None
+    if mode == "images" or args.root or os.environ.get("CITYSCAPES_ROOT"):
+        root = cityscapes_root(args.root)
+    samples = iter_samples(root, entries) if root else None
+
+    backend = None
+    if mode == "npz":
+        backend_meta = {
+            "backend": args.backend_name,
+            "precision": args.precision or "unknown",
+            "device": "external",
+            "artifact_id": args.artifact_id or "unknown",
+        }
+    else:
+        backend = get_backend(args.backend)
+        backend.load(Path(args.artifact), cfg)
+        backend_meta = backend.metadata()
+    precision = args.precision or backend_meta["precision"]
+    tol = load_tolerances(precision)
+
+    print(f"parity {cfg.name}: {args.backend if backend else 'npz'} ({precision}), {mode} mode, "
+          f"{len(entries)} images")  # fmt: skip
+    metrics, findings, pairs = run_parity(
+        cfg, entries, golden_dir, tol, mode,
+        backend=backend, samples=samples, npz_dir=Path(args.from_npz) if args.from_npz else None,
+    )  # fmt: skip
+    if not verified:
+        findings.append({
+            "severity": "info", "code": "PARITY_GOLDEN_UNVERIFIED",
+            "message": f"no committed hashes checked for {golden_dir}",
+        })  # fmt: skip
+
+    inputs = {
+        "manifest": Path(args.manifest).stem, "limit": args.limit, "mode": mode,
+        "artifact": Path(args.artifact).name if args.artifact else None,
+        "config": Path(args.model).name, "golden_verified": verified,
+        "tolerances": precision,
+    }  # fmt: skip
+    if args.per_layer:
+        assert backend is not None
+        ref_path = Path(args.ref_artifact) if args.ref_artifact else Path(args.artifact)
+        ref = get_backend("ort_cpu")
+        ref.load(ref_path, cfg)
+        ref_model = onnx.load(str(ref_path))
+        ops = {n.output[0]: n.op_type for n in ref_model.graph.node}
+        names = layer_tensors(ref_model)
+        if Path(args.artifact).suffix == ".onnx":
+            produced = {o for n in onnx.load(str(args.artifact)).graph.node for o in n.output}
+            names = [n for n in names if n in produced]
+        groups = layer_groups(ref_model, names, args.layer_group_mb << 20)
+        print(f"  per-layer: {len(names)} tensors in {len(groups)} groups, "
+              f"{min(args.layer_images, len(pairs))} images")  # fmt: skip
+        layer_metrics, layer_findings = run_layer_parity(
+            ref, backend, [(n, ops[n]) for n in names], groups, pairs[: args.layer_images], tol
+        )
+        metrics["per_layer"] = layer_metrics
+        findings += layer_findings
+        inputs["ref_artifact"] = ref_path.name
+        inputs["ref_artifact_id"] = ref.metadata()["artifact_id"]
+
+    passed = not any(f["severity"] == "error" for f in findings)
+    report = make_report(
+        tool="parity", model=cfg.name, backend_meta=backend_meta, inputs=inputs,
+        thresholds=tolerances_dict(tol), metrics=metrics, findings=findings, passed=passed,
+    )  # fmt: skip
+    if args.out:
+        out = Path(args.out)
+    else:
+        tag = f"{backend_meta['backend']}__{precision}__{Path(args.manifest).stem}__{mode}"
+        tag += "__layers" if args.per_layer else ""
+        tag += f"__first{args.limit}" if args.limit else ""
+        out = REPORTS_DIR / f"parity__{cfg.name}__{tag}__{sha[:7]}.json"
+    write_report(report, out)
+    _print_findings(findings)
+    m = metrics
+    print(f"  logits max abs {m['logits_max_abs']}, cosine min {m['logits_cosine_min']}, "
+          f"argmax agreement min {m['argmax_agreement_min']}")  # fmt: skip
+    if "miou_delta_points" in m:
+        print(f"  mIoU {m['miou_reference'] * 100:.3f} -> {m['miou_candidate'] * 100:.3f} "
+              f"({m['miou_delta_points']:+.4f} points)")  # fmt: skip
+    print(f"{'PASS' if passed else 'FAIL'} -> {out} ({platform.machine()})")
+    return 0 if passed else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="edgeinfer")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -270,6 +392,29 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--artifact", required=True, help="ONNX file")
     p.add_argument("--out", help="report path (default: artifacts/reports/...)")
     p.set_defaults(func=cmd_validate)
+
+    p = sub.add_parser("parity", help="compare a backend's outputs with the FP32 golden outputs")
+    p.add_argument("--model", required=True, help="config name or path")
+    p.add_argument("--backend", default="ort_cpu")
+    p.add_argument("--artifact", help="model file for the backend")
+    p.add_argument("--inputs", choices=("images", "golden"), default="images",
+                   help="images: preprocess raw images (end to end, needs the dataset); "
+                        "golden: feed the stored golden inputs (model only)")  # fmt: skip
+    p.add_argument("--from-npz", help="compare logits from an external runtime (<image_id>.npz)")
+    p.add_argument("--backend-name", default="external", help="backend label for --from-npz")
+    p.add_argument("--artifact-id", help="artifact id for --from-npz reports")
+    p.add_argument("--precision", help="tolerance set (default: the backend's precision)")
+    p.add_argument("--manifest", default="golden_val32")
+    p.add_argument("--golden-dir", help="default: artifacts/golden/<model>")
+    p.add_argument("--root", help="Cityscapes root (default: $CITYSCAPES_ROOT)")
+    p.add_argument("--limit", type=int, help="first N images only (smoke runs)")
+    p.add_argument("--per-layer", action="store_true", help="also compare intermediate tensors")
+    p.add_argument("--ref-artifact", help="per-layer reference ONNX (default: --artifact)")
+    p.add_argument("--layer-images", type=int, default=4, help="images used for per-layer")
+    p.add_argument("--layer-group-mb", type=int, default=1024,
+                   help="max MB of intermediate tensors fetched per run")  # fmt: skip
+    p.add_argument("--out", help="report path (default: artifacts/reports/...)")
+    p.set_defaults(func=cmd_parity)
 
     return parser
 

@@ -1,0 +1,10 @@
+# Parity tolerances by candidate precision, used by `edgeinfer parity`.
+# PROVISIONAL (loose) values for the C2 measurement run; replaced by D-014.
+fp32:
+  input_max_abs: 1.0e-4
+  logits_max_abs: 1.0e-2
+  logits_cosine_min: 0.9999
+  argmax_agreement_min: 0.999
+  miou_delta_max: 0.1
+  layer_cosine_min: 0.9999
+  layer_rel_max_abs: 1.0e-3
