@@ -1,7 +1,7 @@
 # Progress
 
-**Current checkpoint:** C1 — Baseline and eval harness (CPU)
-**Next step:** Anuj signs off C1; then plan C2 in plan mode.
+**Current checkpoint:** C2 — ONNX export, validator, ORT backend, parity (CPU)
+**Next step:** C2 step 1 — dependencies and Python floor (plan approved 2026-10-15).
 
 ## C1 — Baseline and eval harness
 - [x] Repo skeleton: uv (Python 3.12), pytest, ruff, pre-commit, GitHub Actions
@@ -14,7 +14,7 @@
 - [x] Decision records D-001..D-009 (D-003..D-009 rationales drafted by Claude; Anuj to review)
 - [x] CI green on GitHub (run 38761999524, Python 3.10 + 3.12, commit `0d1f538`)
 - [x] Teach-back: model answers in `private/teach-back-C1.md` (live quiz stopped after Q1 at Anuj's request)
-- [ ] Sign-off (Anuj)
+- [x] Sign-off (Anuj)
 
 ### C1 results — FP32, PyTorch CPU (`torch_ref`), Cityscapes val (500 images)
 All four reports: `artifacts/reports/eval__<model>__torch_ref__eval_val__<H>x<W>__8677951.json` (git `8677951`, clean tree). Scored at full label resolution (D-004).
@@ -40,4 +40,4 @@ A sliding-window run would test cause 1 (logged in `docs/ideas.md`). It doesn't 
 
 Dev timings in the reports are from a Mac running other jobs at the same time; they aren't latency results.
 
-**Sign-off:** _pending_
+**Sign-off:** Anuj, 2026-10-15
