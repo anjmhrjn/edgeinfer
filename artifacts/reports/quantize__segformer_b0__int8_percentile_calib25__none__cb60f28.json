@@ -1,0 +1,95 @@
+{
+  "schema_version": "1",
+  "tool": "quantize",
+  "created_at": "2026-10-15T21:15:33+00:00",
+  "git_sha": "cb60f28345ec22f9d8cd30437ff39e7cea68d024",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "onnxruntime": "1.31.0",
+      "onnx": "1.23.2"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "onnxruntime.quantization",
+  "precision": "int8",
+  "artifact_id": "15f235ca1ad111ce4babf767a12e89f57f493a358349ca70a15490a49139d26a",
+  "inputs": {
+    "artifact": "segformer_b0__fp32__0ef7fcdb0cdc.onnx",
+    "config": "segformer_b0",
+    "quant_config": {
+      "name": "int8_percentile_calib25",
+      "activation_type": "int8",
+      "weight_type": "int8",
+      "activation_symmetric": true,
+      "weight_symmetric": true,
+      "per_channel": true,
+      "op_types": [
+        "Conv",
+        "MatMul",
+        "Gemm"
+      ],
+      "quantize_outputs": false,
+      "quantize_bias": false,
+      "calibration": {
+        "manifest": "calib_train200",
+        "limit": 25,
+        "method": "percentile",
+        "num_bins": 2048,
+        "num_quantized_bins": null,
+        "percentile": 99.99,
+        "chunk_images": 2
+      }
+    },
+    "exclusions": {
+      "name": "none",
+      "model": "segformer_b0",
+      "groups": [],
+      "nodes": []
+    },
+    "groups": "segformer_b0.yaml"
+  },
+  "thresholds": {},
+  "metrics": {
+    "file": "segformer_b0__int8__15f235ca1ad1.onnx",
+    "sha256": "b71b06c8577ea7eacb99e3ce11681bf5a6e33d5f14a71a949d6d199ed441541a",
+    "size_bytes": 4672423,
+    "parent_artifact_id": "0ef7fcdb0cdc344827ec5243eb2f914c1f53a3385ad4d21cdca71488cff55288",
+    "calibration": {
+      "calibration_id": "9b1977bb3ff2486873952f95a80b656bcbe61236b108194f0c40dac660593cbb",
+      "manifest": "calib_train200",
+      "limit": 25,
+      "n_images": 25,
+      "method": "percentile",
+      "options": {
+        "symmetric": true,
+        "num_bins": 2048,
+        "percentile": 99.99
+      }
+    },
+    "calibration_dev": {
+      "seconds": 83.3,
+      "peak_rss_bytes": 4539564032,
+      "n_tensors": 182
+    },
+    "placement": {
+      "quantized_nodes": {
+        "Conv": 20,
+        "MatMul": 68
+      },
+      "excluded_nodes": {},
+      "n_quantize_linear": 94,
+      "n_dequantize_linear": 166
+    },
+    "excluded_nodes": []
+  },
+  "passed": true,
+  "findings": []
+}

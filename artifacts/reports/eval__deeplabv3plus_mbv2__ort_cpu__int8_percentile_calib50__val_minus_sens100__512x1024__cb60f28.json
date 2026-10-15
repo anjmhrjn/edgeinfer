@@ -1,0 +1,67 @@
+{
+  "schema_version": "1",
+  "tool": "eval",
+  "created_at": "2026-10-15T22:54:59+00:00",
+  "git_sha": "cb60f28345ec22f9d8cd30437ff39e7cea68d024",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": 4,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "onnxruntime": "1.31.0",
+      "onnx": "1.23.2"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "ort_cpu",
+  "precision": "int8",
+  "artifact_id": "b49d8c707b3d571c952e5314cfe3e5eaca9d9d37e598044125df453ab4c24beb",
+  "inputs": {
+    "manifest": "val_minus_sens100",
+    "artifact": "deeplabv3plus_mbv2__int8__b49d8c707b3d.onnx",
+    "limit": null,
+    "input_hw": [
+      512,
+      1024
+    ],
+    "eval_resolution": "label (full)"
+  },
+  "thresholds": {},
+  "metrics": {
+    "miou": 0.652181495004855,
+    "pixel_accuracy": 0.937538243654653,
+    "per_class_iou": {
+      "road": 0.9669145485458732,
+      "sidewalk": 0.7589745969336961,
+      "building": 0.8875827414644181,
+      "wall": 0.5287651322424761,
+      "fence": 0.5104396597323076,
+      "pole": 0.4815618205344027,
+      "traffic light": 0.4311639665021161,
+      "traffic sign": 0.6266931945555008,
+      "vegetation": 0.8851664412077538,
+      "terrain": 0.5664009258637336,
+      "sky": 0.9282346399843842,
+      "person": 0.6772936718526759,
+      "rider": 0.4388963077448478,
+      "car": 0.905012489345624,
+      "truck": 0.47657263172577496,
+      "bus": 0.6840670816369755,
+      "train": 0.600301606333733,
+      "motorcycle": 0.38843015931157165,
+      "bicycle": 0.6489767895743794
+    },
+    "n_images": 400,
+    "dev_timing_s": {
+      "infer_mean": 2.8749118161370277,
+      "wall_total": 1242.8556742080254
+    }
+  },
+  "passed": true,
+  "findings": []
+}
