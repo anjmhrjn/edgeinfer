@@ -428,6 +428,103 @@ def cmd_quantize(args: argparse.Namespace) -> int:
     return 0 if passed else 1
 
 
+def cmd_sensitivity(args: argparse.Namespace) -> int:
+    import platform
+
+    import onnxruntime as ort
+    import yaml
+
+    from edgeinfer.analyze.sensitivity import (
+        NON_ADDITIVE_MIN_POINTS,
+        SubsetScorer,
+        run_sensitivity,
+    )
+    from edgeinfer.backends.ort_cpu import THREADS
+    from edgeinfer.config import load_budgets, load_model_config
+    from edgeinfer.data.cityscapes import cityscapes_root, iter_samples
+    from edgeinfer.data.manifests import load_manifest
+    from edgeinfer.quant.calib import CALIB_DIR, calibrate
+    from edgeinfer.quant.config import load_group_rules, load_quant_config
+    from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
+
+    cfg = load_model_config(args.model)
+    qcfg = load_quant_config(args.quant_config)
+    rules = load_group_rules(cfg.name, args.groups)
+    budget = float(load_budgets()["accuracy"]["miou_drop_max_points"])
+    modes = tuple(args.modes.split(","))
+    entries = load_manifest(args.manifest)
+    if args.limit:
+        entries = entries[: args.limit]
+    if args.noise_threads == THREADS:
+        print(f"error: --noise-threads must differ from the scoring thread count ({THREADS})")
+        return 2
+    root = cityscapes_root(args.root)
+    sha, dirty = git_state()
+    if dirty:
+        print("warning: uncommitted changes; this report must not back any published number")
+
+    fp32_path = Path(args.artifact)
+    cal = calibrate(fp32_path, cfg, qcfg, root,
+                    Path(args.calib_dir) if args.calib_dir else CALIB_DIR)  # fmt: skip
+    print(f"sensitivity {cfg.name} ({qcfg.name}): {len(rules.names)} groups, modes {modes}, "
+          f"{len(entries)} images from {Path(args.manifest).stem}")  # fmt: skip
+    scorer = SubsetScorer(cfg, fp32_path, qcfg, cal, rules, iter_samples(root, entries),
+                          Path(args.out_root) if args.out_root else None)  # fmt: skip
+    full = scorer.score(())
+    noise = scorer.score((), threads=args.noise_threads)
+    floor = abs(noise.delta_points - full.delta_points)
+    print(
+        f"  FP32 mIoU {scorer.fp32_miou * 100:.3f}; full INT8 {full.delta_points:+.3f} points "
+        f"({args.noise_threads} threads: {noise.delta_points:+.3f}; noise floor {floor:.3f})"
+    )
+    metrics, findings = run_sensitivity(
+        rules.names, scorer.score, full=full, noise_floor=floor, budget=budget,
+        margin=args.margin, modes=modes,
+    )  # fmt: skip
+    metrics = {"n_images": len(entries), "fp32_miou": scorer.fp32_miou,
+               "fp32_artifact_id": scorer.fp32_artifact_id,
+               "noise_run": {"threads": args.noise_threads, "delta_points": noise.delta_points},
+               **metrics}  # fmt: skip
+    passed = not any(f["severity"] == "error" for f in findings)
+    report = make_report(
+        tool="sensitivity", model=cfg.name,
+        backend_meta={"backend": "ort_cpu", "precision": "int8", "threads": THREADS,
+                      "device": f"cpu ({platform.machine()})", "artifact_id": full.artifact_id,
+                      "versions": {"onnxruntime": ort.__version__}},
+        inputs={"artifact": fp32_path.name, "quant_config": qcfg.to_dict(),
+                "calibration_id": cal[1]["calibration_id"],
+                "groups": Path(args.groups).name if args.groups else f"{cfg.name}.yaml",
+                "manifest": Path(args.manifest).stem, "limit": args.limit, "modes": list(modes)},
+        thresholds={"miou_drop_budget_points": budget, "margin_points": args.margin,
+                    "target_drop_points": budget - args.margin,
+                    "non_additive_min_points": NON_ADDITIVE_MIN_POINTS},
+        metrics=metrics, findings=findings, passed=passed,
+    )  # fmt: skip
+    if args.out:
+        out = Path(args.out)
+    else:
+        report_dir = Path(args.report_dir) if args.report_dir else REPORTS_DIR
+        tag = f"{cfg.name}__{qcfg.name}__{Path(args.manifest).stem}"
+        tag += f"__first{args.limit}" if args.limit else ""
+        out = report_dir / f"sensitivity__{tag}__{sha[:7]}.json"
+    write_report(report, out)
+    if args.write_exclusions:
+        exc_path = Path(args.write_exclusions)
+        exc_path.parent.mkdir(parents=True, exist_ok=True)
+        header = (
+            f"# Suggested by `edgeinfer sensitivity` ({out.name}): groups kept in float so\n"
+            f"# the drop on {Path(args.manifest).stem} is within the budget minus margin.\n"
+        )
+        exc_path.write_text(header + yaml.safe_dump({
+            "name": exc_path.stem, "model": cfg.name,
+            "groups": metrics["suggested_exclusions"], "nodes": [],
+        }, sort_keys=False))  # fmt: skip
+        print(f"  exclusions -> {exc_path}")
+    _print_findings(findings)
+    print(f"{'PASS' if passed else 'FAIL'} -> {out}")
+    return 0 if passed else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="edgeinfer")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -507,6 +604,39 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--report-dir", help="report directory (default: artifacts/reports)")
     p.add_argument("--out", help="report path")
     p.set_defaults(func=cmd_quantize)
+
+    p = sub.add_parser("sensitivity", help="rank layer groups by INT8 accuracy impact; "
+                                           "suggest an exclusion list")  # fmt: skip
+    p.add_argument("--model", required=True, help="config name or path")
+    p.add_argument("--artifact", required=True, help="FP32 ONNX file")
+    p.add_argument("--quant-config", required=True, help="configs/quant/<name>.yaml, or a path")
+    p.add_argument("--groups", help="group rules (default: configs/quant/groups/<model>.yaml)")
+    p.add_argument("--manifest", default="sens_val100", help="scoring images")
+    p.add_argument("--limit", type=int, help="first N images only (smoke runs)")
+    p.add_argument("--root", help="Cityscapes root (default: $CITYSCAPES_ROOT)")
+    p.add_argument(
+        "--modes",
+        default="only,except",
+        help="comma-separated: only (one-at-a-time), except (leave-one-out)",
+    )
+    p.add_argument(
+        "--margin",
+        type=float,
+        default=0.0,
+        help="points kept below the budget on the scoring set (subset vs full val)",
+    )
+    p.add_argument(
+        "--noise-threads",
+        type=int,
+        default=1,
+        help="thread count for the noise-floor rerun of full INT8",
+    )
+    p.add_argument("--write-exclusions", help="write the suggested exclusion list (YAML) here")
+    p.add_argument("--calib-dir", help="calibration cache root (default: artifacts/calib)")
+    p.add_argument("--out-root", help="artifact root for the configurations' models")
+    p.add_argument("--report-dir", help="report directory (default: artifacts/reports)")
+    p.add_argument("--out", help="report path")
+    p.set_defaults(func=cmd_sensitivity)
 
     return parser
 

@@ -139,3 +139,13 @@ def load_model_config(name_or_path: str | Path) -> ModelConfig:
     if not path.is_file():
         raise FileNotFoundError(f"model config not found: {path}")
     return ModelConfig.from_dict(yaml.safe_load(path.read_text()), where=path.name)
+
+
+def load_budgets(path: Path | None = None) -> dict[str, Any]:
+    """configs/budgets.yaml (accuracy now; latency and memory from C4)."""
+    path = path or CONFIG_DIR / "budgets.yaml"
+    d = yaml.safe_load(path.read_text())
+    drop = d.get("accuracy", {}).get("miou_drop_max_points")
+    if not isinstance(drop, int | float) or drop <= 0:
+        raise ConfigError(f"{path.name}: accuracy.miou_drop_max_points must be a positive number")
+    return d

@@ -1,5 +1,6 @@
 """End-to-end CLI pipeline on the tiny fixture model and a fake dataset (runs in CI):
-export -> validate -> ORT eval -> golden -> parity, plus the deliberate breaks."""
+export -> validate -> ORT eval -> golden -> parity, plus the deliberate breaks; then
+quantize -> validate -> eval -> parity -> sensitivity -> exclusions, plus config faults."""
 
 import json
 
@@ -12,7 +13,10 @@ from edgeinfer import reports
 from edgeinfer.cli import main
 from edgeinfer.data.cityscapes import list_image_ids
 from edgeinfer.data.manifests import ManifestSpec, build_manifest, format_manifest
-from tests.conftest import TINY_CONFIG
+from edgeinfer.quant.config import QUANT_DIR
+from tests.conftest import FIXTURES, TINY_CONFIG
+
+TINY_GROUPS = FIXTURES / "tiny_fixture_groups.yaml"
 
 
 @pytest.fixture
@@ -96,3 +100,111 @@ def test_per_layer_localizes_a_corrupted_weight(pipeline):
     first = _report(out)["metrics"]["per_layer"]["first_over_tolerance"]
     assert first["tensor"] == target.output[0] and first["op"] == "MatMul"
     assert np.isfinite(first["cosine_min"])
+
+
+@pytest.fixture
+def int8_setup(pipeline, fake_cityscapes):
+    """Calibration manifest (fake train split) and a quant config pointing at it."""
+    tmp, onnx_path, common = pipeline
+    calib = tmp / "calib_fake.txt"
+    train = build_manifest(ManifestSpec("c", "train", None, None),
+                           list_image_ids(fake_cityscapes, "train"))  # fmt: skip
+    calib.write_text(format_manifest(train))
+    qcfg = tmp / "int8_fake.yaml"
+    qcfg.write_text((QUANT_DIR / "int8_entropy.yaml").read_text()
+                    .replace("manifest: calib_train200", f"manifest: {calib}"))  # fmt: skip
+    quant = ["--model", str(TINY_CONFIG), "--artifact", str(onnx_path), "--quant-config",
+             str(qcfg), "--groups", str(TINY_GROUPS), "--root", str(fake_cityscapes),
+             "--calib-dir", str(tmp / "calib"), "--out-root", str(tmp / "onnx")]  # fmt: skip
+    return tmp, common, quant, qcfg
+
+
+def test_int8_pipeline_end_to_end(int8_setup, fake_cityscapes):
+    tmp, common, quant, _ = int8_setup
+    assert main(["quantize", *quant, "--out", str(tmp / "q.json")]) == 0
+    q = _report(tmp / "q.json")
+    assert q["precision"] == "int8" and q["metrics"]["placement"]["excluded_nodes"] == {}
+    (int8_path,) = (tmp / "onnx" / "tiny_fixture").glob("*__int8__*.onnx")
+    assert main(["validate", "--model", str(TINY_CONFIG), "--artifact", str(int8_path),
+                 "--out", str(tmp / "v.json")]) == 0  # fmt: skip
+    assert main(["eval", "--model", str(TINY_CONFIG), "--backend", "ort_cpu", "--artifact",
+                 str(int8_path), "--manifest", common[1], "--root", str(fake_cityscapes),
+                 "--out", str(tmp / "e.json")]) == 0  # fmt: skip
+    assert _report(tmp / "e.json")["precision"] == "int8"
+    fp32 = next(p for p in (tmp / "onnx" / "tiny_fixture").glob("*__fp32__*.onnx"))
+    assert main(
+        [
+            "parity",
+            "--model",
+            str(TINY_CONFIG),
+            "--artifact",
+            str(int8_path),
+            *common,
+            "--per-layer",
+            "--ref-artifact",
+            str(fp32),
+            "--out",
+            str(tmp / "p.json"),
+        ]
+    ) in (0, 1)
+    p = _report(tmp / "p.json")
+    assert p["thresholds"]["logits_max_abs"] is None  # int8 tolerances: drift is report-only
+    assert p["metrics"]["per_layer"]["n_tensors"] > 0
+    assert {f["code"] for f in p["findings"]} <= {"PARITY_MIOU_DELTA", "PARITY_GOLDEN_UNVERIFIED"}
+
+    # Sensitivity, then the suggested exclusions through the quantizer.
+    exc = tmp / "exc.yaml"
+    sens = [a for a in quant if a not in ("--out-root", str(tmp / "onnx"))]
+    rc = main(
+        [
+            "sensitivity",
+            *sens,
+            "--manifest",
+            common[1],
+            "--out-root",
+            str(tmp / "onnx"),
+            "--margin",
+            "0",
+            "--write-exclusions",
+            str(exc),
+            "--out",
+            str(tmp / "s.json"),
+        ]
+    )
+    s = _report(tmp / "s.json")
+    assert rc == (0 if s["passed"] else 1)
+    m = s["metrics"]
+    assert [r["group"] for r in m["groups"]] == ["stem", "attn", "head"]
+    assert sorted(m["ranking"]) == ["attn", "head", "stem"]
+    assert m["noise_floor_points"] >= 0 and m["noise_run"]["threads"] == 1
+    assert main(["quantize", *quant, "--exclusions", str(exc), "--out", str(tmp / "qx.json")]) == 0
+    assert len(_report(tmp / "qx.json")["metrics"]["excluded_nodes"]) == sum(
+        {"stem": 2, "attn": 4, "head": 2}[g] for g in m["suggested_exclusions"]
+    )
+
+
+def test_config_faults_are_caught_with_their_codes(int8_setup, fake_cityscapes):
+    tmp, common, quant, qcfg = int8_setup
+    # 1. Calibration manifest swapped to val.
+    swapped = tmp / "int8_val.yaml"
+    swapped.write_text(qcfg.read_text().replace(str(tmp / "calib_fake.txt"), common[1]))
+    args = [a if a != str(qcfg) else str(swapped) for a in quant]
+    assert main(["quantize", *args, "--out", str(tmp / "f1.json")]) == 1
+    assert [f["code"] for f in _report(tmp / "f1.json")["findings"]] == [
+        "QUANT_CALIB_ON_EVAL_SPLIT"
+    ]
+    # 2. Exclusion list with a typo.
+    typo = tmp / "typo.yaml"
+    typo.write_text("name: typo\nmodel: tiny_fixture\ngroups: [atention]\nnodes: []\n")
+    assert main(["quantize", *quant, "--exclusions", str(typo), "--out", str(tmp / "f2.json")]) == 1
+    assert [f["code"] for f in _report(tmp / "f2.json")["findings"]] == ["QUANT_UNKNOWN_EXCLUSION"]
+    # 3. Unsigned activations: quantizes, but the validator refuses it for TensorRT.
+    uint8 = tmp / "int8_u8.yaml"
+    uint8.write_text(qcfg.read_text().replace("activation_type: int8", "activation_type: uint8"))
+    args = [a if a != str(qcfg) else str(uint8) for a in quant]
+    assert main(["quantize", *args, "--out", str(tmp / "f3.json")]) == 0
+    art = tmp / "onnx" / "tiny_fixture" / _report(tmp / "f3.json")["metrics"]["file"]
+    assert main(["validate", "--model", str(TINY_CONFIG), "--artifact", str(art),
+                 "--out", str(tmp / "f3v.json")]) == 1  # fmt: skip
+    codes = {f["code"] for f in _report(tmp / "f3v.json")["findings"]}
+    assert "VALIDATE_QDQ_DTYPE" in codes

@@ -24,16 +24,16 @@ LAYER_CHUNK_BYTES = 1 << 30
 class OrtCpuBackend:
     name = "ort_cpu"
 
-    def __init__(self) -> None:
+    def __init__(self, threads: int = THREADS) -> None:
+        self._threads = threads
         self._model: onnx.ModelProto | None = None
         self._session: ort.InferenceSession | None = None
         self._meta: dict[str, Any] = {}
         self._layer_sessions: dict[tuple[str, ...], list[ort.InferenceSession]] = {}
 
-    @staticmethod
-    def _options() -> ort.SessionOptions:
+    def _options(self) -> ort.SessionOptions:
         opts = ort.SessionOptions()
-        opts.intra_op_num_threads = THREADS
+        opts.intra_op_num_threads = self._threads
         opts.inter_op_num_threads = 1
         opts.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
         opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
@@ -94,7 +94,7 @@ class OrtCpuBackend:
             "device": f"cpu ({platform.machine()})",
             "artifact_id": self._meta["artifact_id"],
             "artifact": self._meta["artifact"],
-            "threads": THREADS,
+            "threads": self._threads,
             "session": {"graph_optimization_level": "ORT_ENABLE_ALL", "providers": ["CPU"]},
             "versions": {"onnxruntime": ort.__version__, "onnx": onnx.__version__},
         }

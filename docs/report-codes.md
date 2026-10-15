@@ -34,3 +34,7 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 | `QUANT_GROUP_UNMATCHED` | quantize | error | A quantizable node matches no layer-group rule, a rule matches no node, or the model lacks the exporter's name-scope metadata (`configs/quant/groups/`). |
 | `QUANT_UNKNOWN_EXCLUSION` | quantize | error | An exclusion list names a group or node the model doesn't have. A typo must never silently quantize a layer meant to stay in float. |
 | `QUANT_PLACEMENT_MISMATCH` | quantize | error | After quantizing, a node meant to be INT8 reads a float input, or an excluded node reads a dequantized one. |
+| `SENS_FULL_INT8_WITHIN_BUDGET` | sensitivity | info | The fully quantized model's drop on the scoring set is already within budget − margin; no exclusions needed. |
+| `SENS_EXCLUSION_SUGGESTED` | sensitivity | info | Keeping the listed groups in float (greedy, in leave-one-out order, each step measured) brings the drop within budget − margin. `where` is the comma-separated group list. |
+| `SENS_BUDGET_UNREACHABLE` | sensitivity | error | Even with every group in float the drop exceeds budget − margin: the loss isn't in the quantized layers (or the margin is too large). |
+| `SENS_NON_ADDITIVE` | sensitivity | warn | The final greedy configuration's measured delta differs from the sum of its groups' single-group recoveries by more than max(2 × noise floor, 0.1 points): group effects interact. |
