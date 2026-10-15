@@ -1,0 +1,1854 @@
+{
+  "schema_version": "1",
+  "tool": "parity",
+  "created_at": "2026-10-15T17:28:53+00:00",
+  "git_sha": "cb60f28345ec22f9d8cd30437ff39e7cea68d024",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": 4,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "onnxruntime": "1.31.0",
+      "onnx": "1.23.2"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "ort_cpu",
+  "precision": "int8",
+  "artifact_id": "4933848ac46aae9190930d9586da4852974a9129e10d8890f58ae7b4ab44af5f",
+  "inputs": {
+    "manifest": "golden_val32",
+    "limit": null,
+    "mode": "images",
+    "artifact": "segformer_b0__int8__4933848ac46a.onnx",
+    "config": "segformer_b0",
+    "golden_verified": false,
+    "tolerances": "int8",
+    "ref_artifact": "segformer_b0__fp32__0ef7fcdb0cdc.onnx",
+    "ref_artifact_id": "0ef7fcdb0cdc344827ec5243eb2f914c1f53a3385ad4d21cdca71488cff55288"
+  },
+  "thresholds": {
+    "input_max_abs": 1e-05,
+    "logits_max_abs": null,
+    "logits_cosine_min": null,
+    "argmax_agreement_min": null,
+    "miou_delta_max": 1.0,
+    "layer_cosine_min": null,
+    "layer_rel_max_abs": null
+  },
+  "metrics": {
+    "n_images": 32,
+    "mode": "images",
+    "logits_max_abs": 10.654176712036133,
+    "logits_mean_abs": 0.6905221406396335,
+    "logits_cosine_min": 0.995549504274311,
+    "argmax_agreement_min": 0.945892333984375,
+    "argmax_agreement_mean": 0.9853343963623047,
+    "input_max_abs": 0.0,
+    "argmax_agreement_label_res_min": 0.9463119506835938,
+    "miou_reference": 0.7144653589847592,
+    "miou_candidate": 0.7158841319005714,
+    "miou_delta_points": 0.1418772915812272,
+    "per_image": [
+      {
+        "image_id": "frankfurt_000000_000576",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 5.864185333251953,
+        "mean_abs": 0.6320992921276968,
+        "cosine": 0.9985408882291217,
+        "argmax_agreement": 0.995361328125,
+        "argmax_agreement_label_res": 0.9959220886230469
+      },
+      {
+        "image_id": "frankfurt_000000_007365",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 6.210414886474609,
+        "mean_abs": 0.7795432587359256,
+        "cosine": 0.9982806855016112,
+        "argmax_agreement": 0.9864501953125,
+        "argmax_agreement_label_res": 0.9872732162475586
+      },
+      {
+        "image_id": "frankfurt_000000_013382",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 6.436161041259766,
+        "mean_abs": 0.6547839537804677,
+        "cosine": 0.9985744736242147,
+        "argmax_agreement": 0.99346923828125,
+        "argmax_agreement_label_res": 0.9941797256469727
+      },
+      {
+        "image_id": "frankfurt_000000_022254",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 7.004837989807129,
+        "mean_abs": 0.7086902066075135,
+        "cosine": 0.9983229774482387,
+        "argmax_agreement": 0.98699951171875,
+        "argmax_agreement_label_res": 0.9875898361206055
+      },
+      {
+        "image_id": "frankfurt_000001_005184",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 3.9930992126464844,
+        "mean_abs": 0.5388348112788203,
+        "cosine": 0.9989741080276192,
+        "argmax_agreement": 0.990081787109375,
+        "argmax_agreement_label_res": 0.990025520324707
+      },
+      {
+        "image_id": "frankfurt_000001_007973",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.627164840698242,
+        "mean_abs": 0.6403762355355972,
+        "cosine": 0.9987118847711723,
+        "argmax_agreement": 0.979034423828125,
+        "argmax_agreement_label_res": 0.9806876182556152
+      },
+      {
+        "image_id": "frankfurt_000001_020287",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.270713806152344,
+        "mean_abs": 0.5902260131627906,
+        "cosine": 0.9989942126451066,
+        "argmax_agreement": 0.985748291015625,
+        "argmax_agreement_label_res": 0.9858360290527344
+      },
+      {
+        "image_id": "frankfurt_000001_025921",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.474857330322266,
+        "mean_abs": 0.6752682781037675,
+        "cosine": 0.9980585621331147,
+        "argmax_agreement": 0.977508544921875,
+        "argmax_agreement_label_res": 0.9774813652038574
+      },
+      {
+        "image_id": "frankfurt_000001_031416",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 6.464851379394531,
+        "mean_abs": 0.7193258711541077,
+        "cosine": 0.998389695619405,
+        "argmax_agreement": 0.9886474609375,
+        "argmax_agreement_label_res": 0.9888730049133301
+      },
+      {
+        "image_id": "frankfurt_000001_034047",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 6.031532287597656,
+        "mean_abs": 0.6369491272341021,
+        "cosine": 0.9983541677747518,
+        "argmax_agreement": 0.989990234375,
+        "argmax_agreement_label_res": 0.9913277626037598
+      },
+      {
+        "image_id": "frankfurt_000001_055603",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 7.745367050170898,
+        "mean_abs": 0.6756912652042171,
+        "cosine": 0.9983354997323531,
+        "argmax_agreement": 0.98095703125,
+        "argmax_agreement_label_res": 0.9819345474243164
+      },
+      {
+        "image_id": "frankfurt_000001_057954",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 6.412693023681641,
+        "mean_abs": 0.6684069155601441,
+        "cosine": 0.9981223591860926,
+        "argmax_agreement": 0.97509765625,
+        "argmax_agreement_label_res": 0.975733757019043
+      },
+      {
+        "image_id": "frankfurt_000001_064305",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 5.845109939575195,
+        "mean_abs": 0.7753859105241913,
+        "cosine": 0.9981589038487494,
+        "argmax_agreement": 0.988433837890625,
+        "argmax_agreement_label_res": 0.9886360168457031
+      },
+      {
+        "image_id": "frankfurt_000001_066092",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.868402481079102,
+        "mean_abs": 0.7377484548972922,
+        "cosine": 0.998011358582862,
+        "argmax_agreement": 0.968475341796875,
+        "argmax_agreement_label_res": 0.9686794281005859
+      },
+      {
+        "image_id": "frankfurt_000001_066574",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 6.429075241088867,
+        "mean_abs": 0.881516845911875,
+        "cosine": 0.9966585976175761,
+        "argmax_agreement": 0.9488525390625,
+        "argmax_agreement_label_res": 0.9498023986816406
+      },
+      {
+        "image_id": "frankfurt_000001_069633",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 6.410505294799805,
+        "mean_abs": 0.682187918311751,
+        "cosine": 0.9981341482660775,
+        "argmax_agreement": 0.9906005859375,
+        "argmax_agreement_label_res": 0.9902606010437012
+      },
+      {
+        "image_id": "frankfurt_000001_073464",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.356317520141602,
+        "mean_abs": 0.6728885401022716,
+        "cosine": 0.9988328013646148,
+        "argmax_agreement": 0.9930419921875,
+        "argmax_agreement_label_res": 0.9937372207641602
+      },
+      {
+        "image_id": "frankfurt_000001_076502",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.628604888916016,
+        "mean_abs": 0.608545872359874,
+        "cosine": 0.9987884754630977,
+        "argmax_agreement": 0.985687255859375,
+        "argmax_agreement_label_res": 0.9857034683227539
+      },
+      {
+        "image_id": "lindau_000024_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 9.627116203308105,
+        "mean_abs": 0.9970342238331718,
+        "cosine": 0.995549504274311,
+        "argmax_agreement": 0.945892333984375,
+        "argmax_agreement_label_res": 0.9463119506835938
+      },
+      {
+        "image_id": "lindau_000044_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 6.818782806396484,
+        "mean_abs": 0.9152527851820373,
+        "cosine": 0.9971167583333748,
+        "argmax_agreement": 0.99261474609375,
+        "argmax_agreement_label_res": 0.9926309585571289
+      },
+      {
+        "image_id": "munster_000007_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 3.9006338119506836,
+        "mean_abs": 0.5604178064792225,
+        "cosine": 0.9989581594863464,
+        "argmax_agreement": 0.992767333984375,
+        "argmax_agreement_label_res": 0.9925651550292969
+      },
+      {
+        "image_id": "munster_000030_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.461460113525391,
+        "mean_abs": 0.5957954217531404,
+        "cosine": 0.9988203264228755,
+        "argmax_agreement": 0.990264892578125,
+        "argmax_agreement_label_res": 0.9905490875244141
+      },
+      {
+        "image_id": "munster_000043_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 10.654176712036133,
+        "mean_abs": 0.7384024603624182,
+        "cosine": 0.9977617254916527,
+        "argmax_agreement": 0.9937744140625,
+        "argmax_agreement_label_res": 0.9944257736206055
+      },
+      {
+        "image_id": "munster_000063_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 6.179121017456055,
+        "mean_abs": 0.6602992635897916,
+        "cosine": 0.9987401735089003,
+        "argmax_agreement": 0.994049072265625,
+        "argmax_agreement_label_res": 0.9943947792053223
+      },
+      {
+        "image_id": "munster_000064_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 5.316977500915527,
+        "mean_abs": 0.6541652923147274,
+        "cosine": 0.9988907425451666,
+        "argmax_agreement": 0.990875244140625,
+        "argmax_agreement_label_res": 0.9911508560180664
+      },
+      {
+        "image_id": "munster_000065_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 5.178091049194336,
+        "mean_abs": 0.5880954774312444,
+        "cosine": 0.9988473050173172,
+        "argmax_agreement": 0.990692138671875,
+        "argmax_agreement_label_res": 0.9922490119934082
+      },
+      {
+        "image_id": "munster_000066_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.212034225463867,
+        "mean_abs": 0.5429843334653109,
+        "cosine": 0.9988203486978245,
+        "argmax_agreement": 0.99237060546875,
+        "argmax_agreement_label_res": 0.9924392700195312
+      },
+      {
+        "image_id": "munster_000077_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 7.853553771972656,
+        "mean_abs": 0.7301475846001958,
+        "cosine": 0.9982892954215615,
+        "argmax_agreement": 0.989105224609375,
+        "argmax_agreement_label_res": 0.9883990287780762
+      },
+      {
+        "image_id": "munster_000084_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 8.21672248840332,
+        "mean_abs": 0.6811804301861959,
+        "cosine": 0.9982723196882424,
+        "argmax_agreement": 0.983154296875,
+        "argmax_agreement_label_res": 0.9838418960571289
+      },
+      {
+        "image_id": "munster_000101_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 8.569652557373047,
+        "mean_abs": 0.7464184729667973,
+        "cosine": 0.9982865193382588,
+        "argmax_agreement": 0.9849853515625,
+        "argmax_agreement_label_res": 0.9850683212280273
+      },
+      {
+        "image_id": "munster_000107_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 5.308483123779297,
+        "mean_abs": 0.659322395735431,
+        "cosine": 0.9988918385859492,
+        "argmax_agreement": 0.99560546875,
+        "argmax_agreement_label_res": 0.9960455894470215
+      },
+      {
+        "image_id": "munster_000131_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 7.59351921081543,
+        "mean_abs": 0.7487237819761816,
+        "cosine": 0.9984634647020743,
+        "argmax_agreement": 0.9901123046875,
+        "argmax_agreement_label_res": 0.9899606704711914
+      }
+    ],
+    "per_layer": {
+      "n_tensors": 198,
+      "n_images": 4,
+      "n_over_tolerance": 0,
+      "first_over_tolerance": null,
+      "worst_by_cosine": [
+        {
+          "index": 173,
+          "tensor": "val_675",
+          "op": "MatMul",
+          "cosine_min": 0.893736308035321,
+          "rel_max_abs": 0.43532066328685715
+        },
+        {
+          "index": 82,
+          "tensor": "scaled_dot_product_attention_3",
+          "op": "MatMul",
+          "cosine_min": 0.9172790826433149,
+          "rel_max_abs": 0.3090356696618166
+        },
+        {
+          "index": 83,
+          "tensor": "val_339",
+          "op": "MatMul",
+          "cosine_min": 0.9203277186678663,
+          "rel_max_abs": 0.3737500108991449
+        },
+        {
+          "index": 129,
+          "tensor": "scaled_dot_product_attention_5",
+          "op": "MatMul",
+          "cosine_min": 0.9271721361456138,
+          "rel_max_abs": 0.3782990215950477
+        },
+        {
+          "index": 127,
+          "tensor": "val_512",
+          "op": "MatMul",
+          "cosine_min": 0.9301886215779476,
+          "rel_max_abs": 0.3465540814766221
+        },
+        {
+          "index": 14,
+          "tensor": "val_75",
+          "op": "MatMul",
+          "cosine_min": 0.9302962447442941,
+          "rel_max_abs": 0.37351021512387506
+        },
+        {
+          "index": 13,
+          "tensor": "scaled_dot_product_attention",
+          "op": "MatMul",
+          "cosine_min": 0.9399604235615655,
+          "rel_max_abs": 0.34356783952122705
+        },
+        {
+          "index": 108,
+          "tensor": "val_437",
+          "op": "MatMul",
+          "cosine_min": 0.9420837874230276,
+          "rel_max_abs": 0.24717172117001177
+        },
+        {
+          "index": 153,
+          "tensor": "val_605",
+          "op": "MatMul",
+          "cosine_min": 0.9448304150862968,
+          "rel_max_abs": 0.4552867152044328
+        },
+        {
+          "index": 60,
+          "tensor": "scaled_dot_product_attention_2",
+          "op": "MatMul",
+          "cosine_min": 0.9464097019939934,
+          "rel_max_abs": 0.6000628584626576
+        }
+      ],
+      "tensors": [
+        {
+          "index": 0,
+          "tensor": "conv2d",
+          "op": "Conv",
+          "cosine_min": 0.9998039036473361,
+          "rel_max_abs": 0.007575283941320914
+        },
+        {
+          "index": 1,
+          "tensor": "layer_norm",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9978210859820277,
+          "rel_max_abs": 0.05492644856804775
+        },
+        {
+          "index": 2,
+          "tensor": "layer_norm_1",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9936564294672465,
+          "rel_max_abs": 0.1882575686796782
+        },
+        {
+          "index": 3,
+          "tensor": "val_10",
+          "op": "MatMul",
+          "cosine_min": 0.998242383278006,
+          "rel_max_abs": 0.13284616566138038
+        },
+        {
+          "index": 4,
+          "tensor": "linear",
+          "op": "Add",
+          "cosine_min": 0.9992649543048262,
+          "rel_max_abs": 0.11001116228523906
+        },
+        {
+          "index": 5,
+          "tensor": "conv2d_1",
+          "op": "Conv",
+          "cosine_min": 0.9956584916199576,
+          "rel_max_abs": 0.07915179772292567
+        },
+        {
+          "index": 6,
+          "tensor": "layer_norm_2",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9873850078857991,
+          "rel_max_abs": 0.10085905880166793
+        },
+        {
+          "index": 7,
+          "tensor": "val_31",
+          "op": "MatMul",
+          "cosine_min": 0.9982002432355853,
+          "rel_max_abs": 0.14359524730328252
+        },
+        {
+          "index": 8,
+          "tensor": "linear_1",
+          "op": "Add",
+          "cosine_min": 0.9988602775254576,
+          "rel_max_abs": 0.12865917267257143
+        },
+        {
+          "index": 9,
+          "tensor": "val_39",
+          "op": "MatMul",
+          "cosine_min": 0.9798140068894862,
+          "rel_max_abs": 0.20280067860143042
+        },
+        {
+          "index": 10,
+          "tensor": "linear_2",
+          "op": "Add",
+          "cosine_min": 0.9808247087528739,
+          "rel_max_abs": 0.1907607034029987
+        },
+        {
+          "index": 11,
+          "tensor": "val_67",
+          "op": "MatMul",
+          "cosine_min": 0.9997347838373,
+          "rel_max_abs": 0.0700392507251996
+        },
+        {
+          "index": 12,
+          "tensor": "val_68",
+          "op": "Softmax",
+          "cosine_min": 0.9942481552765196,
+          "rel_max_abs": 0.13365660370520935
+        },
+        {
+          "index": 13,
+          "tensor": "scaled_dot_product_attention",
+          "op": "MatMul",
+          "cosine_min": 0.9399604235615655,
+          "rel_max_abs": 0.34356783952122705
+        },
+        {
+          "index": 14,
+          "tensor": "val_75",
+          "op": "MatMul",
+          "cosine_min": 0.9302962447442941,
+          "rel_max_abs": 0.37351021512387506
+        },
+        {
+          "index": 15,
+          "tensor": "linear_3",
+          "op": "Add",
+          "cosine_min": 0.9843281848378896,
+          "rel_max_abs": 0.17558697757685798
+        },
+        {
+          "index": 16,
+          "tensor": "add",
+          "op": "Add",
+          "cosine_min": 0.9976756620632641,
+          "rel_max_abs": 0.05814121927617655
+        },
+        {
+          "index": 17,
+          "tensor": "layer_norm_3",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9945530562665741,
+          "rel_max_abs": 0.1633384968644271
+        },
+        {
+          "index": 18,
+          "tensor": "val_79",
+          "op": "MatMul",
+          "cosine_min": 0.9964026832720161,
+          "rel_max_abs": 0.20130498018704202
+        },
+        {
+          "index": 19,
+          "tensor": "linear_4",
+          "op": "Add",
+          "cosine_min": 0.9959993736790778,
+          "rel_max_abs": 0.19620758713393144
+        },
+        {
+          "index": 20,
+          "tensor": "conv2d_2",
+          "op": "Conv",
+          "cosine_min": 0.9967435328090267,
+          "rel_max_abs": 0.26789811874096664
+        },
+        {
+          "index": 21,
+          "tensor": "val_92",
+          "op": "MatMul",
+          "cosine_min": 0.9961881906861921,
+          "rel_max_abs": 0.08050695725345303
+        },
+        {
+          "index": 22,
+          "tensor": "linear_5",
+          "op": "Add",
+          "cosine_min": 0.9966337858512669,
+          "rel_max_abs": 0.07426447105798695
+        },
+        {
+          "index": 23,
+          "tensor": "add_1",
+          "op": "Add",
+          "cosine_min": 0.9969539449022359,
+          "rel_max_abs": 0.09099401387229877
+        },
+        {
+          "index": 24,
+          "tensor": "layer_norm_4",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9917293738640754,
+          "rel_max_abs": 0.20579538319591792
+        },
+        {
+          "index": 25,
+          "tensor": "val_96",
+          "op": "MatMul",
+          "cosine_min": 0.9925591402281567,
+          "rel_max_abs": 0.2660575354283951
+        },
+        {
+          "index": 26,
+          "tensor": "linear_6",
+          "op": "Add",
+          "cosine_min": 0.9960271651105813,
+          "rel_max_abs": 0.22658037599444183
+        },
+        {
+          "index": 27,
+          "tensor": "conv2d_3",
+          "op": "Conv",
+          "cosine_min": 0.996505009011691,
+          "rel_max_abs": 0.10846446690131467
+        },
+        {
+          "index": 28,
+          "tensor": "layer_norm_5",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9943042988865969,
+          "rel_max_abs": 0.144164972894488
+        },
+        {
+          "index": 29,
+          "tensor": "val_117",
+          "op": "MatMul",
+          "cosine_min": 0.9952154968879536,
+          "rel_max_abs": 0.13235744875536942
+        },
+        {
+          "index": 30,
+          "tensor": "linear_7",
+          "op": "Add",
+          "cosine_min": 0.9979920593131181,
+          "rel_max_abs": 0.12906865887146046
+        },
+        {
+          "index": 31,
+          "tensor": "val_125",
+          "op": "MatMul",
+          "cosine_min": 0.9921754649653132,
+          "rel_max_abs": 0.15428640919703077
+        },
+        {
+          "index": 32,
+          "tensor": "linear_8",
+          "op": "Add",
+          "cosine_min": 0.9919816137429468,
+          "rel_max_abs": 0.15287676374558526
+        },
+        {
+          "index": 33,
+          "tensor": "val_150",
+          "op": "MatMul",
+          "cosine_min": 0.9985195348416728,
+          "rel_max_abs": 0.12205526230084386
+        },
+        {
+          "index": 34,
+          "tensor": "val_151",
+          "op": "Softmax",
+          "cosine_min": 0.9868122916970922,
+          "rel_max_abs": 0.27341095595450554
+        },
+        {
+          "index": 35,
+          "tensor": "scaled_dot_product_attention_1",
+          "op": "MatMul",
+          "cosine_min": 0.9623771226449754,
+          "rel_max_abs": 0.4032952591084706
+        },
+        {
+          "index": 36,
+          "tensor": "val_158",
+          "op": "MatMul",
+          "cosine_min": 0.9616689365100819,
+          "rel_max_abs": 0.4510509963684264
+        },
+        {
+          "index": 37,
+          "tensor": "linear_9",
+          "op": "Add",
+          "cosine_min": 0.9530488022605783,
+          "rel_max_abs": 0.46874834129970455
+        },
+        {
+          "index": 38,
+          "tensor": "add_2",
+          "op": "Add",
+          "cosine_min": 0.9964791520458222,
+          "rel_max_abs": 0.08811351313703432
+        },
+        {
+          "index": 39,
+          "tensor": "layer_norm_6",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9903495225460122,
+          "rel_max_abs": 0.2972695931119039
+        },
+        {
+          "index": 40,
+          "tensor": "val_162",
+          "op": "MatMul",
+          "cosine_min": 0.9917043404260432,
+          "rel_max_abs": 0.5112164241645412
+        },
+        {
+          "index": 41,
+          "tensor": "linear_10",
+          "op": "Add",
+          "cosine_min": 0.9923101495200448,
+          "rel_max_abs": 0.5334274194631909
+        },
+        {
+          "index": 42,
+          "tensor": "conv2d_4",
+          "op": "Conv",
+          "cosine_min": 0.9921562581059968,
+          "rel_max_abs": 0.5676024908203176
+        },
+        {
+          "index": 43,
+          "tensor": "val_175",
+          "op": "MatMul",
+          "cosine_min": 0.982314353677169,
+          "rel_max_abs": 0.2174771550538256
+        },
+        {
+          "index": 44,
+          "tensor": "linear_11",
+          "op": "Add",
+          "cosine_min": 0.9938253019499977,
+          "rel_max_abs": 0.14551812352663887
+        },
+        {
+          "index": 45,
+          "tensor": "add_3",
+          "op": "Add",
+          "cosine_min": 0.9967717185148348,
+          "rel_max_abs": 0.10766552508634496
+        },
+        {
+          "index": 46,
+          "tensor": "layer_norm_7",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9912633751363678,
+          "rel_max_abs": 0.20007952484960995
+        },
+        {
+          "index": 47,
+          "tensor": "conv2d_5",
+          "op": "Conv",
+          "cosine_min": 0.9975868690868088,
+          "rel_max_abs": 0.08282993175681727
+        },
+        {
+          "index": 48,
+          "tensor": "layer_norm_8",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9933471212698687,
+          "rel_max_abs": 0.15281585745569787
+        },
+        {
+          "index": 49,
+          "tensor": "layer_norm_9",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9909891260516154,
+          "rel_max_abs": 0.25104137981761826
+        },
+        {
+          "index": 50,
+          "tensor": "val_194",
+          "op": "MatMul",
+          "cosine_min": 0.9918934416802223,
+          "rel_max_abs": 0.22134296359313388
+        },
+        {
+          "index": 51,
+          "tensor": "linear_12",
+          "op": "Add",
+          "cosine_min": 0.9945035484983781,
+          "rel_max_abs": 0.19621233331757085
+        },
+        {
+          "index": 52,
+          "tensor": "conv2d_6",
+          "op": "Conv",
+          "cosine_min": 0.9922134172424625,
+          "rel_max_abs": 0.184516958182943
+        },
+        {
+          "index": 53,
+          "tensor": "layer_norm_10",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9873023457480968,
+          "rel_max_abs": 0.18966754676251302
+        },
+        {
+          "index": 54,
+          "tensor": "val_215",
+          "op": "MatMul",
+          "cosine_min": 0.9917157822669176,
+          "rel_max_abs": 0.2442865797589202
+        },
+        {
+          "index": 55,
+          "tensor": "linear_13",
+          "op": "Add",
+          "cosine_min": 0.9945851448257413,
+          "rel_max_abs": 0.23990045510594027
+        },
+        {
+          "index": 56,
+          "tensor": "val_223",
+          "op": "MatMul",
+          "cosine_min": 0.9844186529264881,
+          "rel_max_abs": 0.290876129592029
+        },
+        {
+          "index": 57,
+          "tensor": "linear_14",
+          "op": "Add",
+          "cosine_min": 0.9843923772790771,
+          "rel_max_abs": 0.2892666619636163
+        },
+        {
+          "index": 58,
+          "tensor": "val_248",
+          "op": "MatMul",
+          "cosine_min": 0.9953418528396498,
+          "rel_max_abs": 0.1728202938845293
+        },
+        {
+          "index": 59,
+          "tensor": "val_249",
+          "op": "Softmax",
+          "cosine_min": 0.9859512935535331,
+          "rel_max_abs": 0.27220706851701276
+        },
+        {
+          "index": 60,
+          "tensor": "scaled_dot_product_attention_2",
+          "op": "MatMul",
+          "cosine_min": 0.9464097019939934,
+          "rel_max_abs": 0.6000628584626576
+        },
+        {
+          "index": 61,
+          "tensor": "val_256",
+          "op": "MatMul",
+          "cosine_min": 0.9635877856605781,
+          "rel_max_abs": 0.3847438096857541
+        },
+        {
+          "index": 62,
+          "tensor": "linear_15",
+          "op": "Add",
+          "cosine_min": 0.9503924479434694,
+          "rel_max_abs": 0.4332795030602318
+        },
+        {
+          "index": 63,
+          "tensor": "add_4",
+          "op": "Add",
+          "cosine_min": 0.9879951231385535,
+          "rel_max_abs": 0.14745522914993914
+        },
+        {
+          "index": 64,
+          "tensor": "layer_norm_11",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9860979943167381,
+          "rel_max_abs": 0.221374432442405
+        },
+        {
+          "index": 65,
+          "tensor": "val_260",
+          "op": "MatMul",
+          "cosine_min": 0.9892838937912742,
+          "rel_max_abs": 0.21193554123561995
+        },
+        {
+          "index": 66,
+          "tensor": "linear_16",
+          "op": "Add",
+          "cosine_min": 0.9903890308998886,
+          "rel_max_abs": 0.21380077813887916
+        },
+        {
+          "index": 67,
+          "tensor": "conv2d_7",
+          "op": "Conv",
+          "cosine_min": 0.9958763385722138,
+          "rel_max_abs": 0.1161987490324447
+        },
+        {
+          "index": 68,
+          "tensor": "val_273",
+          "op": "MatMul",
+          "cosine_min": 0.9868207038640373,
+          "rel_max_abs": 0.22288433787930417
+        },
+        {
+          "index": 69,
+          "tensor": "linear_17",
+          "op": "Add",
+          "cosine_min": 0.9875582412167754,
+          "rel_max_abs": 0.1786325700170741
+        },
+        {
+          "index": 70,
+          "tensor": "add_5",
+          "op": "Add",
+          "cosine_min": 0.9879051200686068,
+          "rel_max_abs": 0.1390021369033925
+        },
+        {
+          "index": 71,
+          "tensor": "layer_norm_12",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9817115792342539,
+          "rel_max_abs": 0.2581029627623143
+        },
+        {
+          "index": 72,
+          "tensor": "val_277",
+          "op": "MatMul",
+          "cosine_min": 0.9818820249335412,
+          "rel_max_abs": 0.2315227374418687
+        },
+        {
+          "index": 73,
+          "tensor": "linear_18",
+          "op": "Add",
+          "cosine_min": 0.9885064349964185,
+          "rel_max_abs": 0.20376490100650382
+        },
+        {
+          "index": 74,
+          "tensor": "conv2d_8",
+          "op": "Conv",
+          "cosine_min": 0.9895014030396541,
+          "rel_max_abs": 0.10624560871615704
+        },
+        {
+          "index": 75,
+          "tensor": "layer_norm_13",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9790083513950317,
+          "rel_max_abs": 0.23838386958860916
+        },
+        {
+          "index": 76,
+          "tensor": "val_298",
+          "op": "MatMul",
+          "cosine_min": 0.9800384959123754,
+          "rel_max_abs": 0.24841851801915998
+        },
+        {
+          "index": 77,
+          "tensor": "linear_19",
+          "op": "Add",
+          "cosine_min": 0.9861732797392093,
+          "rel_max_abs": 0.21064197711105287
+        },
+        {
+          "index": 78,
+          "tensor": "val_306",
+          "op": "MatMul",
+          "cosine_min": 0.981228163303582,
+          "rel_max_abs": 0.3154645568860033
+        },
+        {
+          "index": 79,
+          "tensor": "linear_20",
+          "op": "Add",
+          "cosine_min": 0.9811051475759403,
+          "rel_max_abs": 0.3180837026052231
+        },
+        {
+          "index": 80,
+          "tensor": "val_331",
+          "op": "MatMul",
+          "cosine_min": 0.9859194103733825,
+          "rel_max_abs": 0.23173620973894635
+        },
+        {
+          "index": 81,
+          "tensor": "val_332",
+          "op": "Softmax",
+          "cosine_min": 0.9803371382241105,
+          "rel_max_abs": 0.32909208843438825
+        },
+        {
+          "index": 82,
+          "tensor": "scaled_dot_product_attention_3",
+          "op": "MatMul",
+          "cosine_min": 0.9172790826433149,
+          "rel_max_abs": 0.3090356696618166
+        },
+        {
+          "index": 83,
+          "tensor": "val_339",
+          "op": "MatMul",
+          "cosine_min": 0.9203277186678663,
+          "rel_max_abs": 0.3737500108991449
+        },
+        {
+          "index": 84,
+          "tensor": "linear_21",
+          "op": "Add",
+          "cosine_min": 0.9539607232279348,
+          "rel_max_abs": 0.29608456876435557
+        },
+        {
+          "index": 85,
+          "tensor": "add_6",
+          "op": "Add",
+          "cosine_min": 0.9907927768252435,
+          "rel_max_abs": 0.1473607276658048
+        },
+        {
+          "index": 86,
+          "tensor": "layer_norm_14",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9866988169728367,
+          "rel_max_abs": 0.23102546088773873
+        },
+        {
+          "index": 87,
+          "tensor": "val_343",
+          "op": "MatMul",
+          "cosine_min": 0.9892592468374347,
+          "rel_max_abs": 0.24484714369286878
+        },
+        {
+          "index": 88,
+          "tensor": "linear_22",
+          "op": "Add",
+          "cosine_min": 0.9901065214593288,
+          "rel_max_abs": 0.23846462362022702
+        },
+        {
+          "index": 89,
+          "tensor": "conv2d_9",
+          "op": "Conv",
+          "cosine_min": 0.9959237754089028,
+          "rel_max_abs": 0.13159351809703881
+        },
+        {
+          "index": 90,
+          "tensor": "val_356",
+          "op": "MatMul",
+          "cosine_min": 0.9820638110933795,
+          "rel_max_abs": 0.43295258745369913
+        },
+        {
+          "index": 91,
+          "tensor": "linear_23",
+          "op": "Add",
+          "cosine_min": 0.9945692750948854,
+          "rel_max_abs": 0.27227430159296134
+        },
+        {
+          "index": 92,
+          "tensor": "add_7",
+          "op": "Add",
+          "cosine_min": 0.9959781549061858,
+          "rel_max_abs": 0.24039109863586672
+        },
+        {
+          "index": 93,
+          "tensor": "layer_norm_15",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9876023297194739,
+          "rel_max_abs": 0.1926767763416331
+        },
+        {
+          "index": 94,
+          "tensor": "conv2d_10",
+          "op": "Conv",
+          "cosine_min": 0.9923957647713572,
+          "rel_max_abs": 0.1352132574275563
+        },
+        {
+          "index": 95,
+          "tensor": "layer_norm_16",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9893291490279293,
+          "rel_max_abs": 0.14643622867693812
+        },
+        {
+          "index": 96,
+          "tensor": "layer_norm_17",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9855585095352098,
+          "rel_max_abs": 0.20649298443245973
+        },
+        {
+          "index": 97,
+          "tensor": "val_375",
+          "op": "MatMul",
+          "cosine_min": 0.9846790439944637,
+          "rel_max_abs": 0.2354000811029624
+        },
+        {
+          "index": 98,
+          "tensor": "linear_24",
+          "op": "Add",
+          "cosine_min": 0.9874137202603328,
+          "rel_max_abs": 0.20115343428287263
+        },
+        {
+          "index": 99,
+          "tensor": "conv2d_11",
+          "op": "Conv",
+          "cosine_min": 0.9824246057422588,
+          "rel_max_abs": 0.20739006407091592
+        },
+        {
+          "index": 100,
+          "tensor": "layer_norm_18",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9821382659951003,
+          "rel_max_abs": 0.20470806007208292
+        },
+        {
+          "index": 101,
+          "tensor": "val_396",
+          "op": "MatMul",
+          "cosine_min": 0.9831038454703106,
+          "rel_max_abs": 0.21293071743786993
+        },
+        {
+          "index": 102,
+          "tensor": "linear_25",
+          "op": "Add",
+          "cosine_min": 0.9879983520205387,
+          "rel_max_abs": 0.19117202410886347
+        },
+        {
+          "index": 103,
+          "tensor": "val_404",
+          "op": "MatMul",
+          "cosine_min": 0.9801755748974634,
+          "rel_max_abs": 0.2080970459863211
+        },
+        {
+          "index": 104,
+          "tensor": "linear_26",
+          "op": "Add",
+          "cosine_min": 0.9803348596037985,
+          "rel_max_abs": 0.20679312063635824
+        },
+        {
+          "index": 105,
+          "tensor": "val_429",
+          "op": "MatMul",
+          "cosine_min": 0.9801589231325467,
+          "rel_max_abs": 0.23255719867708474
+        },
+        {
+          "index": 106,
+          "tensor": "val_430",
+          "op": "Softmax",
+          "cosine_min": 0.9875764447729861,
+          "rel_max_abs": 0.20190228920148062
+        },
+        {
+          "index": 107,
+          "tensor": "scaled_dot_product_attention_4",
+          "op": "MatMul",
+          "cosine_min": 0.9491430515613998,
+          "rel_max_abs": 0.33988067793047955
+        },
+        {
+          "index": 108,
+          "tensor": "val_437",
+          "op": "MatMul",
+          "cosine_min": 0.9420837874230276,
+          "rel_max_abs": 0.24717172117001177
+        },
+        {
+          "index": 109,
+          "tensor": "linear_27",
+          "op": "Add",
+          "cosine_min": 0.9511678133480362,
+          "rel_max_abs": 0.27571690811556293
+        },
+        {
+          "index": 110,
+          "tensor": "add_8",
+          "op": "Add",
+          "cosine_min": 0.985352911122551,
+          "rel_max_abs": 0.1638301577752325
+        },
+        {
+          "index": 111,
+          "tensor": "layer_norm_19",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9836309497484595,
+          "rel_max_abs": 0.17587808348875
+        },
+        {
+          "index": 112,
+          "tensor": "val_441",
+          "op": "MatMul",
+          "cosine_min": 0.9883014197997283,
+          "rel_max_abs": 0.22652438368858369
+        },
+        {
+          "index": 113,
+          "tensor": "linear_28",
+          "op": "Add",
+          "cosine_min": 0.9894840123674326,
+          "rel_max_abs": 0.21888078943881373
+        },
+        {
+          "index": 114,
+          "tensor": "conv2d_12",
+          "op": "Conv",
+          "cosine_min": 0.9950846352612039,
+          "rel_max_abs": 0.08070549014466963
+        },
+        {
+          "index": 115,
+          "tensor": "val_454",
+          "op": "MatMul",
+          "cosine_min": 0.9675832515992461,
+          "rel_max_abs": 0.23062747335776776
+        },
+        {
+          "index": 116,
+          "tensor": "linear_29",
+          "op": "Add",
+          "cosine_min": 0.9692449575964625,
+          "rel_max_abs": 0.22061904388128364
+        },
+        {
+          "index": 117,
+          "tensor": "add_9",
+          "op": "Add",
+          "cosine_min": 0.9796480079562178,
+          "rel_max_abs": 0.18177350964092104
+        },
+        {
+          "index": 118,
+          "tensor": "layer_norm_20",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9708554242763414,
+          "rel_max_abs": 0.3133643889428571
+        },
+        {
+          "index": 119,
+          "tensor": "val_458",
+          "op": "MatMul",
+          "cosine_min": 0.9674209061132483,
+          "rel_max_abs": 0.2728026713842765
+        },
+        {
+          "index": 120,
+          "tensor": "linear_30",
+          "op": "Add",
+          "cosine_min": 0.9724997206349113,
+          "rel_max_abs": 0.26928690806857797
+        },
+        {
+          "index": 121,
+          "tensor": "conv2d_13",
+          "op": "Conv",
+          "cosine_min": 0.9616241836168771,
+          "rel_max_abs": 0.1260878097090028
+        },
+        {
+          "index": 122,
+          "tensor": "layer_norm_21",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9700959411401049,
+          "rel_max_abs": 0.3527380157512016
+        },
+        {
+          "index": 123,
+          "tensor": "val_479",
+          "op": "MatMul",
+          "cosine_min": 0.9658480134527466,
+          "rel_max_abs": 0.3406325947826144
+        },
+        {
+          "index": 124,
+          "tensor": "linear_31",
+          "op": "Add",
+          "cosine_min": 0.9706531876105776,
+          "rel_max_abs": 0.32394517682841734
+        },
+        {
+          "index": 125,
+          "tensor": "val_487",
+          "op": "MatMul",
+          "cosine_min": 0.9695219098484289,
+          "rel_max_abs": 0.27065652487498637
+        },
+        {
+          "index": 126,
+          "tensor": "linear_32",
+          "op": "Add",
+          "cosine_min": 0.9695986848533599,
+          "rel_max_abs": 0.26987872795953793
+        },
+        {
+          "index": 127,
+          "tensor": "val_512",
+          "op": "MatMul",
+          "cosine_min": 0.9301886215779476,
+          "rel_max_abs": 0.3465540814766221
+        },
+        {
+          "index": 128,
+          "tensor": "val_513",
+          "op": "Softmax",
+          "cosine_min": 0.964958628826155,
+          "rel_max_abs": 0.28885725770517123
+        },
+        {
+          "index": 129,
+          "tensor": "scaled_dot_product_attention_5",
+          "op": "MatMul",
+          "cosine_min": 0.9271721361456138,
+          "rel_max_abs": 0.3782990215950477
+        },
+        {
+          "index": 130,
+          "tensor": "val_520",
+          "op": "MatMul",
+          "cosine_min": 0.9576057450300149,
+          "rel_max_abs": 0.4100873371237744
+        },
+        {
+          "index": 131,
+          "tensor": "linear_33",
+          "op": "Add",
+          "cosine_min": 0.9699811092371113,
+          "rel_max_abs": 0.33518493084895506
+        },
+        {
+          "index": 132,
+          "tensor": "add_10",
+          "op": "Add",
+          "cosine_min": 0.9832230596883189,
+          "rel_max_abs": 0.18786528400183947
+        },
+        {
+          "index": 133,
+          "tensor": "layer_norm_22",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9789928975163303,
+          "rel_max_abs": 0.17980497998464967
+        },
+        {
+          "index": 134,
+          "tensor": "val_524",
+          "op": "MatMul",
+          "cosine_min": 0.9865859120705872,
+          "rel_max_abs": 0.21151862698012294
+        },
+        {
+          "index": 135,
+          "tensor": "linear_34",
+          "op": "Add",
+          "cosine_min": 0.9878051460339822,
+          "rel_max_abs": 0.2088479989048052
+        },
+        {
+          "index": 136,
+          "tensor": "conv2d_14",
+          "op": "Conv",
+          "cosine_min": 0.9949602412908853,
+          "rel_max_abs": 0.1119328487503347
+        },
+        {
+          "index": 137,
+          "tensor": "val_537",
+          "op": "MatMul",
+          "cosine_min": 0.9717592076253606,
+          "rel_max_abs": 0.35825972000131334
+        },
+        {
+          "index": 138,
+          "tensor": "linear_35",
+          "op": "Add",
+          "cosine_min": 0.9906475088657466,
+          "rel_max_abs": 0.2416615532263234
+        },
+        {
+          "index": 139,
+          "tensor": "add_11",
+          "op": "Add",
+          "cosine_min": 0.9909696464749463,
+          "rel_max_abs": 0.22830287613685268
+        },
+        {
+          "index": 140,
+          "tensor": "layer_norm_23",
+          "op": "LayerNormalization",
+          "cosine_min": 0.970694380223223,
+          "rel_max_abs": 0.2788662877783927
+        },
+        {
+          "index": 141,
+          "tensor": "conv2d_15",
+          "op": "Conv",
+          "cosine_min": 0.9849918691319363,
+          "rel_max_abs": 0.14978871909061578
+        },
+        {
+          "index": 142,
+          "tensor": "layer_norm_24",
+          "op": "LayerNormalization",
+          "cosine_min": 0.984464261499988,
+          "rel_max_abs": 0.05232660574841855
+        },
+        {
+          "index": 143,
+          "tensor": "layer_norm_25",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9784973036747857,
+          "rel_max_abs": 0.2547855177960695
+        },
+        {
+          "index": 144,
+          "tensor": "val_556",
+          "op": "MatMul",
+          "cosine_min": 0.9802449563810769,
+          "rel_max_abs": 0.25193310603785984
+        },
+        {
+          "index": 145,
+          "tensor": "linear_36",
+          "op": "Add",
+          "cosine_min": 0.9839369913130493,
+          "rel_max_abs": 0.23980826192350804
+        },
+        {
+          "index": 146,
+          "tensor": "val_564",
+          "op": "MatMul",
+          "cosine_min": 0.9826869557323971,
+          "rel_max_abs": 0.24744403567647158
+        },
+        {
+          "index": 147,
+          "tensor": "linear_37",
+          "op": "Add",
+          "cosine_min": 0.9837510889572536,
+          "rel_max_abs": 0.24577730971838518
+        },
+        {
+          "index": 148,
+          "tensor": "val_572",
+          "op": "MatMul",
+          "cosine_min": 0.9802870316239854,
+          "rel_max_abs": 0.2561511782859686
+        },
+        {
+          "index": 149,
+          "tensor": "linear_38",
+          "op": "Add",
+          "cosine_min": 0.9805283014924285,
+          "rel_max_abs": 0.25754967173076865
+        },
+        {
+          "index": 150,
+          "tensor": "val_597",
+          "op": "MatMul",
+          "cosine_min": 0.9807818083995996,
+          "rel_max_abs": 0.2146373778498148
+        },
+        {
+          "index": 151,
+          "tensor": "val_598",
+          "op": "Softmax",
+          "cosine_min": 0.9734902343274939,
+          "rel_max_abs": 0.26863284908586854
+        },
+        {
+          "index": 152,
+          "tensor": "scaled_dot_product_attention_6",
+          "op": "MatMul",
+          "cosine_min": 0.9507673924872824,
+          "rel_max_abs": 0.2903510637163221
+        },
+        {
+          "index": 153,
+          "tensor": "val_605",
+          "op": "MatMul",
+          "cosine_min": 0.9448304150862968,
+          "rel_max_abs": 0.4552867152044328
+        },
+        {
+          "index": 154,
+          "tensor": "linear_39",
+          "op": "Add",
+          "cosine_min": 0.9520596909987016,
+          "rel_max_abs": 0.2960947257032803
+        },
+        {
+          "index": 155,
+          "tensor": "add_12",
+          "op": "Add",
+          "cosine_min": 0.9828415719478472,
+          "rel_max_abs": 0.05849173212483505
+        },
+        {
+          "index": 156,
+          "tensor": "layer_norm_26",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9808528115759951,
+          "rel_max_abs": 0.16902009687737712
+        },
+        {
+          "index": 157,
+          "tensor": "val_609",
+          "op": "MatMul",
+          "cosine_min": 0.9900109468364321,
+          "rel_max_abs": 0.2050845284684269
+        },
+        {
+          "index": 158,
+          "tensor": "linear_40",
+          "op": "Add",
+          "cosine_min": 0.991105470811194,
+          "rel_max_abs": 0.20669252792878806
+        },
+        {
+          "index": 159,
+          "tensor": "conv2d_16",
+          "op": "Conv",
+          "cosine_min": 0.9954808604529719,
+          "rel_max_abs": 0.1319244192137831
+        },
+        {
+          "index": 160,
+          "tensor": "val_622",
+          "op": "MatMul",
+          "cosine_min": 0.9755828009631025,
+          "rel_max_abs": 0.08211701079749384
+        },
+        {
+          "index": 161,
+          "tensor": "linear_41",
+          "op": "Add",
+          "cosine_min": 0.97740036192186,
+          "rel_max_abs": 0.07317386092184801
+        },
+        {
+          "index": 162,
+          "tensor": "add_13",
+          "op": "Add",
+          "cosine_min": 0.9843547016103392,
+          "rel_max_abs": 0.05504280468607593
+        },
+        {
+          "index": 163,
+          "tensor": "layer_norm_27",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9793770974162906,
+          "rel_max_abs": 0.26225144042710785
+        },
+        {
+          "index": 164,
+          "tensor": "val_626",
+          "op": "MatMul",
+          "cosine_min": 0.9862822114497649,
+          "rel_max_abs": 0.24434807826209098
+        },
+        {
+          "index": 165,
+          "tensor": "linear_42",
+          "op": "Add",
+          "cosine_min": 0.988363239832115,
+          "rel_max_abs": 0.23868219425071524
+        },
+        {
+          "index": 166,
+          "tensor": "val_634",
+          "op": "MatMul",
+          "cosine_min": 0.9862565476207455,
+          "rel_max_abs": 0.2495841234801095
+        },
+        {
+          "index": 167,
+          "tensor": "linear_43",
+          "op": "Add",
+          "cosine_min": 0.987106972730132,
+          "rel_max_abs": 0.2517627521457673
+        },
+        {
+          "index": 168,
+          "tensor": "val_642",
+          "op": "MatMul",
+          "cosine_min": 0.9825238899177666,
+          "rel_max_abs": 0.2649291808738826
+        },
+        {
+          "index": 169,
+          "tensor": "linear_44",
+          "op": "Add",
+          "cosine_min": 0.9826844126915747,
+          "rel_max_abs": 0.2664429790580427
+        },
+        {
+          "index": 170,
+          "tensor": "val_667",
+          "op": "MatMul",
+          "cosine_min": 0.9799778379374872,
+          "rel_max_abs": 0.24586997584781656
+        },
+        {
+          "index": 171,
+          "tensor": "val_668",
+          "op": "Softmax",
+          "cosine_min": 0.9830709954093394,
+          "rel_max_abs": 0.3700441595350431
+        },
+        {
+          "index": 172,
+          "tensor": "scaled_dot_product_attention_7",
+          "op": "MatMul",
+          "cosine_min": 0.9469844200508064,
+          "rel_max_abs": 0.3601872102389776
+        },
+        {
+          "index": 173,
+          "tensor": "val_675",
+          "op": "MatMul",
+          "cosine_min": 0.893736308035321,
+          "rel_max_abs": 0.43532066328685715
+        },
+        {
+          "index": 174,
+          "tensor": "linear_45",
+          "op": "Add",
+          "cosine_min": 0.9786618249117912,
+          "rel_max_abs": 0.22915164904000757
+        },
+        {
+          "index": 175,
+          "tensor": "add_14",
+          "op": "Add",
+          "cosine_min": 0.9872294956466238,
+          "rel_max_abs": 0.09380647162139336
+        },
+        {
+          "index": 176,
+          "tensor": "layer_norm_28",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9763120766797784,
+          "rel_max_abs": 0.22205628509558914
+        },
+        {
+          "index": 177,
+          "tensor": "val_679",
+          "op": "MatMul",
+          "cosine_min": 0.9870833842700805,
+          "rel_max_abs": 0.23471865497171163
+        },
+        {
+          "index": 178,
+          "tensor": "linear_46",
+          "op": "Add",
+          "cosine_min": 0.9890582969952795,
+          "rel_max_abs": 0.23281493846480392
+        },
+        {
+          "index": 179,
+          "tensor": "conv2d_17",
+          "op": "Conv",
+          "cosine_min": 0.994916506072586,
+          "rel_max_abs": 0.17633568063119126
+        },
+        {
+          "index": 180,
+          "tensor": "val_692",
+          "op": "MatMul",
+          "cosine_min": 0.9733750699591339,
+          "rel_max_abs": 0.24932500336815583
+        },
+        {
+          "index": 181,
+          "tensor": "linear_47",
+          "op": "Add",
+          "cosine_min": 0.9876972783881872,
+          "rel_max_abs": 0.1759667323488863
+        },
+        {
+          "index": 182,
+          "tensor": "add_15",
+          "op": "Add",
+          "cosine_min": 0.9921244980729426,
+          "rel_max_abs": 0.11342071033958163
+        },
+        {
+          "index": 183,
+          "tensor": "layer_norm_29",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9727196231575366,
+          "rel_max_abs": 0.32992742140722703
+        },
+        {
+          "index": 184,
+          "tensor": "val_707",
+          "op": "MatMul",
+          "cosine_min": 0.9917410710768828,
+          "rel_max_abs": 0.2456958593298369
+        },
+        {
+          "index": 185,
+          "tensor": "linear_48",
+          "op": "Add",
+          "cosine_min": 0.9919240211570308,
+          "rel_max_abs": 0.2478374788210368
+        },
+        {
+          "index": 186,
+          "tensor": "upsample_bilinear2d",
+          "op": "Resize",
+          "cosine_min": 0.9919240211570349,
+          "rel_max_abs": 0.2478374788210368
+        },
+        {
+          "index": 187,
+          "tensor": "val_724",
+          "op": "MatMul",
+          "cosine_min": 0.987904090546436,
+          "rel_max_abs": 0.1704929037401815
+        },
+        {
+          "index": 188,
+          "tensor": "linear_49",
+          "op": "Add",
+          "cosine_min": 0.9879162280158061,
+          "rel_max_abs": 0.16994179195942666
+        },
+        {
+          "index": 189,
+          "tensor": "upsample_bilinear2d_1",
+          "op": "Resize",
+          "cosine_min": 0.988658954715206,
+          "rel_max_abs": 0.15647061211942295
+        },
+        {
+          "index": 190,
+          "tensor": "val_740",
+          "op": "MatMul",
+          "cosine_min": 0.9752087281542138,
+          "rel_max_abs": 0.22904765635742513
+        },
+        {
+          "index": 191,
+          "tensor": "linear_50",
+          "op": "Add",
+          "cosine_min": 0.9751895359848409,
+          "rel_max_abs": 0.230002091330862
+        },
+        {
+          "index": 192,
+          "tensor": "upsample_bilinear2d_2",
+          "op": "Resize",
+          "cosine_min": 0.9798591778594877,
+          "rel_max_abs": 0.2275230398291074
+        },
+        {
+          "index": 193,
+          "tensor": "val_756",
+          "op": "MatMul",
+          "cosine_min": 0.982138252178265,
+          "rel_max_abs": 0.23823214326014377
+        },
+        {
+          "index": 194,
+          "tensor": "linear_51",
+          "op": "Add",
+          "cosine_min": 0.9821514912425705,
+          "rel_max_abs": 0.23793061224414697
+        },
+        {
+          "index": 195,
+          "tensor": "upsample_bilinear2d_3",
+          "op": "Resize",
+          "cosine_min": 0.9842890911311019,
+          "rel_max_abs": 0.23957241923726286
+        },
+        {
+          "index": 196,
+          "tensor": "cat",
+          "op": "Concat",
+          "cosine_min": 0.9842924297889071,
+          "rel_max_abs": 0.23957241923726286
+        },
+        {
+          "index": 197,
+          "tensor": "getitem",
+          "op": "Conv",
+          "cosine_min": 0.9879959798754154,
+          "rel_max_abs": 0.21360609772141753
+        }
+      ]
+    }
+  },
+  "passed": true,
+  "findings": [
+    {
+      "severity": "info",
+      "code": "PARITY_GOLDEN_UNVERIFIED",
+      "message": "no committed hashes checked for /private/tmp/claude-501/-Users-anujmaharjan-work-claude-projects-edgeinfer/bd3900b5-9f9e-47fc-a6e9-74cfb393b99f/scratchpad/run/artifacts/golden/segformer_b0"
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "schema_version": "1",
+  "tool": "quantize",
+  "created_at": "2026-10-15T19:18:51+00:00",
+  "git_sha": "cb60f28345ec22f9d8cd30437ff39e7cea68d024",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "onnxruntime": "1.31.0",
+      "onnx": "1.23.2"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "onnxruntime.quantization",
+  "precision": "int8",
+  "artifact_id": "362a6eac1a05411ea01da12a6fbe3766314d3f50eb766667ac5a085099972e3e",
+  "inputs": {
+    "artifact": "deeplabv3plus_mbv2__fp32__98b5428431cd.onnx",
+    "config": "deeplabv3plus_mbv2",
+    "quant_config": {
+      "name": "int8_entropy",
+      "activation_type": "int8",
+      "weight_type": "int8",
+      "activation_symmetric": true,
+      "weight_symmetric": true,
+      "per_channel": true,
+      "op_types": [
+        "Conv",
+        "MatMul",
+        "Gemm"
+      ],
+      "quantize_outputs": false,
+      "quantize_bias": false,
+      "calibration": {
+        "manifest": "calib_train200",
+        "limit": null,
+        "method": "entropy",
+        "num_bins": 2048,
+        "num_quantized_bins": 128,
+        "percentile": null,
+        "chunk_images": 2
+      }
+    },
+    "exclusions": {
+      "name": "none",
+      "model": "deeplabv3plus_mbv2",
+      "groups": [],
+      "nodes": []
+    },
+    "groups": "deeplabv3plus_mbv2.yaml"
+  },
+  "thresholds": {},
+  "metrics": {
+    "file": "deeplabv3plus_mbv2__int8__362a6eac1a05.onnx",
+    "sha256": "d1a4b98895814c5c1d18edcd84a46af2161a871f5fab96ee7a4f7a82355d6522",
+    "size_bytes": 5676414,
+    "parent_artifact_id": "98b5428431cd9bbe3b80354b251010db60b811b0a081b59afad424b477bfaa4b",
+    "calibration": {
+      "calibration_id": "c93d83c833d2c51bfc70e39ca31f6dac2ead6f79d93ca5434845afe4330a332d",
+      "manifest": "calib_train200",
+      "limit": null,
+      "n_images": 200,
+      "method": "entropy",
+      "options": {
+        "symmetric": true,
+        "num_bins": 2048,
+        "num_quantized_bins": 128
+      }
+    },
+    "calibration_dev": {
+      "seconds": 309.9,
+      "peak_rss_bytes": 2677424128,
+      "n_tensors": 109
+    },
+    "placement": {
+      "quantized_nodes": {
+        "Conv": 60
+      },
+      "excluded_nodes": {},
+      "n_quantize_linear": 56,
+      "n_dequantize_linear": 116
+    },
+    "excluded_nodes": []
+  },
+  "passed": true,
+  "findings": []
+}
