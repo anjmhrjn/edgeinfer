@@ -1,7 +1,23 @@
 # Progress
 
-**Current checkpoint:** C2 — ONNX export, validator, ORT backend, parity (CPU)
-**Next step:** Anuj reviews C2 (D-011..D-014 rationales, teach-back) and signs off; then plan C3 in plan mode.
+**Current checkpoint:** C3 — INT8 quantization and sensitivity analysis on ORT (CPU)
+**Next step:** Spike ORT `quantize_static` settings (QDQ format, bias, chunked calibration memory, int8 kernels vs fake-quant).
+
+## C3 — INT8 quantization and sensitivity analysis on ORT
+Plan agreed 2026-10-15: ORT `quantize_static` (ModelOpt compared in C5), TRT-style Q/DQ placement (inputs of Conv/MatMul/Gemm), medium sensitivity groups from exporter name scopes, sensitivity scored on a seeded 100-image val subset.
+- [ ] Spike: quantizer settings, bias handling, chunked calibration, ORT int8 kernels vs fake-quant
+- [ ] Quant config, group rules, exclusion lists, `budgets.yaml` (accuracy), `sens_val100` / `val_minus_sens100` manifests
+- [ ] `edgeinfer quantize`: chunked calibration cache, content-addressed QDQ ONNX + sidecar, report
+- [ ] Validator Q/DQ checks
+- [ ] INT8 parity tolerances (mIoU gate, other metrics report-only)
+- [ ] Calibration methods (minmax / entropy / percentile) on both models; calibration-size study
+- [ ] `edgeinfer sensitivity`: one-at-a-time, leave-one-out, greedy exclusion suggestion
+- [ ] Exclusion list end to end + config-only faults caught
+- [ ] CI fixture: quantize → validate → eval → parity → sensitivity
+- [ ] Decision records, report codes, results
+- [ ] Teach-back: model answers in `private/teach-back-C3.md`
+- [ ] CI green
+- [ ] Sign-off (Anuj)
 
 ## C2 — ONNX export, validator, ORT backend, parity
 - [x] Python floor 3.11; `onnx`, `onnxruntime`, `onnxscript` added (D-011)
