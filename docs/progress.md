@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C1 — Baseline and eval harness (CPU)
-**Next step:** C1 teach-back and sign-off; then plan C2.
+**Next step:** Anuj signs off C1; then plan C2 in plan mode.
 
 ## C1 — Baseline and eval harness
 - [x] Repo skeleton: uv (Python 3.12), pytest, ruff, pre-commit, GitHub Actions
@@ -12,8 +12,9 @@
 - [x] FP32 eval of both models on all 500 val images (+ full-resolution protocol check)
 - [x] Golden outputs for `golden_val32` with committed SHA-256 hashes; bitwise reproducible across runs
 - [x] Decision records D-001..D-009 (D-003..D-009 rationales drafted by Claude; Anuj to review)
-- [ ] CI green on GitHub (no remote yet)
-- [ ] Teach-back and sign-off
+- [x] CI green on GitHub (run 38761999524, Python 3.10 + 3.12, commit `0d1f538`)
+- [x] Teach-back: model answers in `private/teach-back-C1.md` (live quiz stopped after Q1 at Anuj's request)
+- [ ] Sign-off (Anuj)
 
 ### C1 results — FP32, PyTorch CPU (`torch_ref`), Cityscapes val (500 images)
 All four reports: `artifacts/reports/eval__<model>__torch_ref__eval_val__<H>x<W>__8677951.json` (git `8677951`, clean tree). Scored at full label resolution (D-004).
