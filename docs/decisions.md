@@ -114,6 +114,6 @@ One entry per non-trivial decision. Newest at the bottom.
 1. Commit `artifacts/reports/*.json`; keep golden outputs, ONNX models and engines ignored — numbers traceable from a clone / reports expose the hostname and library versions; repo grows by a few KB per report.
 2. Keep reports local; rely on reruns for reproduction — nothing extra in git / numbers in docs can't be checked without the dataset and hours of compute.
 **Decision:** Option 1. Reports contain metrics only, no Cityscapes images, labels or tensors, so the license allows it.
-**Rationale:** TODO(Anuj)
+**Rationale:** Every number in the docs should be checkable by someone who has only the repo. Reports hold metrics without any Cityscapes data, so committing them is license-safe and costs a few KB; keeping them local would leave the traceability rule unenforceable.
 **Evidence:** —
 **Consequences / revisit if:** Smoke runs (`--limit`) should write outside `artifacts/reports/` (or be deleted) so only reports that back documented numbers get committed. Reports from before this decision lack the `transformers` version in `env`; it's recoverable from `uv.lock` at the report's git SHA.
