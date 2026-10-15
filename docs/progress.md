@@ -1,19 +1,19 @@
 # Progress
 
 **Current checkpoint:** C3 — INT8 quantization and sensitivity analysis on ORT (CPU)
-**Next step:** Spike ORT `quantize_static` settings (QDQ format, bias, chunked calibration memory, int8 kernels vs fake-quant).
+**Next step:** Calibration-method comparison runs (`scripts/c3_runs.sh evals`), then choose the method per model, then sensitivity.
 
 ## C3 — INT8 quantization and sensitivity analysis on ORT
 Plan agreed 2026-10-15: ORT `quantize_static` (ModelOpt compared in C5), TRT-style Q/DQ placement (inputs of Conv/MatMul/Gemm), medium sensitivity groups from exporter name scopes, sensitivity scored on a seeded 100-image val subset.
-- [ ] Spike: quantizer settings, bias handling, chunked calibration, ORT int8 kernels vs fake-quant
-- [ ] Quant config, group rules, exclusion lists, `budgets.yaml` (accuracy), `sens_val100` / `val_minus_sens100` manifests
-- [ ] `edgeinfer quantize`: chunked calibration cache, content-addressed QDQ ONNX + sidecar, report
-- [ ] Validator Q/DQ checks
-- [ ] INT8 parity tolerances (mIoU gate, other metrics report-only)
+- [x] Spike: quantizer settings, bias handling, chunked calibration, ORT int8 kernels vs fake-quant (D-015, D-016)
+- [x] Quant config, group rules, exclusion lists, `budgets.yaml` (accuracy), `sens_val100` / `val_minus_sens100` manifests
+- [x] `edgeinfer quantize`: chunked calibration cache, content-addressed QDQ ONNX + sidecar, placement check, report
+- [x] Validator Q/DQ checks
+- [x] INT8 parity tolerances (mIoU gate, other metrics report-only; D-018)
 - [ ] Calibration methods (minmax / entropy / percentile) on both models; calibration-size study
-- [ ] `edgeinfer sensitivity`: one-at-a-time, leave-one-out, greedy exclusion suggestion
+- [x] `edgeinfer sensitivity`: one-at-a-time, leave-one-out, noise floor, greedy exclusion suggestion
 - [ ] Exclusion list end to end + config-only faults caught
-- [ ] CI fixture: quantize → validate → eval → parity → sensitivity
+- [x] CI fixture: quantize → validate → eval → parity → sensitivity, plus config-only faults
 - [ ] Decision records, report codes, results
 - [ ] Teach-back: model answers in `private/teach-back-C3.md`
 - [ ] CI green
