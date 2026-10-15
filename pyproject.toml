@@ -3,10 +3,13 @@ name = "edgeinfer"
 version = "0.1.0"
 description = "Validate, profile and gate PyTorch segmentation models on their way to TensorRT."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 dependencies = [
     "jsonschema>=4.26.0",
     "numpy>=2.2.6",
+    "onnx>=1.23.2",
+    "onnxruntime>=1.31.0",
+    "onnxscript>=0.7.2",
     "pillow>=12.3.0",
     "pyyaml>=6.0.3",
     "torch>=2.14.1",
@@ -29,7 +32,7 @@ dev = [
 
 [tool.ruff]
 line-length = 100
-target-version = "py310"
+target-version = "py311"
 extend-exclude = ["src/edgeinfer/models/third_party"]
 
 [tool.ruff.format]

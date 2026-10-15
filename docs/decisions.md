@@ -72,7 +72,7 @@ One entry per non-trivial decision. Newest at the bottom.
 **Options:**
 1. Pin 3.12 via `uv python pin` — matches recent NGC containers / not the newest.
 2. Use 3.14 — newest / risk of missing wheels and behavior differences from the container.
-**Decision:** Option 1. `requires-python >= 3.10` stays; CI tests 3.10 and 3.12.
+**Decision:** Option 1. `requires-python >= 3.10` stays; CI tests 3.10 and 3.12. (Floor raised to 3.11 in D-011.)
 **Rationale:** 3.12 matches what recent NGC containers ship, so code tested on the Mac behaves the same on the GPU instance. 3.14 is too new to count on wheels for every library we'll need (ONNX, ORT, TensorRT bindings).
 **Evidence:** —
 **Consequences / revisit if:** Revisit when the C4 container's Python version is known.
@@ -117,3 +117,14 @@ One entry per non-trivial decision. Newest at the bottom.
 **Rationale:** Every number in the docs should be checkable by someone who has only the repo. Reports hold metrics without any Cityscapes data, so committing them is license-safe and costs a few KB; keeping them local would leave the traceability rule unenforceable.
 **Evidence:** —
 **Consequences / revisit if:** Smoke runs (`--limit`) should write outside `artifacts/reports/` (or be deleted) so only reports that back documented numbers get committed. Reports from before this decision lack the `transformers` version in `env`; it's recoverable from `uv.lock` at the report's git SHA.
+
+## D-011: Raise the Python floor to 3.11  (C2, 2026-10-15)
+**Context:** C2 adds onnxruntime. Releases from 1.25 on publish wheels for Python ≥ 3.11 only; 1.23.2 is the newest with 3.10 wheels (checked on PyPI 2026-10-15). CI tested 3.10 and 3.12, and Python 3.10 reaches end-of-life in October 2026.
+**Options:**
+1. Raise `requires-python` to ≥ 3.11; CI tests 3.11 and 3.12 — one onnxruntime version (1.31) everywhere / drops a Python version nobody on this project uses.
+2. Keep 3.10 with environment markers: onnxruntime 1.31 on ≥ 3.11, 1.23.2 on 3.10 — keeps the floor / CI would run two ORT versions whose numerics can differ, so parity tolerances would have to cover both.
+3. Pin onnxruntime 1.23.2 everywhere — one version, keeps 3.10 / about a year older, and C3 quantization would build on older ORT tooling.
+**Decision:** Option 1.
+**Rationale:** The 3.10 floor was a default, not a requirement: the Mac runs 3.12 (D-006) and NGC containers ship 3.12. Keeping it would mean either two onnxruntime versions in CI, which muddies parity, or an old onnxruntime for the whole project, all for a Python version that goes end-of-life this month.
+**Evidence:** PyPI metadata: onnxruntime 1.23.2 `requires_python >=3.10`, 1.25.0–1.31.0 `>=3.11`.
+**Consequences / revisit if:** Ruff targets py311. Revisit if the C4 NGC container ships Python < 3.11 (unlikely).

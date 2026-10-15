@@ -45,7 +45,7 @@ Toolkit and experiments for taking PyTorch perception models to TensorRT under r
   - Prepare and test on the Mac first; GPU sessions are for running, not writing code.
   - **Stop the instance at the end of every GPU session** (`scripts/gpu-down.sh`). Don't create other billable AWS resources without asking.
 - **Toolchain:** pinned in C4 to the latest TensorRT supporting sm_75. Versions recorded in `docs/decisions.md` and in every report's `env` block.
-- **Python:** ≥ 3.10 (must run on both the Mac and the container).
+- **Python:** ≥ 3.11 (D-011; must run on both the Mac and the container).
 - **Data:** Cityscapes. The license prohibits redistribution: never commit images, labels or derived tensors (golden outputs, calibration caches), and never upload them anywhere public. Data lives at `$CITYSCAPES_ROOT` on the Mac and `/data/cityscapes` on the instance. Only manifests (image IDs) are committed:
   - `data/manifests/eval_val.txt` — full val split (500 images)
   - `data/manifests/calib_train200.txt` — 200 seeded train images; never calibrate on val

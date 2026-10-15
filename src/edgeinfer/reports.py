@@ -10,7 +10,7 @@ import json
 import platform
 import socket
 import subprocess
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from importlib import metadata
 from pathlib import Path
 from typing import Any
@@ -106,7 +106,7 @@ def make_report(
     report = {
         "schema_version": SCHEMA_VERSION,
         "tool": tool,
-        "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "created_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "git_sha": sha,
         "git_dirty": dirty,
         "env": env,
