@@ -173,5 +173,19 @@ def test_tolerances_are_strict(tmp_path):
     path.write_text("fp32:\n  logits_max_abs: 1.0\n")
     with pytest.raises(ValueError, match="expected keys"):
         load_tolerances("fp32", path)
-    with pytest.raises(KeyError, match="int8"):
-        load_tolerances("int8", parity.TOLERANCES_PATH)
+    with pytest.raises(KeyError, match="fp16"):
+        load_tolerances("fp16", parity.TOLERANCES_PATH)
+
+
+def test_int8_reports_drift_without_gating_it(golden_setup, tmp_path):
+    _, entries, golden_dir = golden_setup
+    cand_dir = tmp_path / "cand"
+    cand_dir.mkdir()
+    for e in entries:
+        with np.load(golden_dir / f"{e.image_id}.npz") as z:
+            np.savez(cand_dir / f"{e.image_id}.npz", logits=z["logits"] + 0.5)
+    tol = load_tolerances("int8")
+    assert tol.logits_max_abs is None and tol.miou_delta_max == 1.0
+    metrics, findings, _ = run_parity(CFG, entries, golden_dir, tol, "npz", npz_dir=cand_dir)
+    assert metrics["logits_max_abs"] == pytest.approx(0.5, rel=1e-5)  # still reported
+    assert not any(f["severity"] == "error" for f in findings)

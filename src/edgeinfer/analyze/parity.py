@@ -42,13 +42,15 @@ Finding = dict[str, str]
 
 @dataclass(frozen=True)
 class Tolerances:
-    input_max_abs: float  # preprocessed input vs golden input (images mode)
-    logits_max_abs: float
-    logits_cosine_min: float
-    argmax_agreement_min: float  # fraction of stride-4 pixels with the same class
-    miou_delta_max: float  # |candidate - reference| in mIoU points, on the golden images
-    layer_cosine_min: float
-    layer_rel_max_abs: float  # max|a-b| / max|ref| per tensor
+    """None = reported but not gated (e.g. elementwise drift under INT8, D-018)."""
+
+    input_max_abs: float | None  # preprocessed input vs golden input (images mode)
+    logits_max_abs: float | None
+    logits_cosine_min: float | None
+    argmax_agreement_min: float | None  # fraction of stride-4 pixels with the same class
+    miou_delta_max: float | None  # |candidate - reference| in mIoU points, golden images
+    layer_cosine_min: float | None
+    layer_rel_max_abs: float | None  # max|a-b| / max|ref| per tensor
 
 
 def load_tolerances(precision: str, path: Path = TOLERANCES_PATH) -> Tolerances:
@@ -61,7 +63,7 @@ def load_tolerances(precision: str, path: Path = TOLERANCES_PATH) -> Tolerances:
         raise ValueError(
             f"{path.name}[{precision}]: expected keys {sorted(names)}, got {sorted(d)}"
         )
-    return Tolerances(**{k: float(v) for k, v in d.items()})
+    return Tolerances(**{k: None if v is None else float(v) for k, v in d.items()})
 
 
 def _f(severity: str, code: str, message: str, where: str = "") -> Finding:
@@ -173,7 +175,7 @@ def run_parity(
             else:
                 in_diff = float(np.abs(x.astype(np.float64) - gx).max())
             row["input_max_abs"] = None if math.isinf(in_diff) else in_diff
-            if in_diff > tol.input_max_abs:
+            if tol.input_max_abs is not None and in_diff > tol.input_max_abs:
                 why = (f"shape {x.shape} vs golden {gx.shape}" if math.isinf(in_diff)
                        else diagnose_input(x, gx))  # fmt: skip
                 input_bad.append((entry.image_id, in_diff, why))
@@ -243,17 +245,17 @@ def run_parity(
             f"candidate logits contain NaN/Inf on {len(nonfinite)}/{len(per_image)} images "
             f"({nonfinite[0]['nonfinite']} values on the first)", nonfinite[0]["image_id"],
         ))  # fmt: skip
-    if max_abs is not None and max_abs > tol.logits_max_abs:
+    if None not in (max_abs, tol.logits_max_abs) and max_abs > tol.logits_max_abs:
         findings.append(_f(
             "error", "PARITY_OUTPUT_DRIFT",
             f"logits max abs error {max_abs:.4g} > {tol.logits_max_abs:g}", max_abs_at,
         ))  # fmt: skip
-    if cos_min is not None and cos_min < tol.logits_cosine_min:
+    if None not in (cos_min, tol.logits_cosine_min) and cos_min < tol.logits_cosine_min:
         findings.append(_f(
             "error", "PARITY_OUTPUT_DRIFT",
             f"logits cosine similarity {cos_min:.8f} < {tol.logits_cosine_min}", cos_at,
         ))  # fmt: skip
-    if agree_min is not None and agree_min < tol.argmax_agreement_min:
+    if None not in (agree_min, tol.argmax_agreement_min) and (agree_min < tol.argmax_agreement_min):
         findings.append(_f(
             "error", "PARITY_ARGMAX_DISAGREEMENT",
             f"argmax agreement {agree_min:.6f} < {tol.argmax_agreement_min} "
@@ -270,7 +272,7 @@ def run_parity(
             "miou_candidate": miou_cand,
             "miou_delta_points": delta,
         })  # fmt: skip
-        if abs(delta) > tol.miou_delta_max:
+        if tol.miou_delta_max is not None and abs(delta) > tol.miou_delta_max:
             findings.append(_f(
                 "error", "PARITY_MIOU_DELTA",
                 f"mIoU on {len(per_image)} golden images changed by {delta:+.3f} points "
@@ -320,8 +322,11 @@ def run_layer_parity(
             row["rel_max_abs"] = None  # JSON has no inf; means reference was all zeros
 
     def over(row: dict[str, Any]) -> bool:
-        return (row["cosine_min"] < tol.layer_cosine_min or row["rel_max_abs"] is None
-                or row["rel_max_abs"] > tol.layer_rel_max_abs)  # fmt: skip
+        if tol.layer_cosine_min is not None and row["cosine_min"] < tol.layer_cosine_min:
+            return True
+        if tol.layer_rel_max_abs is None:
+            return False
+        return row["rel_max_abs"] is None or row["rel_max_abs"] > tol.layer_rel_max_abs
 
     failing = [r for r in rows if over(r)]
     worst = sorted(rows, key=lambda r: r["cosine_min"])[:TOP_K]

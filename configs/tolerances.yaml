@@ -10,3 +10,15 @@ fp32:
   miou_delta_max: 0.001          # points on the golden images; worst observed 2e-5
   layer_cosine_min: 0.99999999   # worst observed per-layer 1-cos 2.4e-11
   layer_rel_max_abs: 2.0e-4      # worst observed per-layer 1.5e-5
+# int8 (D-018): INT8 changes the logits by design, and its error has no FP32-style noise
+# floor to scale from, so elementwise and per-layer drift are reported, not gated (null).
+# The gate is accuracy: the budget's 1.0 mIoU point, here on the golden images as a proxy
+# (the budget itself is checked on full val). Preprocessing is unchanged from FP32.
+int8:
+  input_max_abs: 1.0e-5
+  logits_max_abs: null
+  logits_cosine_min: null
+  argmax_agreement_min: null
+  miou_delta_max: 1.0
+  layer_cosine_min: null
+  layer_rel_max_abs: null
