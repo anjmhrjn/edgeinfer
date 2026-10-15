@@ -128,3 +128,16 @@ One entry per non-trivial decision. Newest at the bottom.
 **Rationale:** The 3.10 floor was a default, not a requirement: the Mac runs 3.12 (D-006) and NGC containers ship 3.12. Keeping it would mean either two onnxruntime versions in CI, which muddies parity, or an old onnxruntime for the whole project, all for a Python version that goes end-of-life this month.
 **Evidence:** PyPI metadata: onnxruntime 1.23.2 `requires_python >=3.10`, 1.25.0–1.31.0 `>=3.11`.
 **Consequences / revisit if:** Ruff targets py311. Revisit if the C4 NGC container ships Python < 3.11 (unlikely).
+
+## D-013: ONNX export — dynamo exporter, opset 20, static shape, single file  (C2, 2026-10-15)
+**Context:** Both models must go PyTorch → ONNX for ORT now and TensorRT in C4. Exporter, opset, shape mode and file layout all affect what the TensorRT parser accepts and whether the artifact is reproducible.
+**Options:**
+1. `torch.onnx.export(dynamo=True)` (the default since torch 2.9) — traces with `torch.export`, emits through onnxscript, runs the onnxscript optimizer (constant folding, BatchNorm folding) / needs the `onnxscript` dependency.
+2. Legacy TorchScript exporter (`dynamo=False`) — long track record / many of its options are deprecated in torch 2.14; the fallback if 1 fails.
+3. Hugging Face Optimum — knows HF architectures / heavy dependency, only covers SegFormer, and our wrappers already return plain tensors.
+Opset: pin 20 (torch 2.14's `ONNX_DEFAULT_OPSET`; ≥ 17 gives native `LayerNormalization`, 20 gives native `Gelu`; the TensorRT 11.4 ONNX parser supports opsets 9–24) vs leave unpinned (would change silently with torch upgrades).
+Shapes: static 1×3×512×1024 vs dynamic batch/size.
+**Decision:** Option 1, opset 20 pinned, static shape, weights inside the file (`external_data=False`). Input `input`, output `logits`. The exporter's `pkg.torch.onnx.stack_trace` node metadata is stripped.
+**Rationale:** The dynamo exporter is PyTorch's supported path and exported both models on the first try, so the fallback wasn't needed. Pinning the opset means the graph changes only when we decide it should, and 20 is inside what both ORT and the TensorRT parser accept. Static shapes match a fixed camera resolution and let TensorRT optimize for exactly one shape. Both files are under 25 MB, so splitting weights out would only add a second file to track. The stack-trace metadata held absolute paths of the local checkout: it leaked the path, and it made the file bytes depend on where the repo lives, which breaks content addressing.
+**Evidence:** Export reports `export__<model>__<sha>.json`: ORT vs torch on a seeded random input, max abs error 2.2e-5 (DeepLabV3+, max |logit| 9.7) and 1.8e-5 (SegFormer, 15.0). Re-exporting gives byte-identical files for both models. DeepLabV3+: 117 nodes (BatchNorm folded into Conv, ReLU6 as `Clip`); SegFormer-B0: 400 nodes, including 30 `LayerNormalization` and 8 `Gelu`.
+**Consequences / revisit if:** Adds `onnx`, `onnxscript` (alternative: Optimum, rejected above). The I/O contract (input spec, preprocessing, postprocessing) is embedded in the ONNX metadata, so the validator can catch a config that doesn't match the model. Revisit the opset if the C4-pinned TensorRT parser rejects any op at opset 20, and static shapes if a second resolution is ever needed.

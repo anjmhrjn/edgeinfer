@@ -127,6 +127,50 @@ def cmd_golden(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_export(args: argparse.Namespace) -> int:
+    import platform
+    from collections import Counter
+
+    import onnx
+
+    from edgeinfer.config import load_model_config
+    from edgeinfer.export.onnx_export import ONNX_DIR, export_model
+    from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
+
+    cfg = load_model_config(args.model)
+    sha, dirty = git_state()
+    if dirty:
+        print("warning: uncommitted changes; this report must not back any published number")
+    out_root = Path(args.out) if args.out else ONNX_DIR
+    path, meta = export_model(cfg, out_root, force=args.force)
+    ops = Counter(n.op_type for n in onnx.load(str(path)).graph.node)
+    report = make_report(
+        tool="export",
+        model=cfg.name,
+        backend_meta={
+            "backend": "onnx",
+            "precision": "fp32",
+            "device": f"cpu ({platform.machine()})",
+            "artifact_id": meta["artifact_id"],
+            "versions": meta["versions"],
+        },
+        inputs={"weights_id": meta["weights_id"], "export": meta["export"]},
+        metrics={
+            "file": meta["file"],
+            "sha256": meta["sha256"],
+            "size_bytes": meta["size_bytes"],
+            "n_nodes": sum(ops.values()),
+            "op_counts": dict(sorted(ops.items())),
+            "sanity_max_abs": meta["sanity_max_abs"],
+            "sanity_max_abs_ref": meta["sanity_max_abs_ref"],
+        },
+    )
+    report_dir = Path(args.report_dir) if args.report_dir else REPORTS_DIR
+    out = write_report(report, report_dir / f"export__{cfg.name}__{sha[:7]}.json")
+    print(f"{path} ({meta['size_bytes'] / 1e6:.1f} MB, {sum(ops.values())} nodes) -> {out}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="edgeinfer")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -156,6 +200,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--hashes", help="hash file (default: data/golden_hashes/<model>.sha256)")
     p.add_argument("--force", action="store_true", help="overwrite differing committed hashes")
     p.set_defaults(func=cmd_golden)
+
+    p = sub.add_parser("export", help="PyTorch -> ONNX (FP32, static shape); writes a report")
+    p.add_argument("--model", required=True, help="config name or path")
+    p.add_argument("--out", help="artifact root (default: artifacts/onnx)")
+    p.add_argument("--report-dir", help="report directory (default: artifacts/reports)")
+    p.add_argument("--force", action="store_true", help="re-export even if the artifact exists")
+    p.set_defaults(func=cmd_export)
 
     return parser
 
