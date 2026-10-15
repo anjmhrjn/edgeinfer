@@ -13,7 +13,7 @@
 - [x] Deliberate break (RGB→BGR) caught by validator and parity on both models
 - [x] CI fixture pipeline (export → validate → ORT eval → golden → parity → breaks) in the CI subset
 - [x] Teach-back: model answers in `private/teach-back-C2.md`
-- [ ] CI green on GitHub (3.11 + 3.12)
+- [x] CI green on GitHub (run 38769664648, Python 3.11 + 3.12, commit `30ad2e9`)
 - [ ] Sign-off (Anuj)
 
 ### C2 results — ORT CPU FP32 vs PyTorch FP32
