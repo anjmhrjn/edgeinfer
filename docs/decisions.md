@@ -129,6 +129,16 @@ One entry per non-trivial decision. Newest at the bottom.
 **Evidence:** PyPI metadata: onnxruntime 1.23.2 `requires_python >=3.10`, 1.25.0–1.31.0 `>=3.11`.
 **Consequences / revisit if:** Ruff targets py311. Revisit if the C4 NGC container ships Python < 3.11 (unlikely).
 
+## D-012: Per-layer reference is ORT FP32 on the FP32 ONNX model  (C2, 2026-10-15)
+**Context:** Per-layer parity compares intermediate tensors of a candidate (ORT INT8 in C3, TensorRT debug engines in C4–C5) against a reference, keyed by ONNX tensor names. PyTorch modules don't have ONNX names.
+**Options:**
+1. ORT FP32 running the FP32 ONNX file — the same graph, so tensor names match exactly with no mapping / doesn't localize bugs introduced by the export itself.
+2. `torch_ref` with forward hooks, mapped to ONNX tensors through the dynamo exporter's `pkg.torch.onnx.name_scopes` node metadata — can localize export bugs / covers module boundaries only (not functional ops inside Hugging Face `forward()`), and the metadata format is exporter-version specific.
+**Decision:** Option 1. `TorchRefBackend.layer_outputs` raises an error that names this decision.
+**Rationale:** Whole-model parity (torch vs ORT, on every golden image) already checks the export. What the later checkpoints need from per-layer mode is to compare different executions of the same graph, and for that, a reference built from the same graph gets the names right by construction. The torch mapping would be the most fragile code in the analyzer, and it would only be worth it if an export bug showed up that whole-model parity couldn't explain.
+**Evidence:** —
+**Consequences / revisit if:** The per-layer reference inherits any ORT FP32 deviation from torch, which is bounded by whole-model parity. Revisit if an export bug needs per-layer localization (option 2 is in `docs/ideas.md`).
+
 ## D-013: ONNX export — dynamo exporter, opset 20, static shape, single file  (C2, 2026-10-15)
 **Context:** Both models must go PyTorch → ONNX for ORT now and TensorRT in C4. Exporter, opset, shape mode and file layout all affect what the TensorRT parser accepts and whether the artifact is reproducible.
 **Options:**
