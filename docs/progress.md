@@ -14,7 +14,7 @@
 - [x] CI fixture pipeline (export → validate → ORT eval → golden → parity → breaks) in the CI subset
 - [x] Teach-back: model answers in `private/teach-back-C2.md`
 - [x] CI green on GitHub (run 38769664648, Python 3.11 + 3.12, commit `30ad2e9`)
-- [ ] Sign-off (Anuj)
+- [x] Sign-off (Anuj)
 
 ### C2 results — ORT CPU FP32 vs PyTorch FP32
 **Export and validation** (`export__<model>__ad46490.json`, `validate__<model>__71edac0.json`): both models export without the fallback and pass the validator with 0 errors and 0 warnings.
@@ -37,7 +37,7 @@
 
 **Tolerance evidence** (`tolerance_study__<model>__71edac0.json`): ORT with graph optimizations off or one thread stays within 6.5e-5 of golden; per-layer drift between ORT optimization levels ≤ 1.5e-5 relative; near-tie pixels ≤ 4.3e-4 per image.
 
-**Sign-off:** _pending_
+**Sign-off:** Anuj, 2026-10-15
 
 ## C1 — Baseline and eval harness
 - [x] Repo skeleton: uv (Python 3.12), pytest, ruff, pre-commit, GitHub Actions
