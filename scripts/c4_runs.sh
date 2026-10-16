@@ -120,10 +120,12 @@ case "$phase" in
         done
         ;;
     parity)
+        # Each engine against its precision's tolerance set (fp32: D-014, fp16: D-030).
         for m in "${MODELS[@]}"; do
-            run run "edgeinfer parity --model $m --backend trt --artifact $(engine "$m" fp32) --inputs golden"
+            for p in fp32 fp16; do
+                run run "edgeinfer parity --model $m --backend trt --artifact $(engine "$m" "$p") --inputs golden"
+            done
         done
-        # FP16 parity needs FP16 tolerances, set in C4b from these measurements (D-024).
         ;;
     eval)
         # The default report name has no precision, so FP32 and FP16 would collide.
