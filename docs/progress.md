@@ -1,7 +1,22 @@
 # Progress
 
-**Current checkpoint:** C3 — INT8 quantization and sensitivity analysis on ORT (CPU)
-**Next step:** Anuj's sign-off of C3, then plan C4.
+**Current checkpoint:** C4 — GPU environment, TensorRT FP32/FP16, performance probe
+**Next step:** C4a step 1 — AWS CLI access on the Mac (Anuj), then pin the toolchain (D-020).
+
+## C4 — GPU environment, TensorRT FP32/FP16, performance probe
+The GPU quota request (2026-10-14) is still pending, so C4 is split. **C4a** prepares everything that can be written and tested on the Mac; **C4b** runs it on the T4. The roadmap's C4 exit criteria are met in C4b. Plan agreed 2026-10-16: NGC TensorRT container, `cuda-python` for device buffers and timing, an optional `TimedBackend` protocol for per-stage times, SSH limited to the current IP.
+
+C4a (Mac):
+- [ ] AWS CLI access; quota status checked; budget alert, security group and key pair (with Anuj's approval)
+- [ ] Toolchain pinned (D-020), `docker/Dockerfile.trt`, `supported_ops.yaml` re-seeded for the pinned version
+- [ ] `scripts/gpu-{up,down,status}.sh`, `scripts/remote.sh`
+- [ ] Performance probe and `edgeinfer perf` (dev runs on `ort_cpu` only)
+- [ ] `trt` backend and `edgeinfer build`: builder settings, engine metadata sidecar, mismatch refusal, debug engine
+- [ ] Report codes and decision records
+- [ ] `scripts/c4_runs.sh` (smoke, ops, build, perf, trtexec, parity, nsys)
+- [ ] CI green
+
+C4b (T4): the `c4_runs.sh` phases, Nsight Systems summary, finalized budgets, teach-back, sign-off.
 
 ## C3 — INT8 quantization and sensitivity analysis on ORT
 Plan agreed 2026-10-15: ORT `quantize_static` (ModelOpt compared in C5), TRT-style Q/DQ placement (inputs of Conv/MatMul/Gemm), medium sensitivity groups from exporter name scopes, sensitivity scored on a seeded 100-image val subset.
@@ -17,7 +32,7 @@ Plan agreed 2026-10-15: ORT `quantize_static` (ModelOpt compared in C5), TRT-sty
 - [x] Decision records (D-015..D-019), report codes and CLI exit codes, results
 - [x] Teach-back: model answers in `private/teach-back-C3.md`
 - [x] CI green on GitHub (run 38843730928, Python 3.11 + 3.12, commit `c4b5dc6`)
-- [ ] Sign-off (Anuj)
+- [x] Sign-off (Anuj)
 
 ### C3 results — INT8 PTQ on ORT CPU (arm64), Cityscapes val, 512×1024
 All runs come from `scripts/c3_runs.sh` on a clean checkout; each report records its git SHA. "Change" is INT8 minus ORT FP32 mIoU on the same images, in points. FP32 references: full val `eval__<model>__ort_cpu__eval_val__512x1024__e264b0b.json`; subsets `eval__<model>__ort_cpu__{sens_val100,val_minus_sens100}__512x1024__cb60f28.json`. These are ORT CPU results; TensorRT INT8 is measured in C5.
@@ -47,6 +62,8 @@ Both are within the provisional 1.0-point budget on full val and on the 400 held
 **Found and fixed during the runs:** ORT routes excluded readers of a quantized activation through the shared Q/DQ, so an excluded layer could silently run on quantized values. The placement check stopped the run, and a post-pass now keeps them in float (D-016). A crashing CLI command exited 1, the code for a failed check, so a crash could read as a gate result; crashes now exit 3 (`docs/report-codes.md`).
 
 **Execution noise:** rescoring full INT8 with 1 thread instead of 4 changed SegFormer's subset mIoU by 0.028 points and DeepLab's by 0.000. Group effects below about 0.15 points aren't meaningful (D-017).
+
+**Sign-off:** Anuj, 2026-10-16
 
 ## C2 — ONNX export, validator, ORT backend, parity
 - [x] Python floor 3.11; `onnx`, `onnxruntime`, `onnxscript` added (D-011)
