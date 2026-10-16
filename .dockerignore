@@ -1,0 +1,6 @@
+# The image only needs the dependency files and the entrypoint; the repo is mounted at run time.
+*
+!pyproject.toml
+!uv.lock
+!.python-version
+!docker/entrypoint.sh

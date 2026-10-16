@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# Run work on the GPU instance (D-023). The instance must be running (scripts/gpu-up.sh).
+#
+#   remote.sh run "<cmd>"            sync the repo, build the image if its inputs changed,
+#                                    run <cmd> in the TensorRT container, pull reports back
+#   remote.sh host "<cmd>"           run <cmd> on the instance itself (nvidia-smi, df -h, ...)
+#   remote.sh push-data              copy the Cityscapes val split to $GPU_DATA_DIR
+#   remote.sh push-artifacts <dir>.. copy artifacts/<...> directories (ONNX models, golden outputs)
+#   remote.sh pull-reports           copy artifacts/reports/ back to the Mac
+#
+# Cityscapes data goes only to this private instance, never anywhere public (license).
+set -euo pipefail
+source "$(dirname "$0")/gpu-config.sh"
+
+usage() { sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+[ $# -ge 1 ] || usage
+action=$1
+shift
+
+host=$(ssh_host)
+remote="$host:$GPU_REMOTE_DIR"
+RSYNC=(rsync -rlptz -e "ssh ${SSH_OPTS[*]}")
+
+remote_sh() {  # run a command string on the instance
+    ssh "${SSH_OPTS[@]}" "$host" "$1"
+}
+
+sync_code() {
+    "${RSYNC[@]}" --delete --exclude-from "$REPO_ROOT/scripts/rsync-excludes.txt" \
+        "$REPO_ROOT/" "$remote/"
+}
+
+pull_reports() {
+    "${RSYNC[@]}" "$remote/artifacts/reports/" "$REPO_ROOT/artifacts/reports/"
+}
+
+case "$action" in
+    run)
+        [ $# -eq 1 ] || usage
+        sync_code
+        # The image tag is a hash of everything the image is built from, so a changed
+        # uv.lock or Dockerfile triggers a rebuild and an unchanged one reuses the image.
+        tty=""
+        [ -t 1 ] && tty="-t"
+        remote_sh "set -euo pipefail
+cd ~/$GPU_REMOTE_DIR
+mkdir -p artifacts/reports
+tag=\$(cat docker/Dockerfile.trt docker/entrypoint.sh pyproject.toml uv.lock .python-version | sha256sum | cut -c1-12)
+if ! sudo docker image inspect edgeinfer-trt:\$tag >/dev/null 2>&1; then
+    echo \"building edgeinfer-trt:\$tag ...\"
+    sudo docker build -f docker/Dockerfile.trt -t edgeinfer-trt:\$tag .
+fi
+sudo docker run --rm $tty --gpus all --hostname $GPU_NAME \\
+    --user \$(id -u):\$(id -g) -e HOME=/tmp \\
+    -v \$HOME/$GPU_REMOTE_DIR:/workspace/edgeinfer -v /data:/data:ro \\
+    -e CITYSCAPES_ROOT=$GPU_DATA_DIR \\
+    edgeinfer-trt:\$tag bash -c $(printf '%q' "$1")"
+        pull_reports
+        ;;
+    host)
+        [ $# -eq 1 ] || usage
+        remote_sh "$1"
+        ;;
+    push-data)
+        root=${CITYSCAPES_ROOT:?set CITYSCAPES_ROOT to the local Cityscapes directory}
+        remote_sh "mkdir -p $GPU_DATA_DIR"
+        # val images and their labelIds only: everything the eval and golden manifests read.
+        "${RSYNC[@]}" --include '*/' --include '*_leftImg8bit.png' --exclude '*' \
+            "$root/leftImg8bit/val/" "$host:$GPU_DATA_DIR/leftImg8bit/val/"
+        "${RSYNC[@]}" --include '*/' --include '*_gtFine_labelIds.png' --exclude '*' \
+            "$root/gtFine/val/" "$host:$GPU_DATA_DIR/gtFine/val/"
+        ;;
+    push-artifacts)
+        [ $# -ge 1 ] || usage
+        for dir in "$@"; do
+            dir=${dir%/}
+            case "$dir" in
+                artifacts/reports | artifacts/engines) die "$dir is written on the instance, not pushed" ;;
+                artifacts/?*) ;;
+                *) die "push-artifacts takes directories under artifacts/, got $dir" ;;
+            esac
+            [ -d "$REPO_ROOT/$dir" ] || die "no such directory: $dir"
+            remote_sh "mkdir -p $GPU_REMOTE_DIR/$dir"
+            "${RSYNC[@]}" "$REPO_ROOT/$dir/" "$remote/$dir/"
+        done
+        ;;
+    pull-reports)
+        pull_reports
+        ;;
+    *) usage ;;
+esac

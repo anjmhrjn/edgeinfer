@@ -16,8 +16,14 @@ ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
     UV_PYTHON_DOWNLOADS=never \
     UV_LINK_MODE=copy \
     UV_FROZEN=1 \
+    UV_CACHE_DIR=/tmp/uv-cache \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH=/opt/venv/bin:/workspace/tensorrt/bin:$PATH
+
+# Reports record the git SHA, so git must be present.
+RUN command -v git >/dev/null \
+    || (apt-get update && apt-get install -y --no-install-recommends git \
+        && rm -rf /var/lib/apt/lists/*)
 
 RUN uv venv --system-site-packages /opt/venv
 
@@ -25,6 +31,9 @@ RUN uv venv --system-site-packages /opt/venv
 WORKDIR /workspace/edgeinfer
 COPY pyproject.toml uv.lock .python-version ./
 RUN uv sync --no-default-groups --group gpu --no-install-project
+# remote.sh runs the container as the instance's login user, so files written into the
+# mounted repo belong to that user; the entrypoint installs the project into this venv.
+RUN chmod -R a+rwX /opt/venv
 
 COPY docker/entrypoint.sh /usr/local/bin/edgeinfer-entrypoint
 ENTRYPOINT ["/usr/local/bin/edgeinfer-entrypoint"]
