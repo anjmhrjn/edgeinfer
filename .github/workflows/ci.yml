@@ -20,4 +20,4 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       # GPU, dataset and checkpoint tests run manually, never in CI.
-      - run: uv run pytest -m "not gpu and not data and not weights"
+      - run: uv run pytest -m "not gpu and not data and not weights and not modelopt"

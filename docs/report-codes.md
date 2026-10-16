@@ -29,10 +29,10 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 | `VALIDATE_QDQ_DTYPE` | validate | error | A Quantize/DequantizeLinear uses a type other than signed INT8 (e.g. UINT8, or the ONNX default UINT8 when no zero point is given). TensorRT explicit quantization needs signed INT8 (D-016). `where` is the first such node. |
 | `VALIDATE_QDQ_BIAS` | validate | warn | A Conv/Gemm bias goes through an INT32 DequantizeLinear. Our TensorRT format keeps bias in float (D-016). |
 | `VALIDATE_QDQ_WEIGHT_PER_TENSOR` | validate | warn | A Conv/MatMul/Gemm weight is quantized with one scale for the whole tensor instead of per output channel. |
-| `QUANT_CALIB_ON_EVAL_SPLIT` | quantize | error | The calibration manifest contains images outside the train split. Calibrating on val would tune the quantizer on the evaluation images. |
-| `QUANT_CALIB_TOO_SMALL` | quantize | error | `calibration.limit` asks for more images than the calibration manifest has. |
+| `QUANT_CALIB_ON_EVAL_SPLIT` | quantize, fp16 | error | The calibration manifest contains images outside the train split. Calibrating on val would tune the quantizer on the evaluation images. |
+| `QUANT_CALIB_TOO_SMALL` | quantize, fp16 | error | `calibration.limit` asks for more images than the calibration manifest has. |
 | `QUANT_CALIB_MISMATCH` | quantize | error | The calibration cache was computed on a different FP32 model. |
-| `QUANT_INPUT_NOT_FP32` | quantize | error | The input artifact isn't an FP32 export (e.g. an already-quantized model). |
+| `QUANT_INPUT_NOT_FP32` | quantize, fp16 | error | The input artifact isn't an FP32 export (e.g. an already-quantized model). |
 | `QUANT_GROUP_UNMATCHED` | quantize | error | A quantizable node matches no layer-group rule, a rule matches no node, or the model lacks the exporter's name-scope metadata (`configs/quant/groups/`). |
 | `QUANT_UNKNOWN_EXCLUSION` | quantize | error | An exclusion list names a group or node the model doesn't have. A typo must never silently quantize a layer meant to stay in float. |
 | `QUANT_PLACEMENT_MISMATCH` | quantize | error | After quantizing, a node meant to be INT8 reads a float input, or an excluded node reads a dequantized one. |
@@ -49,3 +49,4 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 | `PERF_FEW_SAMPLES` | perf | warn | Fewer than 1000 measured iterations in total, so p99 rests on fewer than 10 samples above it. |
 | `PERF_UNSTABLE` | perf | warn | The repeats' p99 end-to-end latencies differ by more than `max_repeat_p99_spread` (`configs/perf.yaml`) of their median: the host or device wasn't in a steady state (other load, thermal or power throttling). |
 | `PERF_TELEMETRY_UNAVAILABLE` | perf | warn | GPU clocks, temperature and power couldn't be read (nvidia-smi missing or failing), so throttling can't be ruled out. |
+| `FP16_AUTOCAST_FAILED` | fp16 | error | ModelOpt AutoCast (run in `tools/modelopt/`) exited with an error; the message ends with its log. No FP16 artifact was written. |

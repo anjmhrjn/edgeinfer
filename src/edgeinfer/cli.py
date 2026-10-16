@@ -430,6 +430,68 @@ def cmd_quantize(args: argparse.Namespace) -> int:
     return 0 if passed else 1
 
 
+def cmd_fp16(args: argparse.Namespace) -> int:
+    import platform
+
+    from edgeinfer.artifacts import artifact_identity
+    from edgeinfer.config import load_model_config
+    from edgeinfer.data.cityscapes import cityscapes_root
+    from edgeinfer.quant import QuantError
+    from edgeinfer.quant.calib import CALIB_DIR
+    from edgeinfer.quant.fp16 import PRECISION, convert_fp16, load_fp16_config
+    from edgeinfer.reports import (
+        REPORTS_DIR,
+        git_state,
+        make_report,
+        package_versions,
+        write_report,
+    )
+
+    cfg = load_model_config(args.model)
+    fcfg = load_fp16_config(args.fp16_config)
+    fp32_path = Path(args.artifact)
+    sha, dirty = git_state()
+    if dirty:
+        print("warning: uncommitted changes; this report must not back any published number")
+    inputs = {"artifact": fp32_path.name, "config": Path(args.model).name,
+              "fp16_config": fcfg.to_dict()}  # fmt: skip
+    # The main environment's onnx re-saves the model with its contract restored.
+    backend_meta = {"backend": "modelopt.onnx.autocast", "precision": PRECISION,
+                    "device": f"cpu ({platform.machine()})",
+                    "versions": package_versions("onnx")}  # fmt: skip
+    metrics: dict = {}
+    findings = []
+    try:
+        path, meta = convert_fp16(
+            fp32_path, cfg, fcfg, cityscapes_root(args.root),
+            **({"out_root": Path(args.out_root)} if args.out_root else {}),
+            calib_root=Path(args.calib_dir) if args.calib_dir else CALIB_DIR,
+        )  # fmt: skip
+        backend_meta["artifact_id"] = meta["artifact_id"]
+        backend_meta["versions"] |= meta["versions"]
+        metrics = {k: meta[k] for k in ("file", "sha256", "size_bytes", "parent_artifact_id",
+                                        "calibration", "placement", "autocast_seconds",
+                                        "autocast_peak_rss_bytes")}  # fmt: skip
+        pl = meta["placement"]
+        print(f"{path} ({meta['size_bytes'] / 1e6:.1f} MB): {pl['fp16_nodes']} nodes FP16, "
+              f"{len(pl['fp32_nodes'])} kept FP32, {pl['cast_nodes']} casts")  # fmt: skip
+    except QuantError as e:
+        backend_meta["artifact_id"] = "none"
+        inputs["artifact_id"] = artifact_identity(fp32_path)["artifact_id"]
+        findings.append({"severity": "error", "code": e.code, "message": str(e)})
+    passed = not findings
+    report = make_report(
+        tool="fp16", model=cfg.name, backend_meta=backend_meta, inputs=inputs,
+        metrics=metrics, findings=findings, passed=passed,
+    )  # fmt: skip
+    out = (Path(args.out) if args.out
+           else REPORTS_DIR / f"fp16__{cfg.name}__{fcfg.name}__{sha[:7]}.json")  # fmt: skip
+    write_report(report, out)
+    _print_findings(findings)
+    print(f"{'PASS' if passed else 'FAIL'} -> {out}")
+    return 0 if passed else 1
+
+
 def cmd_sensitivity(args: argparse.Namespace) -> int:
     import platform
 
@@ -683,6 +745,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--report-dir", help="report directory (default: artifacts/reports)")
     p.add_argument("--out", help="report path")
     p.set_defaults(func=cmd_quantize)
+
+    p = sub.add_parser("fp16", help="FP32 ONNX -> FP16 ONNX (ModelOpt AutoCast) for "
+                                    "strongly typed TensorRT builds; writes a report")  # fmt: skip
+    p.add_argument("--model", required=True, help="config name or path")
+    p.add_argument("--artifact", required=True, help="FP32 ONNX file (from `edgeinfer export`)")
+    p.add_argument("--fp16-config", default="fp16_autocast",
+                   help="configs/precision/<name>.yaml, or a path")  # fmt: skip
+    p.add_argument("--root", help="Cityscapes root (default: $CITYSCAPES_ROOT)")
+    p.add_argument("--calib-dir", help="calibration input root (default: artifacts/calib)")
+    p.add_argument("--out-root", help="artifact root (default: artifacts/onnx)")
+    p.add_argument("--out", help="report path")
+    p.set_defaults(func=cmd_fp16)
 
     p = sub.add_parser("sensitivity", help="rank layer groups by INT8 accuracy impact; "
                                            "suggest an exclusion list")  # fmt: skip

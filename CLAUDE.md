@@ -74,6 +74,7 @@ src/edgeinfer/
 pipelines/airflow/dags/deploy_model.py
 scripts/           gpu-*.sh, remote.sh, make_results.py
 docker/Dockerfile.trt
+tools/modelopt/    isolated ModelOpt environment (own uv.lock), run as a subprocess (D-024)
 tests/             unit + integration; GPU tests marked @pytest.mark.gpu
 artifacts/         golden/, onnx/, engines/ gitignored; reports/ committed (D-010)
 docs/              roadmap.md, progress.md, decisions.md, results.md, report-codes.md, ideas.md
@@ -124,5 +125,5 @@ Common flags: `--model --backend --precision --artifact --manifest --out`. Non-z
 ## Commands
 - Setup: `uv sync && uv run pre-commit install`
 - Lint/format: `uv run ruff check . && uv run ruff format --check .`
-- Tests (CI subset): `uv run pytest -m "not gpu and not data and not weights"`
-- All CPU tests: `uv run pytest -m "not gpu"` (needs `$CITYSCAPES_ROOT` and downloaded weights)
+- Tests (CI subset): `uv run pytest -m "not gpu and not data and not weights and not modelopt"`
+- All CPU tests: `uv run pytest -m "not gpu"` (needs `$CITYSCAPES_ROOT`, downloaded weights and `uv sync --project tools/modelopt`)

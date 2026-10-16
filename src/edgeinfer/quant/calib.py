@@ -49,21 +49,27 @@ ORT_METHODS = {
 
 
 def calibration_entries(spec: CalibrationSpec) -> list[ManifestEntry]:
-    """The calibration images. Anything outside the train split is refused: calibrating
-    on val would tune the quantizer on the images it is evaluated on."""
-    entries = load_manifest(spec.manifest)
-    if spec.limit is not None:
-        if spec.limit > len(entries):
+    """The calibration images of an INT8 config; see train_entries."""
+    return train_entries(spec.manifest, spec.limit)
+
+
+def train_entries(manifest: str, limit: int | None) -> list[ManifestEntry]:
+    """Images for calibration or range checks (INT8 PTQ, FP16 AutoCast). Anything outside
+    the train split is refused: calibrating on val would tune the model on the images it
+    is evaluated on."""
+    entries = load_manifest(manifest)
+    if limit is not None:
+        if limit > len(entries):
             raise QuantError(
                 "QUANT_CALIB_TOO_SMALL",
-                f"calibration.limit {spec.limit} > {len(entries)} images in {spec.manifest}",
+                f"calibration.limit {limit} > {len(entries)} images in {manifest}",
             )
-        entries = entries[: spec.limit]
+        entries = entries[:limit]
     bad = [e for e in entries if e.split != CALIBRATION_SPLIT]
     if bad:
         raise QuantError(
             "QUANT_CALIB_ON_EVAL_SPLIT",
-            f"calibration manifest {spec.manifest!r} has {len(bad)}/{len(entries)} images "
+            f"calibration manifest {manifest!r} has {len(bad)}/{len(entries)} images "
             f"outside the {CALIBRATION_SPLIT} split (first: {bad[0]}); never calibrate on "
             "evaluation data",
         )

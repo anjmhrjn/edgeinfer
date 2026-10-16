@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C4 — GPU environment, TensorRT FP32/FP16, performance probe
-**Next step:** C4a step 4 — performance probe and `edgeinfer perf` (D-022).
+**Next step:** C4a step 5b — `trt` backend and `edgeinfer build`.
 
 ## C4 — GPU environment, TensorRT FP32/FP16, performance probe
 The GPU quota request (2026-10-14) is still pending, so C4 is split. **C4a** prepares everything that can be written and tested on the Mac; **C4b** runs it on the T4. The roadmap's C4 exit criteria are met in C4b. Plan agreed 2026-10-16: NGC TensorRT container, `cuda-python` for device buffers and timing, an optional `TimedBackend` protocol for per-stage times, SSH limited to the current IP.
@@ -11,6 +11,7 @@ C4a (Mac):
 - [x] Toolchain pinned: NGC `tensorrt:26.09-py3` (TensorRT 11.3, CUDA 13.4.1), re-checked before the first GPU session (D-020); `cuda-bindings` (D-021); `docker/Dockerfile.trt`; torch-free container environment; `supported_ops.yaml` re-seeded from onnx-tensorrt `11.3-GA`
 - [x] `scripts/gpu-{create,up,status,down,destroy}.sh`, `scripts/remote.sh` (D-023); instance not created yet
 - [x] Performance probe and `edgeinfer perf` (D-022): stage spans, nearest-rank percentiles, repeats, missing-sync check, nvidia-smi telemetry; `TimedBackend` protocol; end to end at label resolution
+- [x] FP16 ONNX for TensorRT 11 strong typing: `edgeinfer fp16` with ModelOpt AutoCast in `tools/modelopt/` (D-024)
 - [ ] `trt` backend and `edgeinfer build`: builder settings, engine metadata sidecar, mismatch refusal, debug engine
 - [ ] Report codes and decision records
 - [ ] `scripts/c4_runs.sh` (smoke, ops, build, perf, trtexec, parity, nsys)

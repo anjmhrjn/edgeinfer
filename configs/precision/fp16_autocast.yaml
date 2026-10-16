@@ -1,0 +1,12 @@
+# FP16 ONNX for TensorRT 11, whose networks are strongly typed: an FP16 engine is built from
+# an FP16 model (D-024). Converted with ModelOpt AutoCast in tools/modelopt/.
+name: fp16_autocast
+low_precision_type: fp16
+keep_io_types: true      # input and logits stay float32: the I/O contract doesn't change
+data_max: 512            # AutoCast default: a node whose output exceeds this stays FP32
+init_max: 65504          # FP16 maximum: a node with a larger weight stays FP32
+nodes_to_exclude: []     # node names forced to stay FP32
+op_types_to_exclude: []  # op types forced to stay FP32
+calibration:             # inputs for AutoCast's range check (reference run on ORT CPU)
+  manifest: calib_train200  # train split only, like INT8 calibration
+  limit: 32

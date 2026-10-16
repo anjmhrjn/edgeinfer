@@ -60,4 +60,5 @@ markers = [
     "gpu: needs an NVIDIA GPU with TensorRT (never runs in CI)",
     "data: needs the Cityscapes dataset at $CITYSCAPES_ROOT",
     "weights: needs downloaded model checkpoints",
+    "modelopt: needs the ModelOpt environment (uv sync --project tools/modelopt; D-024)",
 ]
