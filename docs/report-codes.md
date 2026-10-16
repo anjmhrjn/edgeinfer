@@ -2,7 +2,7 @@
 
 Stable enum of `findings[].code` values used in JSON reports. Codes are never renamed or reused; deprecated codes stay listed.
 
-**CLI exit codes:** `0` checks passed; `1` checks failed and the report was written; `2` usage or configuration error; `3` the tool crashed (traceback on stderr, no report). A caller can read the report after exit 1 and should stop on anything else.
+**CLI exit codes:** `0` checks passed; `1` checks failed and the report was written; `2` usage, configuration or environment error, no report (a backend that can't load here prints `error: <CODE>: <message>` with a `TRT_*` code below); `3` the tool crashed (traceback on stderr, no report). A caller can read the report after exit 1 and should stop on anything else.
 
 | Code | Tool | Severity | Meaning |
 |---|---|---|---|
@@ -50,3 +50,13 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 | `PERF_UNSTABLE` | perf | warn | The repeats' p99 end-to-end latencies differ by more than `max_repeat_p99_spread` (`configs/perf.yaml`) of their median: the host or device wasn't in a steady state (other load, thermal or power throttling). |
 | `PERF_TELEMETRY_UNAVAILABLE` | perf | warn | GPU clocks, temperature and power couldn't be read (nvidia-smi missing or failing), so throttling can't be ruled out. |
 | `FP16_AUTOCAST_FAILED` | fp16 | error | ModelOpt AutoCast (run in `tools/modelopt/`) exited with an error; the message ends with its log. No FP16 artifact was written. |
+| `TRT_UNAVAILABLE` | any (trt backend), build | error | TensorRT or cuda-bindings can't be imported: the command ran outside the GPU container. Exit 2, no report. |
+| `TRT_ENGINE_MISMATCH` | any (trt backend) | error | The engine's sidecar says it was built for a different TensorRT version, GPU or compute capability than the runtime has. Rebuild it on this machine. Exit 2, no report. |
+| `TRT_IO_MISMATCH` | any (trt backend) | error | The engine's inputs/outputs don't match the model's contract: one float32 1×3×H×W input and float32 1×classes×h×w logits with the contract's names. Exit 2, no report. |
+| `TRT_DESERIALIZE_FAILED` | any (trt backend) | error | TensorRT couldn't deserialize the engine file. Exit 2, no report. |
+| `BUILD_PARSE_FAILED` | build | error | The TensorRT ONNX parser rejected the model; the message lists the parser's first errors. |
+| `BUILD_UNKNOWN_DEBUG_OUTPUT` | build | error | `--debug-outputs` names a tensor that doesn't exist in the parsed network. |
+| `BUILD_FAILED` | build | error | TensorRT's builder returned no engine (see its log). |
+| `BUILD_IO_MISMATCH` | build | error | The built engine's inputs/outputs don't match the model's contract (see `TRT_IO_MISMATCH`). |
+| `OPS_LISTED_BUT_REJECTED` | ops_check | error | `configs/supported_ops.yaml` lists an op as supported but the pinned TensorRT's ONNX parser rejects it. `where` is the op. |
+| `OPS_UNLISTED_BUT_ACCEPTED` | ops_check | warn | `configs/supported_ops.yaml` lists an op as unsupported but the parser accepts it. `where` is the op. |

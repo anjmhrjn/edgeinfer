@@ -1,0 +1,8 @@
+# TensorRT engine builder settings (`edgeinfer build`, D-025). Precision isn't set here:
+# TensorRT 11 networks are strongly typed, so an engine runs in the types of its ONNX model
+# (FP32 export, FP16 from `edgeinfer fp16`, INT8 Q/DQ from `edgeinfer quantize`; D-024).
+name: build_default
+workspace_mib: 2048              # scratch memory tactics may use while building; the T4 has 16 GB
+builder_optimization_level: 3    # TensorRT's default (0-5); C4b decides from measured effect
+timing_cache: true               # reuse kernel timings across builds of the same TensorRT + GPU
+profiling_verbosity: detailed    # keep per-layer details for the engine inspector (precision report)

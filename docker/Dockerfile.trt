@@ -10,7 +10,7 @@ COPY --from=ghcr.io/astral-sh/uv:0.12.13@sha256:b485bd65cc2cf1c9a93b3554012c9c37
 
 # The venv sees the image's system site-packages, where TensorRT's Python bindings live;
 # uv installs everything else from uv.lock. No torch: the container runs torch-free
-# modules only, and the `gpu` group adds cuda-bindings for the CUDA 13.4 runtime.
+# modules only. The `gpu` group adds cuda-bindings for the CUDA 13.4 runtime; `dev` adds pytest.
 ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
     UV_PYTHON=/usr/bin/python3 \
     UV_PYTHON_DOWNLOADS=never \
@@ -30,7 +30,7 @@ RUN uv venv --system-site-packages /opt/venv
 # Dependencies only; the repo itself is mounted at run time and installed by the entrypoint.
 WORKDIR /workspace/edgeinfer
 COPY pyproject.toml uv.lock .python-version ./
-RUN uv sync --no-default-groups --group gpu --no-install-project
+RUN uv sync --no-default-groups --group gpu --group dev --no-install-project
 # remote.sh runs the container as the instance's login user, so files written into the
 # mounted repo belong to that user; the entrypoint installs the project into this venv.
 RUN chmod -R a+rwX /opt/venv

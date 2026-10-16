@@ -589,6 +589,57 @@ def cmd_sensitivity(args: argparse.Namespace) -> int:
     return 0 if passed else 1
 
 
+def cmd_build(args: argparse.Namespace) -> int:
+    from edgeinfer.artifacts import artifact_identity
+    from edgeinfer.backends.trt import build_engine, runtime_fingerprint
+    from edgeinfer.backends.trt_meta import BackendError, load_build_config
+    from edgeinfer.config import load_model_config
+    from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
+
+    cfg = load_model_config(args.model)
+    bcfg = load_build_config(args.build_config)
+    onnx_path = Path(args.artifact)
+    debug = [n for n in (args.debug_outputs or "").split(",") if n]
+    sha, dirty = git_state()
+    if dirty:
+        print("warning: uncommitted changes; this report must not back any published number")
+    runtime = runtime_fingerprint()  # TRT_UNAVAILABLE here: exit 2, no report
+    device = f"cuda:0 ({runtime['gpu_name']}, sm_{runtime['compute_capability'].replace('.', '')})"
+    onnx_id = artifact_identity(onnx_path)
+    backend_meta = {
+        "backend": "trt",
+        "precision": onnx_id["precision"],
+        "device": device,
+        "artifact_id": "none",
+        "versions": {"tensorrt": runtime["tensorrt"]},
+    }
+    inputs = {"artifact": onnx_path.name, "onnx_artifact_id": onnx_id["artifact_id"],
+              "build_config": bcfg.to_dict(), "debug_outputs": debug}  # fmt: skip
+    metrics: dict = {}
+    findings = []
+    try:
+        roots = {"out_root": Path(args.out_root)} if args.out_root else {}
+        path, meta = build_engine(onnx_path, cfg, bcfg, debug, **roots)
+        backend_meta["artifact_id"] = meta["artifact_id"]
+        keys = ("file", "sha256", "size_bytes", "parent_artifact_id", "runtime", "io",
+                "num_layers", "layers_file", "device_memory_bytes", "timing_cache",
+                "build_seconds")  # fmt: skip
+        metrics = {k: meta[k] for k in keys}
+        print(f"{path} ({meta['size_bytes'] / 1e6:.1f} MB, {meta['num_layers']} layers, "
+              f"built in {meta['build_seconds']} s)")  # fmt: skip
+    except BackendError as e:
+        findings.append({"severity": "error", "code": e.code, "message": str(e)})
+    passed = not findings
+    report = make_report(tool="build", model=cfg.name, backend_meta=backend_meta, inputs=inputs,
+                         metrics=metrics, findings=findings, passed=passed)  # fmt: skip
+    tag = f"{cfg.name}__{onnx_id['precision']}" + ("__debug" if debug else "")
+    out = Path(args.out) if args.out else REPORTS_DIR / f"build__{tag}__{sha[:7]}.json"
+    write_report(report, out)
+    _print_findings(findings)
+    print(f"{'PASS' if passed else 'FAIL'} -> {out}")
+    return 0 if passed else 1
+
+
 def cmd_perf(args: argparse.Namespace) -> int:
     from dataclasses import asdict
 
@@ -791,6 +842,20 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--out", help="report path")
     p.set_defaults(func=cmd_sensitivity)
 
+    p = sub.add_parser("build", help="ONNX -> TensorRT engine with its metadata sidecar; "
+                                     "writes a report (GPU container only)")  # fmt: skip
+    p.add_argument("--model", required=True, help="config name or path")
+    p.add_argument("--artifact", required=True, help="ONNX file (FP32, FP16 or INT8 Q/DQ)")
+    p.add_argument("--build-config", default="build", help="configs/<name>.yaml, or a path")
+    p.add_argument(
+        "--debug-outputs",
+        help="comma-separated tensors to mark as outputs (a debug engine for per-layer "
+        "parity; never benchmarked)",
+    )
+    p.add_argument("--out-root", help="engine root (default: artifacts/engines)")
+    p.add_argument("--out", help="report path")
+    p.set_defaults(func=cmd_build)
+
     p = sub.add_parser("perf", help="latency distribution per stage and throughput; "
                                     "writes a JSON report")  # fmt: skip
     p.add_argument("--model", required=True, help="config name or path")
@@ -818,13 +883,21 @@ def build_parser() -> argparse.ArgumentParser:
 # 3 the tool crashed (traceback on stderr, no report). Scripts treat 1 as a result to read
 # and anything else as a reason to stop; Python's own exit code for an uncaught
 # exception is 1, which would read as a failed check.
+EXIT_ENVIRONMENT = 2  # same code as usage/configuration errors (docs/report-codes.md)
 EXIT_CRASH = 3
 
 
 def main(argv: list[str] | None = None) -> int:
+    from edgeinfer.backends.trt_meta import BackendError
+
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
+    except BackendError as e:
+        # The backend can't load or run here (no TensorRT, an engine for another runtime):
+        # an environment error with a report code, not a crash.
+        print(f"error: {e.code}: {e}")
+        return EXIT_ENVIRONMENT
     except Exception:  # noqa: BLE001 - top level: re-reported, not silenced
         traceback.print_exc()
         return EXIT_CRASH

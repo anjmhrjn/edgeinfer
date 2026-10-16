@@ -32,9 +32,20 @@ TINY_CONFIG = FIXTURES / "tiny_fixture.yaml"
 
 @pytest.fixture(scope="session")
 def tiny_onnx(tmp_path_factory) -> Path:
-    """The tiny fixture model exported to ONNX once per test session."""
-    from edgeinfer.config import load_model_config
-    from edgeinfer.export.onnx_export import export_model
+    """The tiny fixture model exported to ONNX once per test session.
 
+    The TensorRT container has no PyTorch (D-020), so there the fixture uses the export
+    that scripts/c4_runs.sh push made on the Mac and copied to the instance."""
+    from edgeinfer.config import load_model_config
+
+    try:
+        from edgeinfer.export.onnx_export import export_model
+    except ImportError:
+        from edgeinfer.artifacts import ONNX_DIR
+
+        exported = sorted((ONNX_DIR / "tiny_fixture").glob("tiny_fixture__fp32__*.onnx"))
+        if not exported:
+            pytest.fail("no PyTorch here and no exported tiny fixture: run scripts/c4_runs.sh push")
+        return exported[-1]
     path, _ = export_model(load_model_config(TINY_CONFIG), tmp_path_factory.mktemp("onnx"))
     return path

@@ -17,4 +17,8 @@ def get_backend(name: str, **options: Any) -> Backend:
         from edgeinfer.backends.ort_cpu import OrtCpuBackend
 
         return OrtCpuBackend(**options)
-    raise ValueError(f"unknown backend {name!r} (available: torch_ref, ort_cpu)")
+    if name == "trt":
+        from edgeinfer.backends.trt import TrtBackend
+
+        return TrtBackend(**options)
+    raise ValueError(f"unknown backend {name!r} (available: torch_ref, ort_cpu, trt)")

@@ -1,0 +1,99 @@
+"""TensorRT build and inference on the tiny fixture model (D-025). Runs on the GPU instance
+only: scripts/remote.sh run 'uv run --no-sync pytest -m gpu'."""
+
+import json
+
+import numpy as np
+import onnx
+import onnxruntime as ort
+import pytest
+
+from edgeinfer.artifacts import sidecar_path
+from edgeinfer.backends.base import DEVICE_STAGES
+from edgeinfer.backends.trt import TrtBackend, build_engine, runtime_fingerprint
+from edgeinfer.backends.trt_meta import BackendError, load_build_config
+from edgeinfer.config import load_model_config
+from tests.conftest import TINY_CONFIG
+
+pytestmark = pytest.mark.gpu
+CFG = load_model_config(TINY_CONFIG)
+
+
+@pytest.fixture(scope="module")
+def engine(tiny_onnx, tmp_path_factory):
+    return build_engine(tiny_onnx, CFG, load_build_config(), out_root=tmp_path_factory.mktemp("e"))
+
+
+@pytest.fixture
+def x():
+    return np.random.default_rng(0).standard_normal((1, 3, 32, 64)).astype(np.float32)
+
+
+def _loaded(path):
+    backend = TrtBackend()
+    backend.load(path, CFG)
+    return backend
+
+
+def test_runtime_is_the_t4():
+    rt = runtime_fingerprint()
+    assert rt["compute_capability"] == "7.5", rt
+
+
+def test_fp32_engine_matches_ort(engine, tiny_onnx, x):
+    path, meta = engine
+    assert meta["precision"] == "fp32" and meta["debug_outputs"] == []
+    ref = ort.InferenceSession(str(tiny_onnx)).run(None, {"input": x})[0]
+    backend = _loaded(path)
+    got = backend.infer(x)
+    assert got.shape == ref.shape and got.dtype == np.float32
+    assert np.abs(got - ref).max() < 1e-3 * max(1.0, float(np.abs(ref).max()))
+    backend.close()
+
+
+def test_rebuild_reuses_the_engine(engine, tiny_onnx):
+    path, _ = engine
+    again, _ = build_engine(tiny_onnx, CFG, load_build_config(), out_root=path.parents[1])
+    assert again == path
+
+
+def test_device_stages_fit_inside_the_call(engine, x):
+    import time
+
+    backend = _loaded(engine[0])
+    for _ in range(20):
+        t0 = time.perf_counter()
+        _, ms = backend.infer_timed(x)
+        host_ms = (time.perf_counter() - t0) * 1e3
+        assert set(ms) == set(DEVICE_STAGES) and all(v >= 0 for v in ms.values())
+        assert sum(ms.values()) <= host_ms + 0.05
+    meta = backend.metadata()
+    assert meta["device_memory"]["device_used_delta_bytes"] > 0
+    assert "T4" in meta["device"]
+    backend.close()
+
+
+def test_mismatched_engine_is_refused(engine, tmp_path):
+    path, meta = engine
+    copy = tmp_path / path.name
+    copy.write_bytes(path.read_bytes())
+    meta = {**meta, "runtime": {**meta["runtime"], "tensorrt": "10.0.0"}}
+    sidecar_path(copy).write_text(json.dumps(meta))
+    with pytest.raises(BackendError) as e:
+        _loaded(copy)
+    assert e.value.code == "TRT_ENGINE_MISMATCH"
+
+
+def test_debug_engine_exposes_intermediate_tensors(tiny_onnx, tmp_path, x):
+    model = onnx.load(str(tiny_onnx))
+    name = model.graph.node[0].output[0]  # first intermediate tensor in graph order
+    path, meta = build_engine(tiny_onnx, CFG, load_build_config(), debug_outputs=[name],
+                              out_root=tmp_path)  # fmt: skip
+    assert "__debug__" in path.name and meta["debug_outputs"] == [name]
+    backend = _loaded(path)
+    assert backend.metadata()["debug_outputs"] == [name]
+    out = backend.layer_outputs(x, [name])
+    assert set(out) == {name}
+    with pytest.raises(ValueError, match="debug engine"):
+        backend.layer_outputs(x, ["not_a_tensor"])
+    backend.close()

@@ -13,6 +13,9 @@ HEAVY = ("torch", "transformers")
 TORCH_FREE = [
     "edgeinfer.artifacts",
     "edgeinfer.backends.ort_cpu",
+    "edgeinfer.backends.trt",
+    "edgeinfer.backends.trt_meta",
+    "edgeinfer.perf.probe",
     "edgeinfer.validate.onnx_validator",
     "edgeinfer.analyze.parity",
     "edgeinfer.analyze.sensitivity",
