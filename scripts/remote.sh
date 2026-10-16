@@ -5,7 +5,8 @@
 #                                    run <cmd> in the TensorRT container, pull reports back
 #   remote.sh host "<cmd>"           run <cmd> on the instance itself (nvidia-smi, df -h, ...)
 #   remote.sh push-data              copy the Cityscapes val split to $GPU_DATA_DIR
-#   remote.sh push-artifacts <dir>.. copy artifacts/<...> directories (ONNX models, golden outputs)
+#   remote.sh push-artifacts <path>.. copy files or directories under artifacts/ (ONNX models
+#                                    with their sidecars, golden outputs)
 #   remote.sh pull-reports           copy artifacts/reports/ back to the Mac
 #
 # Cityscapes data goes only to this private instance, never anywhere public (license).
@@ -72,16 +73,22 @@ sudo docker run --rm $tty --gpus all --hostname $GPU_NAME \\
         ;;
     push-artifacts)
         [ $# -ge 1 ] || usage
-        for dir in "$@"; do
-            dir=${dir%/}
-            case "$dir" in
-                artifacts/reports | artifacts/engines) die "$dir is written on the instance, not pushed" ;;
+        for path in "$@"; do
+            path=${path%/}
+            case "$path" in
+                artifacts/reports* | artifacts/engines*) die "$path is written on the instance, not pushed" ;;
                 artifacts/?*) ;;
-                *) die "push-artifacts takes directories under artifacts/, got $dir" ;;
+                *) die "push-artifacts takes paths under artifacts/, got $path" ;;
             esac
-            [ -d "$REPO_ROOT/$dir" ] || die "no such directory: $dir"
-            remote_sh "mkdir -p $GPU_REMOTE_DIR/$dir"
-            "${RSYNC[@]}" "$REPO_ROOT/$dir/" "$remote/$dir/"
+            if [ -d "$REPO_ROOT/$path" ]; then
+                remote_sh "mkdir -p $GPU_REMOTE_DIR/$path"
+                "${RSYNC[@]}" "$REPO_ROOT/$path/" "$remote/$path/"
+            elif [ -f "$REPO_ROOT/$path" ]; then
+                remote_sh "mkdir -p $GPU_REMOTE_DIR/$(dirname "$path")"
+                "${RSYNC[@]}" "$REPO_ROOT/$path" "$remote/$path"
+            else
+                die "no such file or directory: $path"
+            fi
         done
         ;;
     pull-reports)
