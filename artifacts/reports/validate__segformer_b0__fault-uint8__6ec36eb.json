@@ -1,0 +1,1651 @@
+{
+  "schema_version": "1",
+  "tool": "validate",
+  "created_at": "2026-10-16T02:57:36+00:00",
+  "git_sha": "6ec36eb43628dfd2b841fdca6785defb62b884ba",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "onnx": "1.23.2"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "onnx",
+  "precision": "int8",
+  "artifact_id": "0733f82707bccc45b09399f0d7af99424dfb4eeda7de332c4e828e2e2810e1ff",
+  "inputs": {
+    "artifact": "segformer_b0__int8__0733f82707bc.onnx",
+    "config": "segformer_b0"
+  },
+  "thresholds": {
+    "supported_ops": {
+      "tensorrt_version": "11.4",
+      "source_commit": "8f60063873ddc9cc69125c60425fb93189851f18",
+      "status": "provisional",
+      "opset": {
+        "min": 9,
+        "max": 24
+      }
+    }
+  },
+  "metrics": {
+    "opset": {
+      "ai.onnx": 20
+    },
+    "n_nodes": 660,
+    "op_counts": {
+      "Add": 68,
+      "Concat": 1,
+      "Conv": 20,
+      "DequantizeLinear": 166,
+      "Gelu": 8,
+      "LayerNormalization": 30,
+      "MatMul": 68,
+      "Mul": 16,
+      "QuantizeLinear": 94,
+      "Relu": 1,
+      "Reshape": 92,
+      "Resize": 4,
+      "Softmax": 8,
+      "Transpose": 84
+    },
+    "inputs": {
+      "input": [
+        1,
+        3,
+        512,
+        1024
+      ]
+    },
+    "outputs": {
+      "logits": [
+        1,
+        19,
+        128,
+        256
+      ]
+    },
+    "n_float_params": 38533,
+    "max_abs_weight": 14.266263008117676,
+    "n_quantize_linear": 94,
+    "n_dequantize_linear": 166,
+    "n_errors": 261,
+    "n_warnings": 0
+  },
+  "passed": false,
+  "findings": [
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear input_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "input_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.decode_head.classifier.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.decode_head.classifier.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.decode_head.linear_fuse.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.decode_head.linear_fuse.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.0.blocks.0.attention.sequence_reduction.sequence_reduction.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.0.blocks.0.attention.sequence_reduction.sequence_reduction.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.0.blocks.0.mlp.dwconv.dwconv.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.0.blocks.0.mlp.dwconv.dwconv.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.0.blocks.1.attention.sequence_reduction.sequence_reduction.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.0.blocks.1.attention.sequence_reduction.sequence_reduction.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.0.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.0.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.0.patch_embeddings.proj.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.0.patch_embeddings.proj.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.1.blocks.0.attention.sequence_reduction.sequence_reduction.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.1.blocks.0.attention.sequence_reduction.sequence_reduction.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.1.blocks.0.mlp.dwconv.dwconv.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.1.blocks.0.mlp.dwconv.dwconv.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.1.blocks.1.attention.sequence_reduction.sequence_reduction.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.1.blocks.1.attention.sequence_reduction.sequence_reduction.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.1.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.1.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.1.patch_embeddings.proj.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.1.patch_embeddings.proj.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.2.blocks.0.attention.sequence_reduction.sequence_reduction.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.2.blocks.0.attention.sequence_reduction.sequence_reduction.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.2.blocks.0.mlp.dwconv.dwconv.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.2.blocks.0.mlp.dwconv.dwconv.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.2.blocks.1.attention.sequence_reduction.sequence_reduction.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.2.blocks.1.attention.sequence_reduction.sequence_reduction.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.2.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.2.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.2.patch_embeddings.proj.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.2.patch_embeddings.proj.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.3.blocks.0.mlp.dwconv.dwconv.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.3.blocks.0.mlp.dwconv.dwconv.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear model.segformer.stages.3.patch_embeddings.proj.weight_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "model.segformer.stages.3.patch_embeddings.proj.weight_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_116_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_116_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_124_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_124_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_157_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_157_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_161_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_161_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_174_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_174_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_193_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_193_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_214_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_214_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_222_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_222_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_255_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_255_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_259_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_259_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_272_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_272_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_276_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_276_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_297_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_297_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_305_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_305_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_30_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_30_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_338_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_338_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_342_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_342_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_355_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_355_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_374_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_374_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_38_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_38_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_395_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_395_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_403_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_403_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_436_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_436_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_440_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_440_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_453_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_453_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_457_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_457_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_478_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_478_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_486_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_486_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_519_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_519_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_523_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_523_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_536_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_536_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_555_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_555_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_563_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_563_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_571_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_571_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_604_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_604_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_608_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_608_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_621_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_621_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_625_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_625_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_633_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_633_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_641_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_641_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_674_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_674_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_678_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_678_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_691_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_691_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_706_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_706_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_723_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_723_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_739_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_739_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_74_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_74_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_755_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_755_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_78_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_78_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_91_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_91_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_95_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_95_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_9_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_9_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear input_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "input_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_1_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_1_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_1_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_1_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_2_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_2_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_2_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_2_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_63_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_63_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_63_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_63_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_2_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_2_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_2_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_2_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear transpose_5_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_5_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear transpose_5_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_5_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_66_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_66_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_66_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_66_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_68_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_68_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_68_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_68_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_6_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_6_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_6_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_6_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_3_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_3_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_3_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_3_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_7_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_7_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_7_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_7_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear gelu_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear gelu_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_4_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_4_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_4_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_4_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_10_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_10_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_10_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_10_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_146_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_146_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_146_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_146_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_5_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_5_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_5_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_5_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear transpose_13_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_13_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear transpose_13_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_13_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_149_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_149_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_149_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_149_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_151_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_151_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_151_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_151_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_14_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_14_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_14_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_14_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_6_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_6_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_6_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_6_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_15_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_15_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_15_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_15_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear gelu_1_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_1_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear gelu_1_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_1_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear permute_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "permute_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear permute_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "permute_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear transpose_64_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_64_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear transpose_64_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_64_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_9_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_9_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_9_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_9_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_20_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_20_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_20_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_20_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_244_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_244_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_244_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_244_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_10_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_10_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_10_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_10_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear transpose_22_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_22_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear transpose_22_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_22_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_247_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_247_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_247_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_247_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_249_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_249_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_249_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_249_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_24_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_24_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_24_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_24_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_11_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_11_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_11_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_11_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_25_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_25_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_25_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_25_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear gelu_2_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_2_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear gelu_2_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_2_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_12_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_12_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_12_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_12_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_28_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_28_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_28_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_28_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_327_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_327_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_327_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_327_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_13_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_13_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_13_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_13_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear transpose_30_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_30_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear transpose_30_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_30_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_330_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_330_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_330_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_330_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_332_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_332_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_332_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_332_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_32_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_32_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_32_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_32_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_14_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_14_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_14_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_14_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_33_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_33_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_33_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_33_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear gelu_3_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_3_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear gelu_3_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_3_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear permute_1_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "permute_1_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear permute_1_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "permute_1_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear transpose_66_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_66_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear transpose_66_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_66_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_17_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_17_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_17_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_17_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_38_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_38_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_38_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_38_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_425_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_425_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_425_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_425_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_18_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_18_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_18_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_18_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear transpose_39_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_39_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear transpose_39_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_39_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_428_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_428_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_428_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_428_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_430_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_430_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_430_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_430_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_42_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_42_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_42_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_42_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_19_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_19_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_19_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_19_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_43_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_43_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_43_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_43_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear gelu_4_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_4_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear gelu_4_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_4_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_20_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_20_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_20_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_20_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_46_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_46_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_46_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_46_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_508_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_508_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_508_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_508_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_21_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_21_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_21_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_21_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear transpose_47_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_47_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear transpose_47_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_47_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_511_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_511_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_511_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_511_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_513_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_513_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_513_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_513_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_50_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_50_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_50_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_50_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_22_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_22_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_22_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_22_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_51_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_51_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_51_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_51_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear gelu_5_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_5_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear gelu_5_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_5_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear permute_2_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "permute_2_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear permute_2_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "permute_2_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear transpose_68_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_68_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear transpose_68_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_68_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_25_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_25_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_25_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_25_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear transpose_54_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_54_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_593_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_593_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear transpose_54_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_54_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_593_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_593_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_596_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_596_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_596_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_596_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_598_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_598_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_598_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_598_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_58_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_58_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_58_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_58_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_26_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_26_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_26_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_26_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_59_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_59_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_59_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_59_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear gelu_6_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_6_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear gelu_6_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_6_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_27_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_27_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_27_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_27_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear transpose_60_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_60_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_663_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_663_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear transpose_60_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_60_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_663_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_663_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_666_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_666_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_666_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_666_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear val_668_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_668_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear val_668_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "val_668_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_64_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_64_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_64_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_64_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear layer_norm_28_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_28_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear layer_norm_28_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "layer_norm_28_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear view_65_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_65_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear view_65_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "view_65_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear gelu_7_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_7_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear gelu_7_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "gelu_7_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear transpose_70_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_70_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear transpose_70_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "transpose_70_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear cat_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "cat_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear cat_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "cat_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "QuantizeLinear relu_QuantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "relu_QuantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_OP_RESTRICTION",
+      "message": "DequantizeLinear relu_DequantizeLinear: zero point must be an all-zero initializer (symmetric quantization)",
+      "where": "relu_DequantizeLinear"
+    },
+    {
+      "severity": "error",
+      "code": "VALIDATE_QDQ_DTYPE",
+      "message": "260 Q/DQ nodes use UINT8; TensorRT explicit quantization needs signed INT8 (check activation_type/weight_type in the quant config)",
+      "where": "input_QuantizeLinear"
+    }
+  ]
+}
