@@ -39,6 +39,9 @@ run() {  # run <remote.sh args...>
 engine() {  # engine <model> <precision>
     echo "\$(ls -t artifacts/engines/$1/$1__$2__*.engine | grep -v __debug__ | head -1)"
 }
+perf_report() {  # perf_report <model> <precision>: newest full perf report on TensorRT
+    echo "\$(ls -t artifacts/reports/perf__$1__trt__$2__*.json | grep -v __nsys | head -1)"
+}
 onnx() {  # onnx <model> <precision>
     echo "\$(ls -t artifacts/onnx/$1/$1__$2__*.onnx | head -1)"
 }
@@ -85,11 +88,11 @@ case "$phase" in
         ;;
     trtexec)
         # Compute-only latency from NVIDIA's tool, to cross-check the probe's compute span.
-        # Check the flags against `trtexec --help` of the pinned version in the smoke phase.
+        # The wrapper records trtexec's flags and writes a report with the SHA and environment.
         for m in "${MODELS[@]}"; do
             for p in fp32 fp16; do
-                run run "trtexec --loadEngine=$(engine "$m" "$p") --warmUp=2000 --iterations=1000 \
---duration=0 --percentile=50,90,99 --exportTimes=artifacts/reports/trtexec_times__${m}__${p}.json"
+                run run "python scripts/trtexec_report.py --engine $(engine "$m" "$p") \
+--perf-report $(perf_report "$m" "$p")"
             done
         done
         ;;
