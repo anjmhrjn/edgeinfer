@@ -32,6 +32,11 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--engine", required=True)
     ap.add_argument("--perf-report", help="perf report of the same engine to compare against")
+    ap.add_argument(
+        "--clock-mhz",
+        type=int,
+        help="expected SM clock lock for clock searches (default: perf.yaml)",
+    )
     args = ap.parse_args()
     engine = Path(args.engine)
     meta = load_sidecar(engine)
@@ -43,7 +48,7 @@ def main() -> int:
             print(f"error: {args.perf_report} measured {probe['inputs'].get('artifact')}, "
                   f"not {engine.name}")  # fmt: skip
             return 2
-    lock = load_perf_config().gpu_clock_mhz
+    lock = args.clock_mhz if args.clock_mhz is not None else load_perf_config().gpu_clock_mhz
     if probe is not None and probe["inputs"]["perf_config"].get("gpu_clock_mhz") != lock:
         print(f"error: {args.perf_report} was measured with gpu_clock_mhz "
               f"{probe['inputs']['perf_config'].get('gpu_clock_mhz')}, not {lock}")  # fmt: skip
@@ -79,7 +84,8 @@ def main() -> int:
                 "perf_report": Path(args.perf_report).name if args.perf_report else None},
         metrics=metrics, findings=findings, passed=passed,
     )  # fmt: skip
-    out = REPORTS_DIR / f"trtexec__{meta['model']}__{meta['precision']}__{sha[:7]}.json"
+    clock = f"{lock}MHz" if lock is not None else "unlocked"
+    out = REPORTS_DIR / f"trtexec__{meta['model']}__{meta['precision']}__{clock}__{sha[:7]}.json"
     write_report(report, out)
     for span, s in spans.items():
         print(f"  {span:8s} p50 {s['p50']:8.3f}  p99 {s['p99']:8.3f}  max {s['max']:8.3f} ms")

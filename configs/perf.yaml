@@ -15,4 +15,4 @@ max_repeat_p99_spread: 0.10
 # SM clock (MHz) the GPU is locked to while measuring (D-027), or null for no lock. The
 # probe samples clocks during each repeat and fails with PERF_CLOCK_NOT_LOCKED if the
 # clock goes above it. Locked on the host by `scripts/c4_runs.sh clocks-lock`.
-gpu_clock_mhz: null
+gpu_clock_mhz: 990
