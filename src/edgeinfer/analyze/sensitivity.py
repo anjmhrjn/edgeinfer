@@ -19,6 +19,12 @@ Greedy selection excludes groups in leave-one-out order and scores each cumulati
 configuration for real, without assuming the effects add up, until the drop is within
 budget - margin. The margin covers the gap between the scoring subset and full val.
 
+On TensorRT (C5, D-032) the configurations are generated on the Mac ahead of time
+(analyze/candidates.py) for the top-N groups of the ORT ranking, and only leave-one-out is
+scored: one-at-a-time would need every other group excluded, which isn't generated. The
+noise floor there is a second, cold build of the full INT8 model, because what varies
+between TensorRT runs is the builder's kernel choice (D-029), not thread scheduling.
+
 Read-only: inputs are never modified; quantized models are new content-addressed files.
 """
 
@@ -32,7 +38,9 @@ from typing import Any
 
 import numpy as np
 
+from edgeinfer.analyze.candidates import CandidateSet
 from edgeinfer.backends import get_backend
+from edgeinfer.backends.base import Backend
 from edgeinfer.config import ModelConfig
 from edgeinfer.data.cityscapes import Sample
 from edgeinfer.eval.miou import ConfusionMatrix
@@ -135,8 +143,9 @@ def run_sensitivity(
         else:
             findings.append(_f(
                 "error", "SENS_BUDGET_UNREACHABLE",
-                f"even with every group in float the drop is {-final.delta_points:.3f} points "
-                f"> target {target:g}; the loss isn't in the grouped (quantizable) layers",
+                f"even with all {len(groups)} scored groups in float the drop is "
+                f"{-final.delta_points:.3f} points "
+                f"> target {target:g}; the loss isn't in these groups",
             ))  # fmt: skip
         last = steps[-1]
         gap = abs(last["delta"] - last["predicted_additive"])
@@ -166,9 +175,38 @@ class _Cached:
     label: np.ndarray
 
 
-class SubsetScorer:
-    """Quantize-and-score on a fixed image subset, with inputs preprocessed once and the
-    FP32 reference computed once."""
+class _Subset:
+    """A fixed image subset, preprocessed once, with the FP32 reference computed once on
+    `ref` (a loaded backend)."""
+
+    def __init__(self, cfg: ModelConfig, ref: Backend, samples: Iterable[Sample]) -> None:
+        self.cfg = cfg
+        self.data = [_Cached(preprocess(s.image, cfg), s.label) for s in samples]
+        if not self.data:
+            raise ValueError("no images to score on")
+        self.fp32_argmax: list[np.ndarray] = []
+        cm = ConfusionMatrix(cfg.num_classes)
+        for d in self.data:
+            logits = ref.infer(d.x)
+            self.fp32_argmax.append(logits.argmax(1))
+            cm.update(postprocess(logits, *d.label.shape), d.label)
+        self.fp32_miou = cm.miou()
+        self.fp32_artifact_id = ref.metadata()["artifact_id"]
+
+    def score_backend(self, backend: Backend, artifact_id: str) -> Score:
+        cm = ConfusionMatrix(self.cfg.num_classes)
+        agree = []
+        for d, ref_argmax in zip(self.data, self.fp32_argmax, strict=True):
+            logits = backend.infer(d.x)
+            agree.append(float((logits.argmax(1) == ref_argmax).mean()))
+            cm.update(postprocess(logits, *d.label.shape), d.label)
+        miou = cm.miou()
+        return Score(miou, (miou - self.fp32_miou) * 100, float(np.mean(agree)), artifact_id)
+
+
+class SubsetScorer(_Subset):
+    """Quantize-and-score on ORT CPU (C3): each configuration is quantized from the same
+    calibration cache, the reference is ORT FP32."""
 
     def __init__(
         self,
@@ -180,22 +218,12 @@ class SubsetScorer:
         samples: Iterable[Sample],
         out_root: Path | None = None,
     ) -> None:
-        self.cfg, self.fp32_path, self.qcfg = cfg, fp32_path, qcfg
+        self.fp32_path, self.qcfg = fp32_path, qcfg
         self.calibration, self.rules = calibration, rules
         self.out_root = out_root
-        self.data = [_Cached(preprocess(s.image, cfg), s.label) for s in samples]
-        if not self.data:
-            raise ValueError("no images to score on")
         ref = get_backend("ort_cpu")
         ref.load(fp32_path, cfg)
-        self.fp32_argmax: list[np.ndarray] = []
-        cm = ConfusionMatrix(cfg.num_classes)
-        for d in self.data:
-            logits = ref.infer(d.x)
-            self.fp32_argmax.append(logits.argmax(1))
-            cm.update(postprocess(logits, *d.label.shape), d.label)
-        self.fp32_miou = cm.miou()
-        self.fp32_artifact_id = ref.metadata()["artifact_id"]
+        super().__init__(cfg, ref, samples)
 
     def build(self, excluded: tuple[str, ...]) -> tuple[Path, dict[str, Any]]:
         exc = Exclusions("sensitivity", self.cfg.name, tuple(excluded), ())
@@ -207,12 +235,38 @@ class SubsetScorer:
         path, meta = self.build(excluded)
         backend = get_backend("ort_cpu", **({"threads": threads} if threads else {}))
         backend.load(path, self.cfg)
-        cm = ConfusionMatrix(self.cfg.num_classes)
-        agree = []
-        for d, ref_argmax in zip(self.data, self.fp32_argmax, strict=True):
-            logits = backend.infer(d.x)
-            agree.append(float((logits.argmax(1) == ref_argmax).mean()))
-            cm.update(postprocess(logits, *d.label.shape), d.label)
-        miou = cm.miou()
-        return Score(miou, (miou - self.fp32_miou) * 100, float(np.mean(agree)),
-                     meta["artifact_id"])  # fmt: skip
+        return self.score_backend(backend, meta["artifact_id"])
+
+
+Build = Callable[[Path], tuple[Path, dict[str, Any]]]
+
+
+class PrebuiltScorer(_Subset):
+    """Build-and-score for configurations generated ahead of time (C5, D-032): look the
+    ONNX model up in a candidate set, build it with `build` (an engine is reused when its
+    id exists), run it on a fresh `backend_name` backend. The reference is the FP32 model
+    on the same backend, so the delta is what quantization costs on that runtime."""
+
+    def __init__(
+        self,
+        cfg: ModelConfig,
+        ref: Backend,
+        candidates: CandidateSet,
+        build: Build,
+        samples: Iterable[Sample],
+        backend_name: str = "trt",
+        precision: str = "int8_fp16",
+    ) -> None:
+        self.candidates, self.build_fn = candidates, build
+        self.backend_name, self.precision = backend_name, precision
+        self.built: dict[tuple[str, ...], dict[str, Any]] = {}
+        super().__init__(cfg, ref, samples)
+
+    def score(self, excluded: tuple[str, ...], build: Build | None = None) -> Score:
+        onnx_path = self.candidates.path(excluded, self.precision)
+        path, meta = (build or self.build_fn)(onnx_path)
+        if build is None:
+            self.built[tuple(sorted(excluded))] = meta
+        backend = get_backend(self.backend_name)
+        backend.load(path, self.cfg)
+        return self.score_backend(backend, meta["artifact_id"])

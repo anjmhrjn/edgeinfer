@@ -97,3 +97,42 @@ def test_debug_engine_exposes_intermediate_tensors(tiny_onnx, tmp_path, x):
     with pytest.raises(ValueError, match="debug engine"):
         backend.layer_outputs(x, ["not_a_tensor"])
     backend.close()
+
+
+def test_implicit_int8_is_gone():
+    """D-031: TensorRT 11 removes calibrator-based (implicit) INT8; explicit Q/DQ only."""
+    import tensorrt as trt
+
+    assert not hasattr(trt, "IInt8Calibrator")
+    assert not hasattr(trt, "IInt8EntropyCalibrator2")
+    assert not hasattr(trt.BuilderFlag, "INT8")
+
+
+def test_int8_engine_fuses_qdq(fake_cityscapes, tiny_onnx, tmp_path, x):
+    """An INT8 Q/DQ model builds into INT8 layers: every quantized ONNX node is named by an
+    engine layer with INT8 inputs (the inspector format the layer summary relies on)."""
+    from dataclasses import replace
+
+    from edgeinfer.backends.trt_layers import layer_summary, quantized_onnx_nodes
+    from edgeinfer.quant.calib import calibrate
+    from edgeinfer.quant.config import load_group_rules, load_quant_config, no_exclusions
+    from edgeinfer.quant.ptq import quantize
+    from tests.test_quant import TINY_GROUPS, _manifest
+
+    q = load_quant_config("int8_percentile")
+    calib = _manifest(fake_cityscapes, tmp_path, "train")
+    q = replace(q, calibration=replace(q.calibration, manifest=str(calib)))
+    cal = calibrate(tiny_onnx, CFG, q, fake_cityscapes, tmp_path / "calib")
+    rules = load_group_rules("tiny_fixture", TINY_GROUPS)
+    int8, _ = quantize(tiny_onnx, CFG, q, cal, rules, no_exclusions(CFG.name), tmp_path / "onnx")
+    path, meta = build_engine(int8, CFG, load_build_config(), out_root=tmp_path / "engines")
+    assert meta["precision"] == "int8"
+    layers = json.loads((path.parent / meta["layers_file"]).read_text())
+    summary, findings = layer_summary(layers, quantized_onnx_nodes(onnx.load(str(int8))))
+    print(json.dumps(summary, indent=1))  # the real inspector output, for the session log
+    assert summary["by_precision"].get("int8", 0) > 0
+    assert summary["quantized_onnx_nodes"]["not_int8"] == [], findings
+    ref = ort.InferenceSession(str(int8)).run(None, {"input": x})[0]
+    got = _loaded(path).infer(x)
+    # INT8 kernels round differently from ORT's; a loose bound catches a broken build.
+    assert np.abs(got - ref).max() < 0.25 * max(1.0, float(np.abs(ref).max()))

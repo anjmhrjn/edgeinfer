@@ -15,10 +15,17 @@ from edgeinfer.analyze.candidates import (
     subsets,
     top_groups,
 )
+from edgeinfer.analyze.sensitivity import PrebuiltScorer, run_sensitivity
+from edgeinfer.artifacts import load_sidecar
+from edgeinfer.backends import get_backend
+from edgeinfer.cli import main
 from edgeinfer.config import load_model_config
+from edgeinfer.data.cityscapes import iter_samples
+from edgeinfer.data.manifests import load_manifest
 from edgeinfer.quant.calib import calibrate
-from edgeinfer.quant.config import load_group_rules, load_quant_config
+from edgeinfer.quant.config import Exclusions, load_group_rules, load_quant_config
 from edgeinfer.quant.mixed import convert_int8_fp16
+from edgeinfer.quant.ptq import quantize
 from tests.conftest import TINY_CONFIG
 from tests.test_mixed import FakeConvert
 from tests.test_quant import TINY_GROUPS, _manifest
@@ -104,3 +111,56 @@ def test_generate_every_subset_with_the_real_conversion(setup):
     cands = CandidateSet(_report(tmp, configs, ["head", "stem"]), tmp / "onnx")
     assert cands.path(("stem", "head")).name == configs[3]["int8_fp16"]["file"]  # order-free
     assert cands.path((), "int8").name == configs[0]["int8"]["file"]
+
+
+def _int8_candidates(setup, groups):
+    """A candidates report over real INT8 models (no ModelOpt needed), for scorer tests."""
+    cfg, q, cal, rules, tmp, fp32 = setup
+    configs = []
+    for excluded in subsets(groups):
+        exc = Exclusions("sensitivity", cfg.name, excluded, ())
+        path, meta = quantize(fp32, cfg, q, cal, rules, exc, tmp / "onnx")
+        entry = {"file": path.name, "artifact_id": meta["artifact_id"]}
+        configs.append({"excluded": list(excluded), "int8": entry, "int8_fp16": entry})
+    return CandidateSet(_report(tmp, configs, groups), tmp / "onnx")
+
+
+def test_prebuilt_scorer_on_ort(setup, fake_cityscapes):
+    """The TensorRT scoring path with ORT standing in: look up, 'build' (identity), score
+    against the FP32 reference on the same backend, then leave-one-out and greedy."""
+    cfg, *_, tmp, fp32 = setup
+    cands = _int8_candidates(setup, ["head", "stem"])
+    ref = get_backend("ort_cpu")
+    ref.load(fp32, cfg)
+    builds = []
+
+    def build(onnx_path):
+        builds.append(onnx_path.name)
+        return onnx_path, load_sidecar(onnx_path)
+
+    samples = list(
+        iter_samples(fake_cityscapes, load_manifest(_manifest(fake_cityscapes, tmp, "val")))
+    )
+    scorer = PrebuiltScorer(cfg, ref, cands, build, samples, "ort_cpu", "int8")
+    full = scorer.score(())
+    assert full.artifact_id == load_sidecar(cands.path(()))["artifact_id"]
+    both = scorer.score(("stem", "head"))  # order-free lookup; attn stays INT8
+    assert both.artifact_id == load_sidecar(cands.path(("head", "stem")))["artifact_id"]
+    metrics, _ = run_sensitivity(["head", "stem"], scorer.score, full=full, noise_floor=0.0,
+                                 budget=1.0, margin=0.0, modes=("except",))  # fmt: skip
+    assert sorted(metrics["ranking"]) == ["head", "stem"]
+    assert {k for k in scorer.built} >= {(), ("head",), ("stem",)}
+    with pytest.raises(CandidateError) as e:
+        scorer.score(("attn",))  # not among the generated groups
+    assert e.value.code == "SENS_CANDIDATE_MISSING"
+
+
+def test_candidates_cli_refuses_a_ranking_for_another_model(tmp_path):
+    ranking = tmp_path / "ranking.json"
+    ranking.write_text(json.dumps(_ranking_report(model="segformer_b0")))
+    out = tmp_path / "candidates.json"
+    rc = main(["candidates", "--model", str(TINY_CONFIG), "--artifact", "unused.onnx",
+               "--quant-config", "int8_entropy", "--ranking", str(ranking), "--top", "1",
+               "--groups", str(TINY_GROUPS), "--out", str(out)])  # fmt: skip
+    report = json.loads(out.read_text())
+    assert rc == 1 and report["findings"][0]["code"] == "SENS_RANKING_MISMATCH"

@@ -524,6 +524,11 @@ def cmd_sensitivity(args: argparse.Namespace) -> int:
     from edgeinfer.quant.config import load_group_rules, load_quant_config
     from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
 
+    if args.candidates:
+        return _sensitivity_prebuilt(args)
+    if not (args.artifact and args.quant_config):
+        print("error: --artifact and --quant-config are required (or --candidates)")
+        return 2
     cfg = load_model_config(args.model)
     qcfg = load_quant_config(args.quant_config)
     rules = load_group_rules(cfg.name, args.groups)
@@ -602,11 +607,178 @@ def cmd_sensitivity(args: argparse.Namespace) -> int:
     return 0 if passed else 1
 
 
+def _sensitivity_prebuilt(args: argparse.Namespace) -> int:
+    """`edgeinfer sensitivity --candidates`: leave-one-out and greedy over configurations
+    generated on the Mac, built and scored on `--backend` (TensorRT; D-032)."""
+    import json
+    from dataclasses import replace
+
+    from edgeinfer.analyze.candidates import CandidateError, CandidateSet
+    from edgeinfer.analyze.sensitivity import (
+        NON_ADDITIVE_MIN_POINTS,
+        PrebuiltScorer,
+        run_sensitivity,
+    )
+    from edgeinfer.backends import get_backend
+    from edgeinfer.backends.trt import build_engine
+    from edgeinfer.backends.trt_meta import ENGINE_DIR, BackendError, load_build_config
+    from edgeinfer.config import load_budgets, load_model_config
+    from edgeinfer.data.cityscapes import cityscapes_root, iter_samples
+    from edgeinfer.data.manifests import load_manifest
+    from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
+
+    cfg = load_model_config(args.model)
+    if not args.ref_artifact:
+        print(
+            "error: --ref-artifact (the FP32 model on this backend) is required with --candidates"
+        )
+        return 2
+    cands_path = Path(args.candidates)
+    cands_report = json.loads(cands_path.read_text())
+    cands = CandidateSet(cands_report)
+    if cands.model != cfg.name:
+        print(f"error: {cands_path.name} is for {cands.model}, not {cfg.name}")
+        return 2
+    bcfg = load_build_config(args.build_config)
+    budget = float(load_budgets()["accuracy"]["miou_drop_max_points"])
+    entries = load_manifest(args.manifest)
+    if args.limit:
+        entries = entries[: args.limit]
+    sha, dirty = git_state()
+    if dirty:
+        print("warning: uncommitted changes; this report must not back any published number")
+
+    def build(onnx_path: Path) -> tuple[Path, dict]:
+        return build_engine(onnx_path, cfg, bcfg)
+
+    # Noise floor: the full INT8 model built again, cold (no timing cache) and separately,
+    # so the builder chooses its kernels anew (D-029, D-032).
+    noise_bcfg = replace(bcfg, timing_cache=False)
+
+    def rebuild(onnx_path: Path) -> tuple[Path, dict]:
+        return build_engine(
+            onnx_path, cfg, noise_bcfg, out_root=ENGINE_DIR.parent / "engines_noise"
+        )
+
+    ref = get_backend(args.backend)
+    ref.load(Path(args.ref_artifact), cfg)
+    groups = cands.groups
+    print(f"sensitivity {cfg.name} on {args.backend} ({args.precision}): top {len(groups)} "
+          f"groups {groups}, leave-one-out, {len(entries)} images from "
+          f"{Path(args.manifest).stem}")  # fmt: skip
+    findings = []
+    metrics: dict = {}
+    try:
+        scorer = PrebuiltScorer(cfg, ref, cands, build, iter_samples(cityscapes_root(args.root),
+                                entries), args.backend, args.precision)  # fmt: skip
+        full = scorer.score(())
+        noise = scorer.score((), build=rebuild)
+        floor = abs(noise.delta_points - full.delta_points)
+        print(f"  FP32 mIoU {scorer.fp32_miou * 100:.3f}; full INT8 {full.delta_points:+.3f} "
+              f"(cold rebuild {noise.delta_points:+.3f}; noise floor {floor:.3f})")  # fmt: skip
+        metrics, findings = run_sensitivity(
+            groups, scorer.score, full=full, noise_floor=floor, budget=budget,
+            margin=args.margin, modes=("except",),
+        )  # fmt: skip
+        metrics = {"n_images": len(entries), "fp32_miou": scorer.fp32_miou,
+                   "fp32_artifact_id": scorer.fp32_artifact_id,
+                   "noise_run": {"cold_rebuild": True, "artifact_id": noise.artifact_id,
+                                 "delta_points": noise.delta_points},
+                   **metrics,
+                   "engines": [{"excluded": list(k), "artifact_id": m["artifact_id"],
+                                "sha256": m["sha256"], "build_seconds": m["build_seconds"]}
+                               for k, m in sorted(scorer.built.items())]}  # fmt: skip
+    except (CandidateError, BackendError) as e:
+        findings.append({"severity": "error", "code": e.code, "message": str(e)})
+    passed = not any(f["severity"] == "error" for f in findings)
+    ref_meta = ref.metadata()
+    report = make_report(
+        tool="sensitivity", model=cfg.name,
+        backend_meta={**ref_meta, "precision": args.precision,
+                      "artifact_id": metrics.get("full_int8", {}).get("artifact_id", "none")},
+        inputs={"candidates": cands_path.name, "ref_artifact": Path(args.ref_artifact).name,
+                "ref_artifact_id": ref_meta["artifact_id"], "build_config": bcfg.to_dict(),
+                "manifest": Path(args.manifest).stem, "limit": args.limit,
+                "modes": ["except"], "groups": groups},
+        thresholds={"miou_drop_budget_points": budget, "margin_points": args.margin,
+                    "target_drop_points": budget - args.margin,
+                    "non_additive_min_points": NON_ADDITIVE_MIN_POINTS},
+        metrics=metrics, findings=findings, passed=passed,
+    )  # fmt: skip
+    if args.out:
+        out = Path(args.out)
+    else:
+        report_dir = Path(args.report_dir) if args.report_dir else REPORTS_DIR
+        tag = f"{cfg.name}__{args.backend}__{args.precision}__{Path(args.manifest).stem}"
+        tag += f"__first{args.limit}" if args.limit else ""
+        out = report_dir / f"sensitivity__{tag}__{sha[:7]}.json"
+    write_report(report, out)
+    _print_findings(findings)
+    print(f"{'PASS' if passed else 'FAIL'} -> {out}")
+    return 0 if passed else 1
+
+
+def cmd_candidates(args: argparse.Namespace) -> int:
+    """Every subset of the top-N ORT sensitivity groups, quantized and converted to INT8+FP16
+    for a TensorRT sensitivity run (D-032)."""
+    import json
+    import platform
+
+    from edgeinfer.analyze.candidates import CandidateError, generate, top_groups
+    from edgeinfer.config import load_model_config
+    from edgeinfer.data.cityscapes import cityscapes_root
+    from edgeinfer.quant import QuantError
+    from edgeinfer.quant.calib import CALIB_DIR, calibrate
+    from edgeinfer.quant.config import load_group_rules, load_quant_config
+    from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
+
+    cfg = load_model_config(args.model)
+    qcfg = load_quant_config(args.quant_config)
+    rules = load_group_rules(cfg.name, args.groups)
+    fp32_path = Path(args.artifact)
+    ranking_path = Path(args.ranking)
+    sha, dirty = git_state()
+    if dirty:
+        print("warning: uncommitted changes; this report must not back any published number")
+    inputs = {"artifact": fp32_path.name, "quant_config": qcfg.to_dict(),
+              "ranking_report": ranking_path.name, "top": args.top}  # fmt: skip
+    metrics: dict = {}
+    findings = []
+    try:
+        groups = top_groups(json.loads(ranking_path.read_text()), cfg.name, args.top)
+        cal = calibrate(fp32_path, cfg, qcfg, cityscapes_root(args.root),
+                        Path(args.calib_dir) if args.calib_dir else CALIB_DIR)  # fmt: skip
+        print(f"candidates {cfg.name}: {2 ** len(groups)} configurations of {groups}")
+        roots = {"out_root": Path(args.out_root)} if args.out_root else {}
+        configs = generate(fp32_path, cfg, qcfg, cal, rules, groups, **roots)
+        metrics = {"groups": groups, "n_configs": len(configs),
+                   "calibration_id": cal[1]["calibration_id"], "configs": configs}  # fmt: skip
+    except (CandidateError, QuantError) as e:
+        findings.append({"severity": "error", "code": e.code, "message": str(e)})
+    passed = not findings
+    report = make_report(
+        tool="candidates", model=cfg.name,
+        backend_meta={"backend": "onnxruntime.quantization+modelopt", "precision": "int8_fp16",
+                      "device": f"cpu ({platform.machine()})", "artifact_id": "none",
+                      "versions": {}},
+        inputs=inputs, metrics=metrics, findings=findings, passed=passed,
+    )  # fmt: skip
+    name = f"candidates__{cfg.name}__{qcfg.name}__top{args.top}__{sha[:7]}.json"
+    out = Path(args.out) if args.out else REPORTS_DIR / name
+    write_report(report, out)
+    _print_findings(findings)
+    print(f"{'PASS' if passed else 'FAIL'} -> {out}")
+    return 0 if passed else 1
+
+
 def cmd_build(args: argparse.Namespace) -> int:
     import json
 
+    import onnx
+
     from edgeinfer.artifacts import artifact_identity
     from edgeinfer.backends.trt import build_engine, runtime_fingerprint
+    from edgeinfer.backends.trt_layers import layer_summary, quantized_onnx_nodes
     from edgeinfer.backends.trt_meta import BackendError, layer_datatypes, load_build_config
     from edgeinfer.config import load_model_config
     from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
@@ -643,11 +815,17 @@ def cmd_build(args: argparse.Namespace) -> int:
         # What the engine actually runs in (strong typing should match the ONNX model).
         layers = json.loads((path.parent / meta["layers_file"]).read_text())
         metrics["layer_output_datatypes"] = layer_datatypes(layers)
+        # INT8 engines: did every quantized ONNX node become an INT8 layer (Q/DQ fused)?
+        quantized = (quantized_onnx_nodes(onnx.load(str(onnx_path), load_external_data=False))
+                     if onnx_id["precision"] in ("int8", "int8_fp16") else None)  # fmt: skip
+        metrics["layers"], layer_findings = layer_summary(layers, quantized)
+        findings += layer_findings
         print(f"{path} ({meta['size_bytes'] / 1e6:.1f} MB, {meta['num_layers']} layers, "
-              f"built in {meta['build_seconds']} s)")  # fmt: skip
+              f"built in {meta['build_seconds']} s); layers {metrics['layers']['by_precision']}, "
+              f"{metrics['layers']['reformat_layers']} reformats")  # fmt: skip
     except BackendError as e:
         findings.append({"severity": "error", "code": e.code, "message": str(e)})
-    passed = not findings
+    passed = not any(f["severity"] == "error" for f in findings)
     report = make_report(tool="build", model=cfg.name, backend_meta=backend_meta, inputs=inputs,
                          metrics=metrics, findings=findings, passed=passed)  # fmt: skip
     tag = f"{cfg.name}__{onnx_id['precision']}" + ("__debug" if debug else "")
@@ -858,8 +1036,15 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("sensitivity", help="rank layer groups by INT8 accuracy impact; "
                                            "suggest an exclusion list")  # fmt: skip
     p.add_argument("--model", required=True, help="config name or path")
-    p.add_argument("--artifact", required=True, help="FP32 ONNX file")
-    p.add_argument("--quant-config", required=True, help="configs/quant/<name>.yaml, or a path")
+    p.add_argument("--artifact", help="FP32 ONNX file (ORT mode)")
+    p.add_argument("--quant-config", help="configs/quant/<name>.yaml, or a path (ORT mode)")
+    p.add_argument("--candidates", help="candidates report: score its prebuilt configurations "
+                                        "on --backend instead (TensorRT mode, D-032)")  # fmt: skip
+    p.add_argument("--backend", default="trt", help="with --candidates: backend to score on")
+    p.add_argument("--ref-artifact", help="with --candidates: the FP32 model on that backend")
+    p.add_argument("--precision", default="int8_fp16", choices=("int8", "int8_fp16"),
+                   help="with --candidates: the model of each configuration to build")  # fmt: skip
+    p.add_argument("--build-config", default="build", help="with --candidates: configs/<name>.yaml")
     p.add_argument("--groups", help="group rules (default: configs/quant/groups/<model>.yaml)")
     p.add_argument("--manifest", default="sens_val100", help="scoring images")
     p.add_argument("--limit", type=int, help="first N images only (smoke runs)")
@@ -887,6 +1072,20 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--report-dir", help="report directory (default: artifacts/reports)")
     p.add_argument("--out", help="report path")
     p.set_defaults(func=cmd_sensitivity)
+
+    p = sub.add_parser("candidates", help="every subset of the top-N sensitivity groups as "
+                                          "INT8+FP16 models, for a TensorRT run")  # fmt: skip
+    p.add_argument("--model", required=True, help="config name or path")
+    p.add_argument("--artifact", required=True, help="FP32 ONNX file")
+    p.add_argument("--quant-config", required=True, help="configs/quant/<name>.yaml, or a path")
+    p.add_argument("--ranking", required=True, help="ORT sensitivity report to take the top from")
+    p.add_argument("--top", type=int, default=5, help="number of groups (2^N configurations)")
+    p.add_argument("--groups", help="group rules (default: configs/quant/groups/<model>.yaml)")
+    p.add_argument("--root", help="Cityscapes root (default: $CITYSCAPES_ROOT)")
+    p.add_argument("--calib-dir", help="calibration cache root (default: artifacts/calib)")
+    p.add_argument("--out-root", help="artifact root (default: artifacts/onnx)")
+    p.add_argument("--out", help="report path")
+    p.set_defaults(func=cmd_candidates)
 
     p = sub.add_parser("build", help="ONNX -> TensorRT engine with its metadata sidecar; "
                                      "writes a report (GPU container only)")  # fmt: skip
