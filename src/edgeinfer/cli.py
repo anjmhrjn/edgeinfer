@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import traceback
 from pathlib import Path
 
 
@@ -641,9 +642,20 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+# Exit codes: 0 checks passed, 1 checks failed (report written), 2 usage or config error,
+# 3 the tool crashed (traceback on stderr, no report). Scripts treat 1 as a result to read
+# and anything else as a reason to stop; Python's own exit code for an uncaught
+# exception is 1, which would read as a failed check.
+EXIT_CRASH = 3
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    return args.func(args)
+    try:
+        return args.func(args)
+    except Exception:  # noqa: BLE001 - top level: re-reported, not silenced
+        traceback.print_exc()
+        return EXIT_CRASH
 
 
 if __name__ == "__main__":

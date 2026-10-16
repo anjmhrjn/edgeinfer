@@ -2,6 +2,8 @@
 
 Stable enum of `findings[].code` values used in JSON reports. Codes are never renamed or reused; deprecated codes stay listed.
 
+**CLI exit codes:** `0` checks passed; `1` checks failed and the report was written; `2` usage or configuration error; `3` the tool crashed (traceback on stderr, no report). A caller can read the report after exit 1 and should stop on anything else.
+
 | Code | Tool | Severity | Meaning |
 |---|---|---|---|
 | `EVAL_CLASS_ABSENT` | eval | warn | A class has no pixels in the labels or the predictions, so it's excluded from mIoU. Expected only on small subsets. |

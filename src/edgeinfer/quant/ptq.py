@@ -88,6 +88,36 @@ def _ort_kwargs(qcfg: QuantConfig, cache: Path, excluded: list[str]) -> dict[str
     }
 
 
+def unshare_excluded_inputs(model: onnx.ModelProto, excluded: list[str]) -> int:
+    """Point excluded nodes back at the float tensor where ORT shared a Q/DQ with them.
+
+    ORT quantizes an activation once and rewires every reader of it through the new
+    DequantizeLinear, including readers in `nodes_to_exclude` (its `DedicatedQDQPair`
+    option only splits pairs between two or more quantized readers). So an excluded
+    node whose input also feeds a quantized node would silently run on quantized
+    values. A tensor read by nodes in different groups hits this whenever only one
+    of the groups is excluded, e.g. DeepLab's low-level features (bb.s32 and
+    lowlevel_proj). Weights are untouched: ORT only quantizes those of quantized nodes.
+
+    A no-op unless such a tensor exists, so artifacts built without it are unchanged.
+    Returns the number of inputs rewired."""
+    producer = {o: n for n in model.graph.node for o in n.output}
+    excluded_set = set(excluded)
+    rewired = 0
+    for node in model.graph.node:
+        if node.name not in excluded_set:
+            continue
+        for i, name in enumerate(node.input):
+            dq = producer.get(name)
+            if dq is None or dq.op_type != "DequantizeLinear":
+                continue
+            q = producer.get(dq.input[0])
+            if q is not None and q.op_type == "QuantizeLinear":
+                node.input[i] = q.input[0]
+                rewired += 1
+    return rewired
+
+
 def check_placement(
     model: onnx.ModelProto, op_types: tuple[str, ...], excluded: list[str]
 ) -> dict[str, Any]:
@@ -164,7 +194,9 @@ def quantize(
         quantize_static(str(fp32_path), str(tmp), None, **_ort_kwargs(qcfg, cache, excluded))
         root_logger.setLevel(level)
         model = onnx.load(str(tmp))
+        unshared = unshare_excluded_inputs(model, excluded)
         placement = check_placement(model, qcfg.op_types, excluded)
+        placement["unshared_inputs"] = unshared
         onnx.helper.set_model_props(model, {
             **{p.key: p.value for p in model.metadata_props},
             META_PREFIX + "artifact_id": art_id,
