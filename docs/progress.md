@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C3 — INT8 quantization and sensitivity analysis on ORT (CPU)
-**Next step:** Teach-back (`private/teach-back-C3.md`), CI green on GitHub, then Anuj's sign-off.
+**Next step:** CI green on GitHub, then Anuj's sign-off.
 
 ## C3 — INT8 quantization and sensitivity analysis on ORT
 Plan agreed 2026-10-15: ORT `quantize_static` (ModelOpt compared in C5), TRT-style Q/DQ placement (inputs of Conv/MatMul/Gemm), medium sensitivity groups from exporter name scopes, sensitivity scored on a seeded 100-image val subset.
@@ -15,7 +15,7 @@ Plan agreed 2026-10-15: ORT `quantize_static` (ModelOpt compared in C5), TRT-sty
 - [x] Exclusion list end to end + config-only faults caught on both real models
 - [x] CI fixture: quantize → validate → eval → parity → sensitivity, plus config-only faults
 - [x] Decision records (D-015..D-019), report codes and CLI exit codes, results
-- [ ] Teach-back: model answers in `private/teach-back-C3.md`
+- [x] Teach-back: model answers in `private/teach-back-C3.md`
 - [ ] CI green
 - [ ] Sign-off (Anuj)
 
