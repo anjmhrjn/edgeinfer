@@ -138,10 +138,9 @@ case "$phase" in
         ;;
     nsys)
         lock_clocks
+        # One model, as the roadmap asks: SegFormer FP16, the engine C5 builds on.
         m=segformer_b0
-        run run "nsys profile --trace=cuda,nvtx,osrt --output=artifacts/reports/nsys__${m}__fp16 --force-overwrite=true \
-edgeinfer perf --model $m --backend trt --artifact $(engine "$m" fp16) --warmup 20 --iterations 100 --repeats 1 \
---out artifacts/reports/perf__${m}__trt__fp16__nsys.json"
+        run run "python scripts/nsys_report.py --model $m --engine $(engine "$m" fp16)"
         ;;
     *)
         echo "unknown phase: $phase" >&2

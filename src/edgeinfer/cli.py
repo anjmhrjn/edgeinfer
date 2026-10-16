@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import traceback
+from collections.abc import Iterator
 from pathlib import Path
 
 
@@ -645,6 +647,19 @@ def cmd_build(args: argparse.Namespace) -> int:
     return 0 if passed else 1
 
 
+@contextlib.contextmanager
+def _cuda_profiler_range() -> Iterator[None]:
+    """cudaProfilerStart/Stop around the block: the capture range for nsys (C4 task 6)."""
+    from edgeinfer.backends.trt import _import_runtime, _ok
+
+    _, cudart = _import_runtime()
+    _ok(cudart, cudart.cudaProfilerStart())
+    try:
+        yield
+    finally:
+        _ok(cudart, cudart.cudaProfilerStop())
+
+
 def cmd_perf(args: argparse.Namespace) -> int:
     from dataclasses import asdict
 
@@ -697,8 +712,13 @@ def cmd_perf(args: argparse.Namespace) -> int:
     meta = backend.metadata()
     print(f"perf {cfg.name} on {args.backend} ({meta['precision']}): {pcfg.warmup_iterations} "
           f"warmup + {pcfg.repeats} x {pcfg.iterations} iterations, frames: {source}")  # fmt: skip
+    if args.cuda_profiler_range and args.backend != "trt":
+        print("error: --cuda-profiler-range needs --backend trt")
+        return 2
+    profiler = _cuda_profiler_range() if args.cuda_profiler_range else contextlib.nullcontext()
     try:
-        metrics, findings, passed = run_probe(cfg, backend, frames, pcfg, budgets)
+        with profiler:
+            metrics, findings, passed = run_probe(cfg, backend, frames, pcfg, budgets)
     except ConfigError as e:
         print(f"error: {e}")
         return 2
@@ -885,6 +905,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--iterations", type=int, help="override iterations per repeat")
     p.add_argument("--repeats", type=int, help="override repeats")
     p.add_argument("--max-images", type=int, help="override max_images")
+    p.add_argument(
+        "--cuda-profiler-range",
+        action="store_true",
+        help="bracket warmup and measurement with cudaProfilerStart/Stop, so "
+        "`nsys profile --capture-range=cudaProfilerApi` leaves out engine loading (trt only)",
+    )
     p.add_argument("--out", help="report path (default: artifacts/reports/...)")
     p.set_defaults(func=cmd_perf)
 
