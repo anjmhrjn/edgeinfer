@@ -1,0 +1,136 @@
+{
+  "schema_version": "1",
+  "tool": "perf",
+  "created_at": "2026-10-16T16:55:21+00:00",
+  "git_sha": "d4c433825938135ba827adfc93d16104c483dfe6",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": 4,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "onnxruntime": "1.31.0",
+      "onnx": "1.23.2"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "ort_cpu",
+  "precision": "fp32",
+  "artifact_id": "0ef7fcdb0cdc344827ec5243eb2f914c1f53a3385ad4d21cdca71488cff55288",
+  "inputs": {
+    "frames": "golden_val32",
+    "frame_hw": [
+      1024,
+      2048
+    ],
+    "artifact": "segformer_b0__fp32__0ef7fcdb0cdc.onnx",
+    "perf_config": {
+      "warmup_iterations": 20,
+      "iterations": 400,
+      "repeats": 3,
+      "manifest": "golden_val32",
+      "max_images": 8,
+      "postprocess_size": "label",
+      "max_repeat_p99_spread": 0.1
+    },
+    "gc": "enabled; collected before each repeat"
+  },
+  "thresholds": {
+    "latency": null
+  },
+  "metrics": {
+    "spans_ms": {
+      "e2e": {
+        "n": 1200,
+        "mean": 310.17744397166666,
+        "std": 15.388081527733307,
+        "min": 295.9585,
+        "p50": 306.903417,
+        "p90": 319.004708,
+        "p99": 371.361959,
+        "max": 520.883792
+      },
+      "preprocess": {
+        "n": 1200,
+        "mean": 13.834846613333333,
+        "std": 1.3138723557563114,
+        "min": 13.226833,
+        "p50": 13.477834,
+        "p90": 14.38175,
+        "p99": 19.006166,
+        "max": 30.79625
+      },
+      "infer": {
+        "n": 1200,
+        "mean": 115.52328260333333,
+        "std": 9.273105065772512,
+        "min": 110.108416,
+        "p50": 114.112,
+        "p90": 119.520083,
+        "p99": 151.403833,
+        "max": 273.047625
+      },
+      "postprocess": {
+        "n": 1200,
+        "mean": 180.81931475500002,
+        "std": 8.01028218150566,
+        "min": 166.162083,
+        "p50": 179.791375,
+        "p90": 187.211458,
+        "p99": 211.6315,
+        "max": 272.504291
+      }
+    },
+    "throughput_fps": 3.2238492916281363,
+    "repeats": [
+      {
+        "e2e_p50_ms": 309.856459,
+        "e2e_p99_ms": 388.359625,
+        "throughput_fps": 3.1813062752948396,
+        "telemetry_before": null,
+        "telemetry_after": null
+      },
+      {
+        "e2e_p50_ms": 307.681209,
+        "e2e_p99_ms": 412.065166,
+        "throughput_fps": 3.2111127277702542,
+        "telemetry_before": null,
+        "telemetry_after": null
+      },
+      {
+        "e2e_p50_ms": 304.117083,
+        "e2e_p99_ms": 325.767959,
+        "throughput_fps": 3.2807346576184866,
+        "telemetry_before": null,
+        "telemetry_after": null
+      }
+    ],
+    "repeat_p99_spread": 0.22220952293895113,
+    "span_inconsistencies": 0,
+    "device_stages_timed": false,
+    "host_peak_rss_bytes": 1704247296,
+    "artifact_size_bytes": 15622794
+  },
+  "passed": true,
+  "findings": [
+    {
+      "severity": "info",
+      "code": "PERF_DEV_HOST",
+      "message": "measured on a development host (cpu (arm64)); not a deployment latency"
+    },
+    {
+      "severity": "warn",
+      "code": "PERF_UNSTABLE",
+      "message": "p99 e2e varies by 22.2% across repeats (limit 10%): 388.36, 412.07, 325.77 ms"
+    },
+    {
+      "severity": "info",
+      "code": "PERF_BUDGET_UNSET",
+      "message": "configs/budgets.yaml has no latency budget yet (set in C4b)"
+    }
+  ]
+}
