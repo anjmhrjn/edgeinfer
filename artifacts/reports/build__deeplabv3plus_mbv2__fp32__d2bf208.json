@@ -1,0 +1,87 @@
+{
+  "schema_version": "1",
+  "tool": "build",
+  "created_at": "2026-10-16T18:18:32+00:00",
+  "git_sha": "d2bf208a092b092121f362e51340d9007cb30061",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "cuda:0 (Tesla T4, sm_75)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "trt",
+  "precision": "fp32",
+  "artifact_id": "9f849b8cbe004b16f48d5fb5522d0f9fe3ff18a076eb545e0fd8846817a25bb8",
+  "inputs": {
+    "artifact": "deeplabv3plus_mbv2__fp32__98b5428431cd.onnx",
+    "onnx_artifact_id": "98b5428431cd9bbe3b80354b251010db60b811b0a081b59afad424b477bfaa4b",
+    "build_config": {
+      "name": "build_default",
+      "workspace_mib": 2048,
+      "builder_optimization_level": 3,
+      "timing_cache": true,
+      "profiling_verbosity": "detailed"
+    },
+    "debug_outputs": []
+  },
+  "thresholds": {},
+  "metrics": {
+    "file": "deeplabv3plus_mbv2__fp32__9f849b8cbe00.engine",
+    "sha256": "f10c17df4b0d31288e38cf36cf3f3a31b157295f185dbd4b7134d8650a1e60c4",
+    "size_bytes": 23595996,
+    "parent_artifact_id": "98b5428431cd9bbe3b80354b251010db60b811b0a081b59afad424b477bfaa4b",
+    "runtime": {
+      "tensorrt": "11.3.0.99",
+      "gpu_name": "Tesla T4",
+      "compute_capability": "7.5",
+      "cuda_driver": 13040,
+      "cuda_runtime": 13040
+    },
+    "io": [
+      {
+        "name": "input",
+        "mode": "input",
+        "shape": [
+          1,
+          3,
+          512,
+          1024
+        ],
+        "dtype": "float32"
+      },
+      {
+        "name": "logits",
+        "mode": "output",
+        "shape": [
+          1,
+          19,
+          128,
+          256
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "num_layers": 94,
+    "layers_file": "deeplabv3plus_mbv2__fp32__9f849b8cbe00.layers.json",
+    "device_memory_bytes": 91783680,
+    "timing_cache": {
+      "used": true,
+      "file": "timing_cache__trt11.3.0.99__sm7.5.cache",
+      "sha256_before_build": "97568a46d68e6893003bc552fb1f5cb15899dbd827e75a01a5a5c0530566165d"
+    },
+    "build_seconds": 32.52,
+    "layer_output_datatypes": {
+      "Float": 94
+    }
+  },
+  "passed": true,
+  "findings": []
+}
