@@ -1,0 +1,7 @@
+# Suggested by `edgeinfer sensitivity` (sensitivity__deeplabv3plus_mbv2__int8_percentile__sens_val100__da584fa.json): groups kept in float so
+# the drop on sens_val100 is within the budget minus margin.
+name: deeplabv3plus_mbv2__sens
+model: deeplabv3plus_mbv2
+groups:
+- bb.stem_16
+nodes: []

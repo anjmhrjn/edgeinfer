@@ -1,0 +1,209 @@
+{
+  "schema_version": "1",
+  "tool": "sensitivity",
+  "created_at": "2026-10-16T02:02:14+00:00",
+  "git_sha": "da584faa439999339e3cd948076b91f2c340d8e4",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": 4,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "onnxruntime": "1.31.0"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "ort_cpu",
+  "precision": "int8",
+  "artifact_id": "2110a1487014c1037478ecb1e4d23766744e87975289d32c7741e36a4152d735",
+  "inputs": {
+    "artifact": "deeplabv3plus_mbv2__fp32__98b5428431cd.onnx",
+    "quant_config": {
+      "name": "int8_percentile",
+      "activation_type": "int8",
+      "weight_type": "int8",
+      "activation_symmetric": true,
+      "weight_symmetric": true,
+      "per_channel": true,
+      "op_types": [
+        "Conv",
+        "MatMul",
+        "Gemm"
+      ],
+      "quantize_outputs": false,
+      "quantize_bias": false,
+      "calibration": {
+        "manifest": "calib_train200",
+        "limit": null,
+        "method": "percentile",
+        "num_bins": 2048,
+        "num_quantized_bins": null,
+        "percentile": 99.99,
+        "chunk_images": 2
+      }
+    },
+    "calibration_id": "a08dc6d943c00c7e77895d89f12ef4b740f78a28020ccaa048c07c8c265d18c9",
+    "groups": "deeplabv3plus_mbv2.yaml",
+    "manifest": "sens_val100",
+    "limit": null,
+    "modes": [
+      "only",
+      "except"
+    ]
+  },
+  "thresholds": {
+    "miou_drop_budget_points": 1.0,
+    "margin_points": 0.7,
+    "target_drop_points": 0.30000000000000004,
+    "non_additive_min_points": 0.1
+  },
+  "metrics": {
+    "n_images": 100,
+    "fp32_miou": 0.6679610879734338,
+    "fp32_artifact_id": "98b5428431cd9bbe3b80354b251010db60b811b0a081b59afad424b477bfaa4b",
+    "noise_run": {
+      "threads": 1,
+      "delta_points": -1.1574346955096182
+    },
+    "full_int8": {
+      "miou": 0.6563867410183376,
+      "delta_points": -1.1574346955096182,
+      "argmax_agreement": 0.9802020263671875,
+      "artifact_id": "2110a1487014c1037478ecb1e4d23766744e87975289d32c7741e36a4152d735"
+    },
+    "noise_floor_points": 0.0,
+    "groups": [
+      {
+        "group": "bb.stem_16",
+        "only_delta": -0.953285134022841,
+        "only_agreement": 0.98367431640625,
+        "except_delta": -0.13067779534889912,
+        "except_agreement": 0.9904217529296875,
+        "recovery": 1.026756900160719,
+        "distinguishable": true
+      },
+      {
+        "group": "bb.s24",
+        "only_delta": -0.05332403075134495,
+        "only_agreement": 0.993377685546875,
+        "except_delta": -0.9838927152723831,
+        "except_agreement": 0.9820169067382812,
+        "recovery": 0.1735419802372351,
+        "distinguishable": true
+      },
+      {
+        "group": "bb.s32",
+        "only_delta": -0.07607746494211476,
+        "only_agreement": 0.9975286865234375,
+        "except_delta": -1.1286609336161324,
+        "except_agreement": 0.9802365112304687,
+        "recovery": 0.028773761893485794,
+        "distinguishable": true
+      },
+      {
+        "group": "bb.s64",
+        "only_delta": -0.08679249088475727,
+        "only_agreement": 0.9977835083007812,
+        "except_delta": -1.0999474057968528,
+        "except_agreement": 0.9801162719726563,
+        "recovery": 0.0574872897127654,
+        "distinguishable": true
+      },
+      {
+        "group": "bb.s96",
+        "only_delta": 0.01821843040825666,
+        "only_agreement": 0.99724853515625,
+        "except_delta": -1.2828932957725359,
+        "except_agreement": 0.9802182006835938,
+        "recovery": -0.12545860026291766,
+        "distinguishable": true
+      },
+      {
+        "group": "bb.s160",
+        "only_delta": 0.07640250697686923,
+        "only_agreement": 0.9963619995117188,
+        "except_delta": -1.267384514609693,
+        "except_agreement": 0.9806484985351562,
+        "recovery": -0.10994981910007473,
+        "distinguishable": true
+      },
+      {
+        "group": "bb.s320",
+        "only_delta": 0.017282175913824194,
+        "only_agreement": 0.9965011596679687,
+        "except_delta": -1.146610624308786,
+        "except_agreement": 0.9807525634765625,
+        "recovery": 0.010824071200832286,
+        "distinguishable": true
+      },
+      {
+        "group": "aspp",
+        "only_delta": -0.005434678907956236,
+        "only_agreement": 0.999119873046875,
+        "except_delta": -1.1568698282573786,
+        "except_agreement": 0.9801724243164063,
+        "recovery": 0.000564867252239587,
+        "distinguishable": true
+      },
+      {
+        "group": "lowlevel_proj",
+        "only_delta": -0.00028758972476783384,
+        "only_agreement": 0.9996371459960938,
+        "except_delta": -1.1547030595788543,
+        "except_agreement": 0.9802099609375,
+        "recovery": 0.002731635930763865,
+        "distinguishable": true
+      },
+      {
+        "group": "head",
+        "only_delta": -0.14219810460216475,
+        "only_agreement": 0.9986376953125,
+        "except_delta": -1.0516680120063682,
+        "except_agreement": 0.9804022216796875,
+        "recovery": 0.10576668350325003,
+        "distinguishable": true
+      }
+    ],
+    "ranking": [
+      "bb.stem_16",
+      "bb.s24",
+      "head",
+      "bb.s64",
+      "bb.s32",
+      "bb.s320",
+      "lowlevel_proj",
+      "aspp",
+      "bb.s160",
+      "bb.s96"
+    ],
+    "n_distinguishable": 10,
+    "greedy": [
+      {
+        "excluded": [
+          "bb.stem_16"
+        ],
+        "delta": -0.13067779534889912,
+        "predicted_additive": -0.13067779534889912,
+        "agreement": 0.9904217529296875,
+        "artifact_id": "d3dcca5f82e9806513f8dd89027767b8b934c0cc10023ce37543fcc7460ac2c2"
+      }
+    ],
+    "suggested_exclusions": [
+      "bb.stem_16"
+    ],
+    "suggested_delta_points": -0.13067779534889912
+  },
+  "passed": true,
+  "findings": [
+    {
+      "severity": "info",
+      "code": "SENS_EXCLUSION_SUGGESTED",
+      "message": "keeping 1/10 groups in float brings the drop from 1.157 to 0.131 points (target 0.3): ['bb.stem_16']",
+      "where": "bb.stem_16"
+    }
+  ]
+}
