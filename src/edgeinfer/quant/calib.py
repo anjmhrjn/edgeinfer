@@ -29,10 +29,10 @@ import onnxruntime as ort
 from onnxruntime.quantization import CalibrationDataReader, CalibrationMethod
 from onnxruntime.quantization.calibrate import create_calibrator, save_tensors_data
 
+from edgeinfer.artifacts import INPUT_NAME, canonical_json, load_sidecar
 from edgeinfer.config import ModelConfig
 from edgeinfer.data.cityscapes import iter_samples
 from edgeinfer.data.manifests import ManifestEntry, format_manifest, load_manifest
-from edgeinfer.export.onnx_export import INPUT_NAME, canonical_json, load_sidecar
 from edgeinfer.preprocess import preprocess
 from edgeinfer.quant import QuantError
 from edgeinfer.quant.config import CalibrationSpec, QuantConfig

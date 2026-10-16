@@ -29,8 +29,7 @@ import onnx
 import onnxruntime as ort
 from onnxruntime.quantization import QuantFormat, QuantType, quantize_static
 
-from edgeinfer.config import ModelConfig
-from edgeinfer.export.onnx_export import (
+from edgeinfer.artifacts import (
     META_PREFIX,
     ONNX_DIR,
     canonical_json,
@@ -38,6 +37,7 @@ from edgeinfer.export.onnx_export import (
     sha256_file,
     sidecar_path,
 )
+from edgeinfer.config import ModelConfig
 from edgeinfer.quant import QuantError
 from edgeinfer.quant.calib import ORT_METHODS
 from edgeinfer.quant.config import Exclusions, GroupRules, QuantConfig

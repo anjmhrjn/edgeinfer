@@ -24,14 +24,22 @@ import numpy as np
 import onnx
 import torch
 
+from edgeinfer.artifacts import (
+    CONTRACT_KEY,
+    INPUT_NAME,
+    META_PREFIX,
+    ONNX_DIR,
+    OUTPUT_NAME,
+    canonical_json,
+    io_contract,
+    load_sidecar,
+    sha256_file,
+    sidecar_path,
+)
 from edgeinfer.config import ModelConfig
 from edgeinfer.models.registry import build_model, weights_id
-from edgeinfer.reports import REPO_ROOT, package_versions
+from edgeinfer.reports import package_versions
 
-ONNX_DIR = REPO_ROOT / "artifacts" / "onnx"
-
-INPUT_NAME = "input"
-OUTPUT_NAME = "logits"
 OPSET = 20  # D-013
 EXPORT_SETTINGS = {
     "exporter": "torch.onnx.export(dynamo=True)",
@@ -44,9 +52,6 @@ EXPORT_SETTINGS = {
 # the local checkout path and make the bytes depend on where the repo lives.
 _STRIP_NODE_METADATA = ("pkg.torch.onnx.stack_trace",)
 
-META_PREFIX = "edgeinfer."
-CONTRACT_KEY = META_PREFIX + "contract"
-
 # Post-export sanity bound, relative to max |torch logits|. Only catches a broken
 # export; parity tolerances (configs/tolerances.yaml) are the real check.
 _SANITY_REL = 1e-3
@@ -54,27 +59,6 @@ _SANITY_REL = 1e-3
 
 class ExportError(RuntimeError):
     pass
-
-
-def canonical_json(obj: Any) -> str:
-    return json.dumps(obj, sort_keys=True, separators=(",", ":"))
-
-
-def io_contract(cfg: ModelConfig) -> dict[str, Any]:
-    """What a runtime needs to feed the model and interpret its output.
-
-    Normalized through JSON (tuples -> lists) so it compares equal to the embedded copy."""
-    contract = {
-        "model": cfg.name,
-        "num_classes": cfg.num_classes,
-        "output_stride": cfg.output_stride,
-        "input_name": INPUT_NAME,
-        "output_name": OUTPUT_NAME,
-        "input": asdict(cfg.input),
-        "preprocess": asdict(cfg.preprocess),
-        "postprocess": asdict(cfg.postprocess),
-    }
-    return json.loads(canonical_json(contract))
 
 
 def _exporter_versions() -> dict[str, str]:
@@ -94,39 +78,6 @@ def artifact_id(cfg: ModelConfig) -> str:
 
 def artifact_path(cfg: ModelConfig, out_root: Path = ONNX_DIR) -> Path:
     return out_root / cfg.name / f"{cfg.name}__fp32__{artifact_id(cfg)[:12]}.onnx"
-
-
-def sidecar_path(path: Path) -> Path:
-    return path.with_suffix(".meta.json")
-
-
-def sha256_file(path: Path) -> str:
-    h = hashlib.sha256()
-    with path.open("rb") as f:
-        for chunk in iter(lambda: f.read(1 << 20), b""):
-            h.update(chunk)
-    return h.hexdigest()
-
-
-def load_sidecar(path: Path) -> dict[str, Any]:
-    """Sidecar of an artifact, checked against the file it describes."""
-    meta_path = sidecar_path(path)
-    if not meta_path.is_file():
-        raise FileNotFoundError(f"no sidecar for {path} (expected {meta_path})")
-    meta = json.loads(meta_path.read_text())
-    if meta["sha256"] != sha256_file(path):
-        raise ValueError(f"{path} does not match the sha256 in {meta_path}; file was modified")
-    return meta
-
-
-def artifact_identity(path: Path) -> dict[str, str]:
-    """artifact_id and precision of a model file: from its sidecar, or by content for
-    derived files without one (e.g. a modified copy made by a test)."""
-    try:
-        meta = load_sidecar(path)
-    except FileNotFoundError:
-        return {"artifact_id": f"sha256:{sha256_file(path)}", "precision": "unknown"}
-    return {"artifact_id": meta["artifact_id"], "precision": meta["precision"]}
 
 
 def _strip_and_annotate(model: onnx.ModelProto, cfg: ModelConfig, art_id: str) -> None:

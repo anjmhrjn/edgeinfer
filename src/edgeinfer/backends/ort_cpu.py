@@ -10,8 +10,8 @@ import numpy as np
 import onnx
 import onnxruntime as ort
 
+from edgeinfer.artifacts import INPUT_NAME, OUTPUT_NAME, artifact_identity
 from edgeinfer.config import ModelConfig
-from edgeinfer.export.onnx_export import INPUT_NAME, OUTPUT_NAME, artifact_identity
 from edgeinfer.onnx_utils import layer_groups, with_outputs
 
 # Same thread count as the torch_ref golden run (C1).

@@ -2,9 +2,9 @@ import numpy as np
 import onnx
 import pytest
 
+from edgeinfer.artifacts import sha256_file
 from edgeinfer.backends import get_backend, ort_cpu
 from edgeinfer.config import load_model_config
-from edgeinfer.export.onnx_export import sha256_file
 from edgeinfer.onnx_utils import layer_tensors
 from tests.conftest import TINY_CONFIG
 

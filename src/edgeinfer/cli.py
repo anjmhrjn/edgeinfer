@@ -138,8 +138,9 @@ def cmd_export(args: argparse.Namespace) -> int:
 
     import onnx
 
+    from edgeinfer.artifacts import ONNX_DIR
     from edgeinfer.config import load_model_config
-    from edgeinfer.export.onnx_export import ONNX_DIR, export_model
+    from edgeinfer.export.onnx_export import export_model
     from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
 
     cfg = load_model_config(args.model)
@@ -185,8 +186,8 @@ def _print_findings(findings: list[dict[str, str]]) -> None:
 def cmd_validate(args: argparse.Namespace) -> int:
     import platform
 
+    from edgeinfer.artifacts import artifact_identity
     from edgeinfer.config import load_model_config
-    from edgeinfer.export.onnx_export import artifact_identity
     from edgeinfer.reports import (
         REPORTS_DIR,
         git_state,
@@ -356,9 +357,9 @@ def cmd_parity(args: argparse.Namespace) -> int:
 def cmd_quantize(args: argparse.Namespace) -> int:
     import platform
 
+    from edgeinfer.artifacts import artifact_identity
     from edgeinfer.config import load_model_config
     from edgeinfer.data.cityscapes import cityscapes_root
-    from edgeinfer.export.onnx_export import artifact_identity
     from edgeinfer.quant import QuantError
     from edgeinfer.quant.calib import CALIB_DIR, calibrate, calibration_entries
     from edgeinfer.quant.config import (

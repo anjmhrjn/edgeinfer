@@ -12,8 +12,6 @@ dependencies = [
     "onnxscript>=0.7.2",
     "pillow>=12.3.0",
     "pyyaml>=6.0.3",
-    "torch>=2.14.1",
-    "transformers>=5.19.0",
 ]
 
 [project.scripts]
@@ -29,6 +27,20 @@ dev = [
     "pytest>=9.1.1",
     "ruff>=0.17.0",
 ]
+# PyTorch models: export, torch_ref, golden outputs. Installed by default; left out of
+# the TensorRT container, which only runs torch-free modules (D-020).
+models = [
+    "torch>=2.14.1",
+    "transformers>=5.19.0",
+]
+# TensorRT container only. TensorRT itself comes from the NGC image; cuda-bindings
+# follows the image's CUDA minor version (13.4) (D-020, D-021).
+gpu = [
+    "cuda-bindings~=13.4.4; sys_platform == 'linux'",
+]
+
+[tool.uv]
+default-groups = ["dev", "models"]
 
 [tool.ruff]
 line-length = 100

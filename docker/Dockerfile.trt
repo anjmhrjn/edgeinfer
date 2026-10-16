@@ -1,0 +1,31 @@
+# TensorRT toolchain for edgeinfer on the T4 (D-020).
+# Built on the GPU instance by scripts/remote.sh and never pushed to a registry.
+#
+# 26.09-py3: TensorRT 11.3, CUDA 13.4.1, Ubuntu 24.04, Python 3.12, Nsight Systems 2026.5.1.
+# Pinned by digest, so a re-pushed tag can't change the toolchain under us.
+FROM nvcr.io/nvidia/tensorrt:26.09-py3@sha256:651006ce4ec6f361a10b3d9595cba50d263044d18df82be67969c2ff4501db25
+
+# Same uv version as the one that wrote uv.lock.
+COPY --from=ghcr.io/astral-sh/uv:0.12.13@sha256:b485bd65cc2cf1c9a93b3554012c9c3778cf7b1b5fd3d3096ce9e1226c97e1e6 /uv /uvx /usr/local/bin/
+
+# The venv sees the image's system site-packages, where TensorRT's Python bindings live;
+# uv installs everything else from uv.lock. No torch: the container runs torch-free
+# modules only, and the `gpu` group adds cuda-bindings for the CUDA 13.4 runtime.
+ENV UV_PROJECT_ENVIRONMENT=/opt/venv \
+    UV_PYTHON=/usr/bin/python3 \
+    UV_PYTHON_DOWNLOADS=never \
+    UV_LINK_MODE=copy \
+    UV_FROZEN=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH=/opt/venv/bin:/workspace/tensorrt/bin:$PATH
+
+RUN uv venv --system-site-packages /opt/venv
+
+# Dependencies only; the repo itself is mounted at run time and installed by the entrypoint.
+WORKDIR /workspace/edgeinfer
+COPY pyproject.toml uv.lock .python-version ./
+RUN uv sync --no-default-groups --group gpu --no-install-project
+
+COPY docker/entrypoint.sh /usr/local/bin/edgeinfer-entrypoint
+ENTRYPOINT ["/usr/local/bin/edgeinfer-entrypoint"]
+CMD ["bash"]

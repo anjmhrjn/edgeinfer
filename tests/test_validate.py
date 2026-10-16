@@ -7,9 +7,9 @@ import onnx
 import pytest
 from onnx import TensorProto, helper, numpy_helper
 
+from edgeinfer.artifacts import CONTRACT_KEY, canonical_json, io_contract
 from edgeinfer.cli import main
 from edgeinfer.config import load_model_config
-from edgeinfer.export.onnx_export import CONTRACT_KEY, canonical_json, io_contract
 from edgeinfer.validate.onnx_validator import validate_onnx
 from tests.conftest import TINY_CONFIG
 

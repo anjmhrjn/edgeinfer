@@ -4,15 +4,10 @@ import numpy as np
 import onnx
 import pytest
 
+from edgeinfer.artifacts import CONTRACT_KEY, io_contract, load_sidecar
 from edgeinfer.cli import main
 from edgeinfer.config import load_model_config
-from edgeinfer.export.onnx_export import (
-    CONTRACT_KEY,
-    artifact_id,
-    export_model,
-    io_contract,
-    load_sidecar,
-)
+from edgeinfer.export.onnx_export import artifact_id, export_model
 from tests.conftest import TINY_CONFIG
 
 

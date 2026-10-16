@@ -22,8 +22,8 @@ import onnx
 import yaml
 from onnx import numpy_helper, shape_inference
 
+from edgeinfer.artifacts import CONTRACT_KEY, INPUT_NAME, OUTPUT_NAME, io_contract
 from edgeinfer.config import CONFIG_DIR, ModelConfig
-from edgeinfer.export.onnx_export import CONTRACT_KEY, INPUT_NAME, OUTPUT_NAME, io_contract
 
 SUPPORTED_OPS_PATH = CONFIG_DIR / "supported_ops.yaml"
 FP16_MAX = 65504.0

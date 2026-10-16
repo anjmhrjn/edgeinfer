@@ -10,11 +10,11 @@ from onnx import numpy_helper
 from onnxruntime.quantization import CalibrationMethod
 from onnxruntime.quantization.calibrate import create_calibrator
 
+from edgeinfer.artifacts import load_sidecar
 from edgeinfer.backends import get_backend
 from edgeinfer.config import load_model_config
 from edgeinfer.data.cityscapes import iter_samples, list_image_ids
 from edgeinfer.data.manifests import ManifestSpec, build_manifest, format_manifest
-from edgeinfer.export.onnx_export import load_sidecar
 from edgeinfer.preprocess import preprocess
 from edgeinfer.quant import QuantError
 from edgeinfer.quant.calib import calibrate
