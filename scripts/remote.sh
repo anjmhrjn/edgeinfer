@@ -71,7 +71,7 @@ sudo docker run --rm $tty --gpus all --hostname $GPU_NAME \\
         ;;
     push-data)
         root=${CITYSCAPES_ROOT:?set CITYSCAPES_ROOT to the local Cityscapes directory}
-        remote_sh "mkdir -p $GPU_DATA_DIR"
+        remote_sh "mkdir -p $GPU_DATA_DIR/leftImg8bit/val $GPU_DATA_DIR/gtFine/val"
         # val images and their labelIds only: everything the eval and golden manifests read.
         "${RSYNC[@]}" --include '*/' --include '*_leftImg8bit.png' --exclude '*' \
             "$root/leftImg8bit/val/" "$host:$GPU_DATA_DIR/leftImg8bit/val/"
