@@ -1,0 +1,8 @@
+# Experiment (C4b): configs/build.yaml with builder optimization level 5, built into
+# artifacts/engines_opt5/ so the deployed level-3 engines stay the newest under
+# artifacts/engines/. Compared with level 3 in D-029.
+name: build_opt5
+workspace_mib: 2048              # scratch memory tactics may use while building; the T4 has 16 GB
+builder_optimization_level: 5    # experiment (C4b): compared with level 3, D-029
+timing_cache: true               # reuse kernel timings across builds of the same TensorRT + GPU
+profiling_verbosity: detailed    # keep per-layer details for the engine inspector (precision report)

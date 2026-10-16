@@ -32,6 +32,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--engine", required=True)
     ap.add_argument("--perf-report", help="perf report of the same engine to compare against")
+    ap.add_argument("--out", help="report path (default: artifacts/reports/trtexec__...)")
     ap.add_argument(
         "--clock-mhz",
         type=int,
@@ -85,7 +86,8 @@ def main() -> int:
         metrics=metrics, findings=findings, passed=passed,
     )  # fmt: skip
     clock = f"{lock}MHz" if lock is not None else "unlocked"
-    out = REPORTS_DIR / f"trtexec__{meta['model']}__{meta['precision']}__{clock}__{sha[:7]}.json"
+    name = f"trtexec__{meta['model']}__{meta['precision']}__{clock}__{sha[:7]}.json"
+    out = Path(args.out) if args.out else REPORTS_DIR / name
     write_report(report, out)
     for span, s in spans.items():
         print(f"  {span:8s} p50 {s['p50']:8.3f}  p99 {s['p99']:8.3f}  max {s['max']:8.3f} ms")
