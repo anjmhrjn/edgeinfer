@@ -1,0 +1,207 @@
+{
+  "schema_version": "1",
+  "tool": "nsys",
+  "created_at": "2026-10-16T21:48:53+00:00",
+  "git_sha": "1f0ceb2c9b907abda93e580600f3494fe881eeae",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "Tesla T4 (sm_7.5)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99",
+      "cuda_driver": "13040",
+      "cuda_runtime": "13040"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "trt",
+  "precision": "fp16",
+  "artifact_id": "baba668a26e9b7b389807717f263fbd7f2da3c1704419e6418b984f64c54efd6",
+  "inputs": {
+    "artifact": "segformer_b0__fp16__baba668a26e9.engine",
+    "nsys_flags": [
+      "--trace=cuda",
+      "--sample=none",
+      "--cpuctxsw=none",
+      "--capture-range=cudaProfilerApi",
+      "--capture-range-end=stop"
+    ],
+    "warmup": 10,
+    "iterations": 50,
+    "perf_report": "perf__segformer_b0__trt__fp16__nsys__1f0ceb2.json",
+    "trace": "artifacts/nsys/nsys__segformer_b0__fp16__1f0ceb2.nsys-rep (not committed)",
+    "note": "profiling adds overhead; latency numbers come from perf reports",
+    "artifact_sha256": "7fee0ed7744be6e30cccca57b59b92d529e71966d12813ab4b214837965bbc9e"
+  },
+  "thresholds": {},
+  "metrics": {
+    "frames_captured": 60,
+    "gpu_kernel_ms_per_frame": 6.089014016666667,
+    "gpu_copy_ms_per_frame": 1.4068839,
+    "e2e_mean_ms": 754.32517538,
+    "gpu_busy_share": 0.009937223575880949,
+    "kernels": {
+      "total_ms": 365.340841,
+      "entries": 88,
+      "top": [
+        {
+          "name": "trt_turing_h1688gemm_128x128_ldg8_relu_nn_v1",
+          "total_ms": 34.335171,
+          "count": 60,
+          "share": 0.09398120096844031
+        },
+        {
+          "name": "sm50_xmma_fprop_conv2d_c1_k1_f16f16_f16_f16_nchwkcrs_nchw_tilesize10x40x8_threadsize4x4_r3s3_u1v1_xcorr_zerobeta_execute_kernel_trt",
+          "total_ms": 28.679531,
+          "count": 480,
+          "share": 0.07850075267112007
+        },
+        {
+          "name": "void CUTENSOR_NAMESPACE::permutationKernelPLC3<CUTENSOR_NAMESPACE::VectorWrite2DTensorView<(unsigned char)0, (unsigned char)1, (bool)0, (unsigned int)4, float, __half, CUTENSOR_NAMESPACE::GeneralUnarySmall<float>>, CUTENSOR_NAMESPACE::VectorRead2DTensorView<(unsigned char)0, (unsigned char)1, (bool)0, (unsigned int)4, float, __half, CUTENSOR_NAMESPACE::GeneralUnarySmall<float>>, CUTENSOR_NAMESPACE::ThreadLevelElementwise<CUTENSOR_NAMESPACE::ElementwiseConfig2DCommonCase<CUTENSOR_NAMESPACE::GeneralUnarySmall<float>, CUTENSOR_NAMESPACE::GeneralBinary<float>, (int)2, (int)32, (int)32, (int)128, (signed char)4, (bool)1, (bool)0, (bool)1, (bool)0, (bool)0>, float>, CUTENSOR_NAMESPACE::ElementwiseRuntimePLC3<__half, float, __half, float>::Params>(T4)",
+          "total_ms": 26.07612,
+          "count": 180,
+          "share": 0.07137477411127983
+        },
+        {
+          "name": "_gemm_mha_v2_0x1dcbc380e4c7f3e8eba65724dbfb4fe4",
+          "total_ms": 18.266221,
+          "count": 120,
+          "share": 0.04999775264654849
+        },
+        {
+          "name": "ResizeVectorizedH2x4BilinearKernel",
+          "total_ms": 14.710214,
+          "count": 180,
+          "share": 0.04026435686668822
+        },
+        {
+          "name": "__myl_ReshTran_0x7387350ac8e3105c2107fe8ab6479caf",
+          "total_ms": 13.826794,
+          "count": 120,
+          "share": 0.0378462861205271
+        },
+        {
+          "name": "void CUTENSOR_NAMESPACE::permutationKernelPLC3<CUTENSOR_NAMESPACE::VectorWrite2DTensorView<(unsigned char)0, (unsigned char)1, (bool)0, (unsigned int)8, float, __half, CUTENSOR_NAMESPACE::GeneralUnarySmall<float>>, CUTENSOR_NAMESPACE::VectorRead2DTensorView<(unsigned char)1, (unsigned char)0, (bool)0, (unsigned int)8, float, __half, CUTENSOR_NAMESPACE::GeneralUnarySmall<float>>, CUTENSOR_NAMESPACE::ThreadLevelElementwise<CUTENSOR_NAMESPACE::ElementwiseConfig2DCommonCase<CUTENSOR_NAMESPACE::GeneralUnarySmall<float>, CUTENSOR_NAMESPACE::GeneralBinary<float>, (int)2, (int)16, (int)128, (int)128, (signed char)8, (bool)0, (bool)0, (bool)1, (bool)0, (bool)0>, float>, CUTENSOR_NAMESPACE::ElementwiseRuntimePLC3<__half, float, __half, float>::Params>(T4)",
+          "total_ms": 11.120535,
+          "count": 120,
+          "share": 0.030438795097644175
+        },
+        {
+          "name": "_gemm_mha_v2_0xac1b3d4bd6855322e301be7edd026747",
+          "total_ms": 10.964894,
+          "count": 120,
+          "share": 0.03001277921731176
+        },
+        {
+          "name": "sm75_xmma_fprop_implicit_gemm_indexed_f16f16_f16f16_f16_nhwckrsc_nhwc_tilesize64x32x64_stage1_warpsize2x1x2_g1_tensor16x8x8_execute_kernel_trt",
+          "total_ms": 9.411431,
+          "count": 240,
+          "share": 0.025760686854060206
+        },
+        {
+          "name": "__myl_Add_0x70fa3174a3600158b4c7e3e1b12c32c6",
+          "total_ms": 9.108037,
+          "count": 60,
+          "share": 0.024930245890576467
+        }
+      ]
+    },
+    "copies": {
+      "total_ms": 84.413034,
+      "entries": 3,
+      "top": [
+        {
+          "name": "[CUDA memcpy Host-to-Device]",
+          "total_ms": 60.625151,
+          "count": 60,
+          "share": 0.7181965642888751
+        },
+        {
+          "name": "[CUDA memcpy Device-to-Host]",
+          "total_ms": 23.646507,
+          "count": 60,
+          "share": 0.28012862326450677
+        },
+        {
+          "name": "[CUDA memset]",
+          "total_ms": 0.141376,
+          "count": 120,
+          "share": 0.0016748124466181371
+        }
+      ]
+    },
+    "cuda_api": {
+      "total_ms": 469.223054,
+      "entries": 15,
+      "top": [
+        {
+          "name": "cudaEventSynchronize",
+          "total_ms": 330.035647,
+          "count": 60,
+          "share": 0.7033662224959646
+        },
+        {
+          "name": "cuLibraryLoadData",
+          "total_ms": 49.301178,
+          "count": 4,
+          "share": 0.10506981185114575
+        },
+        {
+          "name": "cudaLaunchKernel",
+          "total_ms": 37.147155,
+          "count": 2580,
+          "share": 0.07916736972604078
+        },
+        {
+          "name": "cuLaunchKernel",
+          "total_ms": 27.945516,
+          "count": 4860,
+          "share": 0.05955699695863622
+        },
+        {
+          "name": "cuLaunchKernelEx",
+          "total_ms": 16.278544,
+          "count": 2820,
+          "share": 0.034692549441528504
+        },
+        {
+          "name": "cudaMemcpyAsync",
+          "total_ms": 2.591409,
+          "count": 120,
+          "share": 0.005522765724976506
+        },
+        {
+          "name": "cudaEventRecord",
+          "total_ms": 2.040274,
+          "count": 240,
+          "share": 0.004348196412361273
+        },
+        {
+          "name": "cudaMemsetAsync",
+          "total_ms": 0.992857,
+          "count": 120,
+          "share": 0.0021159595453295863
+        },
+        {
+          "name": "cuStreamWaitEvent",
+          "total_ms": 0.878019,
+          "count": 600,
+          "share": 0.0018712187999185565
+        },
+        {
+          "name": "cuEventRecord",
+          "total_ms": 0.757335,
+          "count": 480,
+          "share": 0.001614019161130135
+        }
+      ]
+    }
+  },
+  "passed": true,
+  "findings": []
+}

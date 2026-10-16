@@ -173,8 +173,15 @@ def test_tolerances_are_strict(tmp_path):
     path.write_text("fp32:\n  logits_max_abs: 1.0\n")
     with pytest.raises(ValueError, match="expected keys"):
         load_tolerances("fp32", path)
-    with pytest.raises(KeyError, match="fp16"):
-        load_tolerances("fp16", parity.TOLERANCES_PATH)
+    with pytest.raises(KeyError, match="bf16"):
+        load_tolerances("bf16", parity.TOLERANCES_PATH)
+
+
+def test_fp16_tolerances_are_the_d030_values():
+    tol = load_tolerances("fp16")
+    assert (tol.logits_max_abs, tol.logits_cosine_min, tol.argmax_agreement_min,
+            tol.miou_delta_max) == (2.6, 0.99684, 0.98, 0.026)  # fmt: skip
+    assert tol.layer_cosine_min is None and tol.layer_rel_max_abs is None
 
 
 def test_int8_reports_drift_without_gating_it(golden_setup, tmp_path):
