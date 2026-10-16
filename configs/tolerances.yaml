@@ -10,6 +10,18 @@ fp32:
   miou_delta_max: 0.001          # points on the golden images; worst observed 2e-5
   layer_cosine_min: 0.99999999   # worst observed per-layer 1-cos 2.4e-11
   layer_rel_max_abs: 2.0e-4      # worst observed per-layer 1.5e-5
+# fp16 (D-030): same method as fp32, from TensorRT FP16 vs FP32 golden on the T4
+# (parity__<model>__trt__fp16__golden_val32__golden__tolfp32__3a086ea.json): 10x headroom
+# over the worst image on error magnitude (100x on 1-cosine), rounded toward stricter.
+# Per-layer drift isn't measured for FP16 yet, so it's reported, not gated (null).
+fp16:
+  input_max_abs: 1.0e-5          # preprocessing is unchanged from FP32
+  logits_max_abs: 2.6            # worst observed 0.260 (DeepLabV3+)
+  logits_cosine_min: 0.99684     # worst observed 1-cos 3.16e-5 (DeepLabV3+)
+  argmax_agreement_min: 0.98     # worst observed 0.99799 (DeepLabV3+): 0.20% of pixels
+  miou_delta_max: 0.026          # points on the golden images; worst observed +0.0027
+  layer_cosine_min: null
+  layer_rel_max_abs: null
 # int8 (D-018): INT8 changes the logits by design, and its error has no FP32-style noise
 # floor to scale from, so elementwise and per-layer drift are reported, not gated (null).
 # The gate is accuracy: the budget's 1.0 mIoU point, here on the golden images as a proxy

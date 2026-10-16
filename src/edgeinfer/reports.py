@@ -114,7 +114,11 @@ def make_report(
         "backend": backend_meta["backend"],
         "precision": backend_meta["precision"],
         "artifact_id": backend_meta["artifact_id"],
-        "inputs": inputs,
+        "inputs": (
+            {**inputs, "artifact_sha256": backend_meta["artifact_sha256"]}
+            if "artifact_sha256" in backend_meta
+            else inputs
+        ),
         "thresholds": thresholds or {},
         "metrics": metrics,
         "passed": passed,

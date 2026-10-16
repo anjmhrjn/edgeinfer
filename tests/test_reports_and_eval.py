@@ -72,3 +72,12 @@ def test_harness_end_to_end_on_fake_data(fake_cityscapes):
     assert metrics["per_class_iou"]["road"] is not None
     # Only "road" is ever predicted; classes missing from the random labels are flagged.
     assert all(f["code"] == "EVAL_CLASS_ABSENT" for f in findings)
+
+
+def test_engine_plan_hash_is_recorded_in_inputs():
+    # TensorRT builds with the same inputs (same artifact id) can differ in kernel choice.
+    meta = {**META, "artifact_sha256": "ab" * 32}
+    report = make_report(tool="perf", model="m", backend_meta=meta, inputs={"x": 1}, metrics={})
+    assert report["inputs"] == {"x": 1, "artifact_sha256": "ab" * 32}
+    plain = make_report(tool="perf", model="m", backend_meta=META, inputs={"x": 1}, metrics={})
+    assert plain["inputs"] == {"x": 1}

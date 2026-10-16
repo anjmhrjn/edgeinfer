@@ -337,6 +337,9 @@ class TrtBackend:
             "device": f"cuda:{self._device} ({rt['gpu_name']}, sm_{sm})",
             "artifact_id": self._meta["artifact_id"],
             "artifact": self._meta["file"],
+            # The id hashes the build inputs; TensorRT's kernel choice varies between builds,
+            # so the plan's own hash is what tells two builds with the same id apart.
+            "artifact_sha256": self._meta["sha256"],
             "debug_outputs": self._meta["debug_outputs"],
             "device_memory": self._memory,
             "runtime_warnings": self._warnings,

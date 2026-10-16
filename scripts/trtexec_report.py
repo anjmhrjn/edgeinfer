@@ -76,7 +76,7 @@ def main() -> int:
     report = make_report(
         tool="trtexec", model=meta["model"],
         backend_meta={"backend": "trtexec", "precision": meta["precision"],
-                      "artifact_id": meta["artifact_id"],
+                      "artifact_id": meta["artifact_id"], "artifact_sha256": meta["sha256"],
                       "device": f"{runtime['gpu_name']} (sm_{runtime['compute_capability']})",
                       "versions": {"tensorrt": runtime["tensorrt"],
                                    "cuda_driver": str(runtime["cuda_driver"]),
