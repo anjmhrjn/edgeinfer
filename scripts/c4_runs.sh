@@ -9,6 +9,7 @@
 #   scripts/c4_runs.sh perf     performance probe on every engine
 #   scripts/c4_runs.sh trtexec  trtexec cross-check of compute latency
 #   scripts/c4_runs.sh parity   golden parity for every engine
+#   scripts/c4_runs.sh eval     full-val mIoU for every engine (500 images, ~10 min each)
 #   scripts/c4_runs.sh nsys     Nsight Systems trace of the end-to-end path (one model)
 #
 # --print shows the commands without running them. Start the instance with gpu-up.sh
@@ -21,7 +22,7 @@ if [ "${1:-}" = "--print" ]; then
     PRINT=1
     shift
 fi
-phase=${1:?usage: scripts/c4_runs.sh [--print] push|push-data|smoke|ops|build|perf|trtexec|parity|nsys}
+phase=${1:?usage: scripts/c4_runs.sh [--print] push|push-data|smoke|ops|build|perf|trtexec|parity|eval|nsys}
 MODELS=(segformer_b0 deeplabv3plus_mbv2)
 
 run() {  # run <remote.sh args...>
@@ -101,6 +102,15 @@ case "$phase" in
             run run "edgeinfer parity --model $m --backend trt --artifact $(engine "$m" fp32) --inputs golden"
         done
         # FP16 parity needs FP16 tolerances, set in C4b from these measurements (D-024).
+        ;;
+    eval)
+        # The default report name has no precision, so FP32 and FP16 would collide.
+        for m in "${MODELS[@]}"; do
+            for p in fp32 fp16; do
+                run run "edgeinfer eval --model $m --backend trt --artifact $(engine "$m" "$p") \
+--manifest eval_val --out artifacts/reports/eval__${m}__trt__${p}__eval_val__512x1024__\$(git rev-parse --short=7 HEAD).json"
+            done
+        done
         ;;
     nsys)
         m=segformer_b0
