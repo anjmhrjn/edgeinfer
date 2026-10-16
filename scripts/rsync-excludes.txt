@@ -1,6 +1,7 @@
 # Never copied to the GPU instance by `remote.sh` code syncs.
 # Private files (CLAUDE.local.md, private/) stay on the Mac.
-# Data and artifacts move only through `remote.sh push-data` and `remote.sh push-artifacts`.
+# Data and artifacts move only through `remote.sh push-data` and `remote.sh push-artifacts`,
+# except artifacts/reports/ (committed, metrics only), which remote.sh syncs with the code.
 # Excluded paths are also protected from --delete on the instance, so engines and
 # reports written there survive the next sync.
 /CLAUDE.local.md

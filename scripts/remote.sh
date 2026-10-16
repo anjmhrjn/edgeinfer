@@ -27,7 +27,14 @@ remote_sh() {  # run a command string on the instance
 }
 
 sync_code() {
-    "${RSYNC[@]}" --delete --exclude-from "$REPO_ROOT/scripts/rsync-excludes.txt" \
+    # Committed reports travel with the code, so git on the instance sees the same tree as
+    # the Mac (otherwise every report there would be marked git_dirty). Reports written on
+    # the instance are pulled first, so --delete can't remove one that isn't on the Mac yet.
+    remote_sh "mkdir -p $GPU_REMOTE_DIR/artifacts/reports"
+    pull_reports
+    "${RSYNC[@]}" --delete \
+        --include '/artifacts/' --include '/artifacts/reports/***' --exclude '/artifacts/*' \
+        --exclude-from "$REPO_ROOT/scripts/rsync-excludes.txt" \
         "$REPO_ROOT/" "$remote/"
 }
 
