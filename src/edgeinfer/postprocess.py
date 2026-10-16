@@ -14,5 +14,7 @@ def postprocess(logits: np.ndarray, height: int, width: int) -> np.ndarray:
     """
     if logits.ndim != 4 or logits.shape[0] != 1:
         raise ValueError(f"expected 1xCxhxw logits, got {logits.shape}")
+    if logits.shape[2:] == (height, width):  # native stride: nothing to upsample
+        return logits[0].argmax(axis=0).astype(np.uint8)
     up = resize_bilinear(logits[0].astype(np.float32, copy=False), height, width)
     return up.argmax(axis=0).astype(np.uint8)

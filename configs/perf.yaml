@@ -1,0 +1,14 @@
+# Performance probe settings (`edgeinfer perf`, D-022). Iteration counts are provisional
+# until C4b sets them from T4 measurements.
+warmup_iterations: 20     # run, not recorded: lazy initialization, caches, clocks ramping up
+iterations: 400           # recorded per repeat
+repeats: 3                # independent runs; their spread is the run-to-run variation
+manifest: golden_val32    # images are decoded into memory before timing; decoding isn't timed
+max_images: 8             # how many of the manifest's images are cycled through
+# Size of the class map the postprocess stage produces:
+#   label: the camera frame's size (1024x2048), which is what eval scores; input: the model
+#   input size; native: argmax at the model's output stride, without upsampling.
+postprocess_size: label
+# PERF_UNSTABLE when the repeats' p99 end-to-end latencies differ by more than this fraction
+# of their median.
+max_repeat_p99_spread: 0.10

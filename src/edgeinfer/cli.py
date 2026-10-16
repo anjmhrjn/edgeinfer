@@ -527,6 +527,83 @@ def cmd_sensitivity(args: argparse.Namespace) -> int:
     return 0 if passed else 1
 
 
+def cmd_perf(args: argparse.Namespace) -> int:
+    from dataclasses import asdict
+
+    import numpy as np
+
+    from edgeinfer.backends import get_backend
+    from edgeinfer.config import ConfigError, load_budgets, load_model_config
+    from edgeinfer.data.cityscapes import cityscapes_root, iter_samples
+    from edgeinfer.data.manifests import load_manifest
+    from edgeinfer.perf.probe import PerfConfig, latency_budget, load_perf_config, run_probe
+    from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
+
+    cfg = load_model_config(args.model)
+    try:
+        pcfg = load_perf_config(args.perf_config)
+        overrides = {
+            "warmup_iterations": args.warmup, "iterations": args.iterations,
+            "repeats": args.repeats, "manifest": args.manifest, "max_images": args.max_images,
+        }  # fmt: skip
+        merged = asdict(pcfg) | {k: v for k, v in overrides.items() if v is not None}
+        pcfg = PerfConfig.from_dict(merged, where="perf config + CLI overrides")
+        budgets = load_budgets()
+        latency_budget(budgets)
+    except ConfigError as e:
+        print(f"error: {e}")
+        return 2
+    sha, dirty = git_state()
+    if dirty:
+        print("warning: uncommitted changes; this report must not back any published number")
+
+    if args.synthetic:
+        h, w = (int(v) for v in args.synthetic.lower().split("x"))
+        rng = np.random.default_rng(0)
+        frames = [rng.integers(0, 256, (h, w, 3), dtype=np.uint8) for _ in range(pcfg.max_images)]
+        source = f"synthetic {h}x{w}"
+    else:
+        entries = load_manifest(pcfg.manifest)[: pcfg.max_images]
+        frames = [s.image for s in iter_samples(cityscapes_root(args.root), entries)]
+        source = Path(pcfg.manifest).stem
+
+    backend = get_backend(args.backend)
+    backend.load(Path(args.artifact) if args.artifact else None, cfg)
+    meta = backend.metadata()
+    print(f"perf {cfg.name} on {args.backend} ({meta['precision']}): {pcfg.warmup_iterations} "
+          f"warmup + {pcfg.repeats} x {pcfg.iterations} iterations, frames: {source}")  # fmt: skip
+    try:
+        metrics, findings, passed = run_probe(cfg, backend, frames, pcfg, budgets)
+    except ConfigError as e:
+        print(f"error: {e}")
+        return 2
+    if metrics:
+        size = Path(args.artifact).stat().st_size if args.artifact else None
+        metrics["artifact_size_bytes"] = size
+        if "device_memory" in meta:
+            metrics["device_memory"] = meta["device_memory"]
+    report = make_report(
+        tool="perf", model=cfg.name, backend_meta=meta,
+        inputs={"frames": source, "frame_hw": list(frames[0].shape[:2]),
+                "artifact": Path(args.artifact).name if args.artifact else None,
+                "perf_config": asdict(pcfg), "gc": "enabled; collected before each repeat"},
+        thresholds={"latency": budgets.get("latency")},
+        metrics=metrics, findings=findings, passed=passed,
+    )  # fmt: skip
+    name = f"perf__{cfg.name}__{meta['backend']}__{meta['precision']}"
+    out = Path(args.out) if args.out else REPORTS_DIR / f"{name}__{sha[:7]}.json"
+    write_report(report, out)
+    for span, s in metrics.get("spans_ms", {}).items():
+        print(f"  {span:12s} p50 {s['p50']:9.3f}  p90 {s['p90']:9.3f}  p99 {s['p99']:9.3f}  "
+              f"max {s['max']:9.3f} ms")  # fmt: skip
+    if metrics:
+        print(f"  throughput {metrics['throughput_fps']:.2f} frames/s, "
+              f"repeat p99 spread {metrics['repeat_p99_spread']:.1%}")  # fmt: skip
+    _print_findings(findings)
+    print(f"{'PASS' if passed else 'FAIL'} -> {out}")
+    return 0 if passed else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="edgeinfer")
     sub = parser.add_subparsers(dest="command", required=True)
@@ -639,6 +716,26 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--report-dir", help="report directory (default: artifacts/reports)")
     p.add_argument("--out", help="report path")
     p.set_defaults(func=cmd_sensitivity)
+
+    p = sub.add_parser("perf", help="latency distribution per stage and throughput; "
+                                    "writes a JSON report")  # fmt: skip
+    p.add_argument("--model", required=True, help="config name or path")
+    p.add_argument("--backend", default="ort_cpu")
+    p.add_argument("--artifact", help="model file for the backend")
+    p.add_argument("--perf-config", help="probe settings (default: configs/perf.yaml)")
+    p.add_argument("--manifest", help="frames to cycle through (default: from the perf config)")
+    p.add_argument(
+        "--synthetic",
+        metavar="HxW",
+        help="random frames of this size instead of dataset images (no dataset needed)",
+    )
+    p.add_argument("--root", help="Cityscapes root (default: $CITYSCAPES_ROOT)")
+    p.add_argument("--warmup", type=int, help="override warmup_iterations")
+    p.add_argument("--iterations", type=int, help="override iterations per repeat")
+    p.add_argument("--repeats", type=int, help="override repeats")
+    p.add_argument("--max-images", type=int, help="override max_images")
+    p.add_argument("--out", help="report path (default: artifacts/reports/...)")
+    p.set_defaults(func=cmd_perf)
 
     return parser
 

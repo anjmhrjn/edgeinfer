@@ -40,3 +40,12 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 | `SENS_EXCLUSION_SUGGESTED` | sensitivity | info | Keeping the listed groups in float (greedy, in leave-one-out order, each step measured) brings the drop within budget − margin. `where` is the comma-separated group list. |
 | `SENS_BUDGET_UNREACHABLE` | sensitivity | error | Even with every group in float the drop exceeds budget − margin: the loss isn't in the quantized layers (or the margin is too large). |
 | `SENS_NON_ADDITIVE` | sensitivity | warn | The final greedy configuration's measured delta differs from the sum of its groups' single-group recoveries by more than max(2 × noise floor, 0.1 points): group effects interact. |
+| `PERF_DEBUG_ENGINE` | perf | error | The backend's artifact is a debug engine with marked layer outputs. Marking outputs disables layer fusion, so its latency doesn't describe the deployed engine; the probe refuses to measure it. |
+| `PERF_SPAN_INCONSISTENT` | perf | error | In some iterations the device stages (H2D + compute + D2H, measured with device events) took longer than the host-measured inference call that contains them. A timer was read before the device finished: missing synchronization. |
+| `PERF_BUDGET_EXCEEDED` | perf | error | The p99 of the budgeted span (`configs/budgets.yaml` `latency.span`) is above `latency.p99_ms_max`. `where` is the span. |
+| `PERF_BUDGET_UNSET` | perf | info | `configs/budgets.yaml` has no latency budget, so nothing was gated. |
+| `PERF_DEV_HOST` | perf | info | Measured on a development CPU, not the deployment GPU. The numbers are for development only. |
+| `PERF_NO_WARMUP` | perf | warn | `warmup_iterations` is 0, so first-call initialization (allocation, lazy loading, clocks ramping up) is in the measurement. |
+| `PERF_FEW_SAMPLES` | perf | warn | Fewer than 1000 measured iterations in total, so p99 rests on fewer than 10 samples above it. |
+| `PERF_UNSTABLE` | perf | warn | The repeats' p99 end-to-end latencies differ by more than `max_repeat_p99_spread` (`configs/perf.yaml`) of their median: the host or device wasn't in a steady state (other load, thermal or power throttling). |
+| `PERF_TELEMETRY_UNAVAILABLE` | perf | warn | GPU clocks, temperature and power couldn't be read (nvidia-smi missing or failing), so throttling can't be ruled out. |

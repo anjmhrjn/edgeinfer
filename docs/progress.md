@@ -10,7 +10,7 @@ C4a (Mac):
 - [x] AWS CLI access (`aws login`), region us-east-1; GPU quota applied (4 vCPUs, request record still `CASE_OPENED`); budget email alerts exist (credit filter skipped for now)
 - [x] Toolchain pinned: NGC `tensorrt:26.09-py3` (TensorRT 11.3, CUDA 13.4.1), re-checked before the first GPU session (D-020); `cuda-bindings` (D-021); `docker/Dockerfile.trt`; torch-free container environment; `supported_ops.yaml` re-seeded from onnx-tensorrt `11.3-GA`
 - [x] `scripts/gpu-{create,up,status,down,destroy}.sh`, `scripts/remote.sh` (D-023); instance not created yet
-- [ ] Performance probe and `edgeinfer perf` (dev runs on `ort_cpu` only)
+- [x] Performance probe and `edgeinfer perf` (D-022): stage spans, nearest-rank percentiles, repeats, missing-sync check, nvidia-smi telemetry; `TimedBackend` protocol; end to end at label resolution
 - [ ] `trt` backend and `edgeinfer build`: builder settings, engine metadata sidecar, mismatch refusal, debug engine
 - [ ] Report codes and decision records
 - [ ] `scripts/c4_runs.sh` (smoke, ops, build, perf, trtexec, parity, nsys)
