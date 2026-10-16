@@ -30,7 +30,10 @@ RUN uv venv --system-site-packages /opt/venv
 # Dependencies only; the repo itself is mounted at run time and installed by the entrypoint.
 WORKDIR /workspace/edgeinfer
 COPY pyproject.toml uv.lock .python-version ./
-RUN uv sync --no-default-groups --group gpu --group dev --no-install-project
+# The build cache is root's; deleting it keeps the image small and lets the non-root
+# run-time user create its own.
+RUN uv sync --no-default-groups --group gpu --group dev --no-install-project \
+    && rm -rf /tmp/uv-cache
 # remote.sh runs the container as the instance's login user, so files written into the
 # mounted repo belong to that user; the entrypoint installs the project into this venv.
 RUN chmod -R a+rwX /opt/venv
