@@ -18,6 +18,8 @@ from pathlib import Path
 
 from edgeinfer.artifacts import load_sidecar
 from edgeinfer.backends.trt import runtime_fingerprint
+from edgeinfer.perf.probe import load_perf_config
+from edgeinfer.perf.telemetry import GpuSampler, clock_findings
 from edgeinfer.perf.trtexec import compare_compute, summarize_times
 from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
 
@@ -41,14 +43,26 @@ def main() -> int:
             print(f"error: {args.perf_report} measured {probe['inputs'].get('artifact')}, "
                   f"not {engine.name}")  # fmt: skip
             return 2
+    lock = load_perf_config().gpu_clock_mhz
+    if probe is not None and probe["inputs"]["perf_config"].get("gpu_clock_mhz") != lock:
+        print(f"error: {args.perf_report} was measured with gpu_clock_mhz "
+              f"{probe['inputs']['perf_config'].get('gpu_clock_mhz')}, not {lock}")  # fmt: skip
+        return 2
 
     with tempfile.TemporaryDirectory() as tmp:
         times = Path(tmp) / "times.json"
         cmd = ["trtexec", f"--loadEngine={engine}", *TRTEXEC_FLAGS, f"--exportTimes={times}"]
-        subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL)
+        # Clocks are sampled through the whole run, warmup included (D-027).
+        with GpuSampler() as sampler:
+            subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL)
         spans = summarize_times(json.loads(times.read_text()))
 
-    metrics: dict = {"spans_ms": spans}
+    findings = clock_findings([sampler.summary] if sampler.summary else [], lock)
+    if sampler.error:
+        findings.append({"severity": "warn", "code": "PERF_TELEMETRY_UNAVAILABLE",
+                         "message": f"GPU clocks not sampled: {sampler.error}"})  # fmt: skip
+    passed = not any(f["severity"] == "error" for f in findings)
+    metrics: dict = {"spans_ms": spans, "telemetry_during": sampler.summary}
     if probe is not None:
         metrics |= compare_compute(spans, probe["metrics"]["spans_ms"])
     runtime = runtime_fingerprint()
@@ -61,9 +75,9 @@ def main() -> int:
                       "versions": {"tensorrt": runtime["tensorrt"],
                                    "cuda_driver": str(runtime["cuda_driver"]),
                                    "cuda_runtime": str(runtime["cuda_runtime"])}},
-        inputs={"artifact": engine.name, "trtexec_flags": TRTEXEC_FLAGS,
+        inputs={"artifact": engine.name, "trtexec_flags": TRTEXEC_FLAGS, "gpu_clock_mhz": lock,
                 "perf_report": Path(args.perf_report).name if args.perf_report else None},
-        metrics=metrics,
+        metrics=metrics, findings=findings, passed=passed,
     )  # fmt: skip
     out = REPORTS_DIR / f"trtexec__{meta['model']}__{meta['precision']}__{sha[:7]}.json"
     write_report(report, out)
@@ -72,8 +86,10 @@ def main() -> int:
     if probe is not None:
         print(f"  probe/trtexec compute: p50 {metrics['probe_over_trtexec_p50']:.3f}, "
               f"p99 {metrics['probe_over_trtexec_p99']:.3f}")  # fmt: skip
-    print(f"-> {out}")
-    return 0
+    for f in findings:
+        print(f"  {f['severity'].upper():5s} {f['code']}: {f['message']}")
+    print(f"{'PASS' if passed else 'FAIL'} -> {out}")
+    return 0 if passed else 1
 
 
 if __name__ == "__main__":

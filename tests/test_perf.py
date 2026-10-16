@@ -12,7 +12,12 @@ from edgeinfer.cli import main
 from edgeinfer.config import ConfigError, load_model_config
 from edgeinfer.perf.probe import PerfConfig, load_perf_config, run_probe
 from edgeinfer.perf.stats import nearest_rank, summarize
-from edgeinfer.perf.telemetry import TelemetryError
+from edgeinfer.perf.telemetry import (
+    GpuSampler,
+    TelemetryError,
+    clock_findings,
+    summarize_samples,
+)
 from edgeinfer.postprocess import postprocess
 from edgeinfer.resize import resize_bilinear
 from tests.conftest import TINY_CONFIG
@@ -21,7 +26,7 @@ CFG = load_model_config(TINY_CONFIG)  # input 32x64, output stride 4
 FRAMES = [np.zeros((40, 80, 3), np.uint8)]
 PCFG = PerfConfig(
     warmup_iterations=2, iterations=10, repeats=3, manifest="golden_val32", max_images=1,
-    postprocess_size="label", max_repeat_p99_spread=0.10,
+    postprocess_size="label", max_repeat_p99_spread=0.10, gpu_clock_mhz=None,
 )  # fmt: skip
 NO_BUDGET: dict = {}
 
@@ -202,13 +207,26 @@ def test_dev_host_few_samples_no_warmup_and_unset_budget():
 
 def test_latency_budget_gate():
     budget = {"latency": {"span": "e2e", "p99_ms_max": 9.0}}
+    gpu = {"device": "cuda:0 (Tesla T4)", "sampler_fn": FakeSampler}
     clock = FakeClock()
-    _, findings, passed = probe(FakeBackend(clock), clock, budgets=budget)
+    _, findings, passed = probe(FakeBackend(clock, device=gpu["device"]), clock, budgets=budget,
+                                sampler_fn=gpu["sampler_fn"])  # fmt: skip
     assert "PERF_BUDGET_EXCEEDED" in codes(findings) and not passed
     budget["latency"]["p99_ms_max"] = 10.0
     clock = FakeClock()
-    _, findings, passed = probe(FakeBackend(clock), clock, budgets=budget)
+    _, findings, passed = probe(FakeBackend(clock, device=gpu["device"]), clock, budgets=budget,
+                                sampler_fn=gpu["sampler_fn"])  # fmt: skip
     assert not {"PERF_BUDGET_EXCEEDED", "PERF_BUDGET_UNSET"} & codes(findings) and passed
+
+
+def test_dev_host_latency_is_not_gated():
+    budget = {"latency": {"span": "e2e", "p99_ms_max": 9.0}}
+    clock = FakeClock()
+    _, findings, passed = probe(FakeBackend(clock), clock, budgets=budget)
+    assert "PERF_BUDGET_EXCEEDED" not in codes(findings) and passed
+    assert "budgets aren't gated" in next(
+        f["message"] for f in findings if f["code"] == "PERF_DEV_HOST"
+    )
 
 
 @pytest.mark.parametrize(
@@ -244,8 +262,98 @@ def test_gpu_telemetry_recorded_or_reported_missing():
 
     clock = FakeClock()
     _, findings, _ = probe(FakeBackend(clock, device="cuda:0 (Tesla T4)"), clock,
-                           telemetry_fn=broken)  # fmt: skip
+                           telemetry_fn=broken, sampler_fn=NoSmiSampler)  # fmt: skip
     assert "PERF_TELEMETRY_UNAVAILABLE" in codes(findings)
+
+
+class FakeSampler:
+    """Stands in for GpuSampler: a fixed summary, as if nvidia-smi sampled the repeat."""
+
+    def __init__(self, sm_max=1035.0, sm_min=1035.0, reasons=()):
+        self.summary = {"samples": 10, "interval_ms": 100, "clocks.sm_min": sm_min,
+                        "clocks.sm_max": sm_max, "power.draw_max": 60.0,
+                        "temperature.gpu_max": 50.0, "clocks_event_reasons": "0x0",
+                        "throttle_reasons": list(reasons)}  # fmt: skip
+        self.error = None
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        pass
+
+
+class NoSmiSampler(FakeSampler):
+    def __init__(self):
+        super().__init__()
+        self.summary, self.error = None, "nvidia-smi not found"
+
+
+def test_clocks_sampled_during_each_repeat_and_checked_against_the_lock():
+    gpu = {"device": "cuda:0 (Tesla T4)"}
+    locked = replace(PCFG, gpu_clock_mhz=1035)
+
+    clock = FakeClock()
+    metrics, findings, passed = probe(FakeBackend(clock, **gpu), clock, pcfg=locked,
+                                      sampler_fn=FakeSampler)  # fmt: skip
+    assert metrics["repeats"][0]["telemetry_during"]["clocks.sm_max"] == 1035.0
+    assert passed and not {"PERF_CLOCK_NOT_LOCKED", "PERF_GPU_THROTTLED"} & codes(findings)
+
+    clock = FakeClock()
+    _, findings, passed = probe(FakeBackend(clock, **gpu), clock, pcfg=locked,
+                                sampler_fn=lambda: FakeSampler(sm_max=1590.0))  # fmt: skip
+    assert "PERF_CLOCK_NOT_LOCKED" in codes(findings) and not passed
+
+    clock = FakeClock()
+    _, findings, passed = probe(FakeBackend(clock, **gpu), clock, pcfg=locked,
+                                sampler_fn=NoSmiSampler)  # fmt: skip
+    assert "PERF_CLOCK_NOT_LOCKED" in codes(findings) and not passed
+
+    clock = FakeClock()
+    _, findings, passed = probe(FakeBackend(clock, **gpu), clock, sampler_fn=FakeSampler)
+    assert "PERF_CLOCK_UNLOCKED" in codes(findings) and passed
+
+
+def test_clock_findings_report_throttling():
+    during = [FakeSampler(sm_min=1005.0, reasons=["sw_power_cap"]).summary]
+    found = {f["code"]: f for f in clock_findings(during, 1035)}
+    assert found["PERF_GPU_THROTTLED"]["severity"] == "warn"
+    assert "1005 MHz" in found["PERF_GPU_THROTTLED"]["message"]
+
+
+def test_summarize_samples_ors_the_reason_bits():
+    lines = ["1590, 32.4, 39, 0x0000000000000001", "", "1065, 69.3, 45, 0x0000000000000004"]
+    s = summarize_samples(lines, 100)
+    assert (s["samples"], s["clocks.sm_min"], s["clocks.sm_max"]) == (2, 1065.0, 1590.0)
+    assert s["clocks_event_reasons"] == "0x5"
+    assert s["throttle_reasons"] == ["sw_power_cap"]  # idle (0x1) is not throttling
+    with pytest.raises(TelemetryError, match="no samples"):
+        summarize_samples([], 100)
+    with pytest.raises(TelemetryError, match="unparseable"):
+        summarize_samples(["No devices were found"], 100)
+
+
+def test_sampler_without_nvidia_smi_reports_instead_of_raising(monkeypatch):
+    monkeypatch.setattr("edgeinfer.perf.telemetry.shutil.which", lambda name: None)
+    with GpuSampler() as s:
+        pass
+    assert s.summary is None and s.error == "nvidia-smi not found"
+
+
+def test_stability_is_checked_on_the_budgeted_span():
+    clock = FakeClock()
+    per_repeat = PCFG.warmup_iterations + PCFG.iterations
+    # infer goes from 5 to 10 ms after the first repeat; e2e (2 + infer + 3) from 10 to 15.
+    slower = lambda call: 5.0 if call <= per_repeat else 10.0  # noqa: E731
+    backend = FakeTimedBackend(clock, {"h2d": 0.1, "compute": 1.0, "d2h": 0.1}, infer_ms=slower)
+    budget = {"latency": {"span": "infer", "p99_ms_max": 100.0}}
+    metrics, findings, _ = probe(backend, clock, budgets=budget)
+    assert metrics["repeat_p99_spread_span"] == "infer"
+    assert metrics["repeat_p99_spread"] == pytest.approx(0.5)  # (10 - 5) / median 10
+    assert "PERF_UNSTABLE" in codes(findings)
+    assert "p99 infer varies" in next(
+        f["message"] for f in findings if f["code"] == "PERF_UNSTABLE"
+    )
 
 
 # --- config and CLI -----------------------------------------------------------------------
@@ -311,3 +419,28 @@ def test_perf_cli_bad_override_is_a_usage_error(tiny_onnx, tmp_path):
         str(tmp_path / "p.json"),
     ]
     assert main(argv) == 2
+
+
+def test_memory_budget_gates_gpu_memory_used():
+    gpu = {"device": "cuda:0 (Tesla T4)"}
+    budget = {"memory": {"device_used_mib_max": 953}}
+    for used, code in [(299.0, None), (1200.0, "PERF_MEMORY_EXCEEDED")]:
+        clock = FakeClock()
+        metrics, findings, passed = probe(
+            FakeBackend(clock, **gpu),
+            clock,
+            budgets=budget,
+            sampler_fn=FakeSampler,
+            telemetry_fn=lambda used=used: {"memory.used": used},
+        )
+        assert metrics["device_used_mib_max"] == used
+        assert passed == (code is None)
+        assert code is None or code in codes(findings)
+
+    def broken():
+        raise TelemetryError("nvidia-smi not found")
+
+    clock = FakeClock()
+    _, findings, passed = probe(FakeBackend(clock, **gpu), clock, budgets=budget,
+                                sampler_fn=FakeSampler, telemetry_fn=broken)  # fmt: skip
+    assert "PERF_MEMORY_UNMEASURED" in codes(findings) and not passed

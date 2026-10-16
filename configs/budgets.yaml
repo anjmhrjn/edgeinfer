@@ -1,5 +1,16 @@
 # Deployment budgets. Gates and the sensitivity analyzer read them from here.
-# Accuracy is from the project brief and provisional (D-017); latency and memory budgets
-# are added in C4 from measured T4 baselines.
+# Accuracy is from the project brief and provisional (D-017); latency and memory are set in
+# C4 from measured T4 baselines (D-026).
 accuracy:
   miou_drop_max_points: 1.0  # vs FP32 at the same resolution, full val (500 images)
+# One frame at 30 FPS. Gated on the engine's `infer` span (host-timed H2D + compute + D2H
+# through the TensorRT backend), not e2e: the Python pipeline's CPU pre/postprocessing is
+# the baseline the C++/CUDA runtime replaces (D-003, D-026). Measured at the locked clock
+# in configs/perf.yaml (D-027).
+latency:
+  span: infer
+  p99_ms_max: 33.3
+# 1 GB = 10^9 bytes = 953.7 MiB, rounded down. GPU-wide memory.used with the engine loaded,
+# CUDA context included (D-026).
+memory:
+  device_used_mib_max: 953

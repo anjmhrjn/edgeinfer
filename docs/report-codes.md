@@ -44,11 +44,16 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 | `PERF_SPAN_INCONSISTENT` | perf | error | In some iterations the device stages (H2D + compute + D2H, measured with device events) took longer than the host-measured inference call that contains them. A timer was read before the device finished: missing synchronization. |
 | `PERF_BUDGET_EXCEEDED` | perf | error | The p99 of the budgeted span (`configs/budgets.yaml` `latency.span`) is above `latency.p99_ms_max`. `where` is the span. |
 | `PERF_BUDGET_UNSET` | perf | info | `configs/budgets.yaml` has no latency budget, so nothing was gated. |
-| `PERF_DEV_HOST` | perf | info | Measured on a development CPU, not the deployment GPU. The numbers are for development only. |
+| `PERF_DEV_HOST` | perf | info | Measured on a development CPU, not the deployment GPU. The numbers are for development only, and the latency and memory budgets aren't gated. |
 | `PERF_NO_WARMUP` | perf | warn | `warmup_iterations` is 0, so first-call initialization (allocation, lazy loading, clocks ramping up) is in the measurement. |
 | `PERF_FEW_SAMPLES` | perf | warn | Fewer than 1000 measured iterations in total, so p99 rests on fewer than 10 samples above it. |
-| `PERF_UNSTABLE` | perf | warn | The repeats' p99 end-to-end latencies differ by more than `max_repeat_p99_spread` (`configs/perf.yaml`) of their median: the host or device wasn't in a steady state (other load, thermal or power throttling). |
-| `PERF_TELEMETRY_UNAVAILABLE` | perf | warn | GPU clocks, temperature and power couldn't be read (nvidia-smi missing or failing), so throttling can't be ruled out. |
+| `PERF_UNSTABLE` | perf | warn | The repeats' p99 latencies of the budgeted span (`configs/budgets.yaml` `latency.span`; end to end when no budget is set, and in reports before D-026) differ by more than `max_repeat_p99_spread` (`configs/perf.yaml`) of their median: the host or device wasn't in a steady state (other load, thermal or power throttling). |
+| `PERF_TELEMETRY_UNAVAILABLE` | perf, trtexec | warn | GPU clocks, temperature and power couldn't be read (nvidia-smi missing or failing), so throttling can't be ruled out. |
+| `PERF_GPU_THROTTLED` | perf, trtexec | warn | nvidia-smi sampled during the measurement reported a throttle reason (software power cap, hardware slowdown, thermal slowdown or power brake): the GPU ran below the clock it was asked for, so the latency describes a slowed GPU. The message gives the lowest SM clock seen. |
+| `PERF_CLOCK_UNLOCKED` | perf, trtexec | warn | `configs/perf.yaml` `gpu_clock_mhz` is null, so the GPU chose its own clocks and the latency depends on how busy it was (D-027). |
+| `PERF_CLOCK_NOT_LOCKED` | perf, trtexec | error | A clock lock is configured, but the SM clock sampled during the measurement went above it, or no samples were taken to confirm it. Lock it on the host (`scripts/c4_runs.sh clocks-lock`) and measure again. |
+| `PERF_MEMORY_EXCEEDED` | perf | error | GPU memory used with the engine loaded (nvidia-smi `memory.used`, GPU-wide) is above `configs/budgets.yaml` `memory.device_used_mib_max`. |
+| `PERF_MEMORY_UNMEASURED` | perf | error | A memory budget is set but no GPU memory reading was taken, so it can't be checked. |
 | `FP16_AUTOCAST_FAILED` | fp16 | error | ModelOpt AutoCast (run in `tools/modelopt/`) exited with an error; the message ends with its log. No FP16 artifact was written. |
 | `TRT_UNAVAILABLE` | any (trt backend), build | error | TensorRT or cuda-bindings can't be imported: the command ran outside the GPU container. Exit 2, no report. |
 | `TRT_ENGINE_MISMATCH` | any (trt backend) | error | The engine's sidecar says it was built for a different TensorRT version, GPU or compute capability than the runtime has. Rebuild it on this machine. Exit 2, no report. |

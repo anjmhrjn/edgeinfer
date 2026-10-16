@@ -17,6 +17,7 @@ as a camera would deliver them.
 
 from __future__ import annotations
 
+import contextlib
 import gc
 import resource
 import sys
@@ -32,7 +33,7 @@ import yaml
 from edgeinfer.backends.base import DEVICE_STAGES, Backend, TimedBackend
 from edgeinfer.config import CONFIG_DIR, ConfigError, ModelConfig, _choice, _take
 from edgeinfer.perf.stats import summarize
-from edgeinfer.perf.telemetry import TelemetryError, gpu_snapshot
+from edgeinfer.perf.telemetry import GpuSampler, TelemetryError, clock_findings, gpu_snapshot
 from edgeinfer.postprocess import postprocess
 from edgeinfer.preprocess import preprocess
 
@@ -55,6 +56,7 @@ class PerfConfig:
     max_images: int
     postprocess_size: str
     max_repeat_p99_spread: float
+    gpu_clock_mhz: int | None
 
     @classmethod
     def from_dict(cls, d: Any, where: str) -> PerfConfig:
@@ -67,6 +69,11 @@ class PerfConfig:
         spread = d["max_repeat_p99_spread"]
         if not isinstance(spread, int | float) or spread <= 0:
             raise ConfigError(f"{where}.max_repeat_p99_spread: expected > 0, got {spread!r}")
+        lock = d["gpu_clock_mhz"]
+        if lock is not None and (not isinstance(lock, int) or lock <= 0):
+            raise ConfigError(
+                f"{where}.gpu_clock_mhz: expected a positive int or null, got {lock!r}"
+            )
         return cls(**{**d, "max_repeat_p99_spread": float(spread)})
 
 
@@ -94,6 +101,22 @@ class _LatencyBudget:
     p99_ms_max: float
 
 
+def memory_budget(budgets: dict[str, Any]) -> dict[str, Any] | None:
+    """The optional `memory` section of budgets.yaml: {device_used_mib_max}."""
+    memory = budgets.get("memory")
+    if memory is None:
+        return None
+    _take(_MemoryBudget, memory, "budgets.yaml: memory")
+    if not isinstance(memory["device_used_mib_max"], int) or memory["device_used_mib_max"] <= 0:
+        raise ConfigError("budgets.yaml: memory.device_used_mib_max must be a positive int")
+    return memory
+
+
+@dataclass(frozen=True)
+class _MemoryBudget:
+    device_used_mib_max: int
+
+
 def is_dev_host(meta: dict[str, Any]) -> bool:
     return str(meta.get("device", "")).startswith("cpu")
 
@@ -114,6 +137,7 @@ def run_probe(
     preprocess_fn: Callable[[np.ndarray, ModelConfig], np.ndarray] = preprocess,
     postprocess_fn: Callable[[np.ndarray, int, int], np.ndarray] = postprocess,
     telemetry_fn: Callable[[], dict[str, Any]] | None = None,
+    sampler_fn: Callable[[], GpuSampler] | None = None,
 ) -> tuple[dict[str, Any], list[dict[str, str]], bool]:
     """Returns (metrics, findings, passed). `frames` are decoded uint8 HxWx3 images."""
     if not frames:
@@ -132,6 +156,7 @@ def run_probe(
         return {}, findings, False
 
     budget = latency_budget(budgets)
+    mem_budget = memory_budget(budgets)
     timed = isinstance(backend, TimedBackend)
     if budget is not None and budget["span"] in DEVICE_STAGES and not timed:
         raise ConfigError(
@@ -140,6 +165,10 @@ def run_probe(
     dev_host = is_dev_host(meta)
     if telemetry_fn is None and not dev_host:
         telemetry_fn = gpu_snapshot
+    if sampler_fn is None and not dev_host:
+        sampler_fn = GpuSampler
+    # The run-to-run stability check is on the span the budget gates (e2e without a budget).
+    spread_span = budget["span"] if budget is not None else "e2e"
 
     def target_hw(frame: np.ndarray, logits_hw: tuple[int, int]) -> tuple[int, int]:
         if pcfg.postprocess_size == "label":
@@ -191,25 +220,32 @@ def run_probe(
     for r in range(pcfg.repeats):
         gc.collect()  # don't carry earlier garbage into the measured loop
         before = telemetry()
-        e2e: list[float] = []
-        start = clock()
-        for i in range(pcfg.iterations):
-            ms, consistent = iteration(pcfg.warmup_iterations + r * pcfg.iterations + i)
-            inconsistent += not consistent
-            e2e.append(ms["e2e"])
-            for span, value in ms.items():
-                pooled.setdefault(span, []).append(value)
-        wall_ns = clock() - start
+        this: dict[str, list[float]] = {}
+        sampler = sampler_fn() if sampler_fn is not None else None
+        with sampler if sampler is not None else contextlib.nullcontext():
+            start = clock()
+            for i in range(pcfg.iterations):
+                ms, consistent = iteration(pcfg.warmup_iterations + r * pcfg.iterations + i)
+                inconsistent += not consistent
+                for span, value in ms.items():
+                    this.setdefault(span, []).append(value)
+            wall_ns = clock() - start
         total_wall_ns += wall_ns
-        stats = summarize(e2e)
+        for span, values in this.items():
+            pooled.setdefault(span, []).extend(values)
+        if sampler is not None and sampler.error:
+            telemetry_errors.append(sampler.error)
+        e2e = summarize(this["e2e"])
         repeats.append({
-            "e2e_p50_ms": stats["p50"], "e2e_p99_ms": stats["p99"],
+            "e2e_p50_ms": e2e["p50"], "e2e_p99_ms": e2e["p99"],
+            "p99_ms": {span: summarize(this[span])["p99"] for span in SPANS if span in this},
             "throughput_fps": pcfg.iterations / (wall_ns / 1e9),
             "telemetry_before": before, "telemetry_after": telemetry(),
+            "telemetry_during": sampler.summary if sampler is not None else None,
         })  # fmt: skip
 
     spans = {span: summarize(pooled[span]) for span in SPANS if span in pooled}
-    p99s = [rep["e2e_p99_ms"] for rep in repeats]
+    p99s = [rep["p99_ms"][spread_span] for rep in repeats]
     spread = (max(p99s) - min(p99s)) / float(np.median(p99s))
     n_total = pcfg.repeats * pcfg.iterations
     metrics = {
@@ -217,6 +253,7 @@ def run_probe(
         "throughput_fps": n_total / (total_wall_ns / 1e9),
         "repeats": repeats,
         "repeat_p99_spread": spread,
+        "repeat_p99_spread_span": spread_span,
         "span_inconsistencies": inconsistent,
         "device_stages_timed": timed,
         "host_peak_rss_bytes": _host_peak_rss_bytes(),
@@ -226,7 +263,7 @@ def run_probe(
         findings.append({
             "severity": "info", "code": "PERF_DEV_HOST",
             "message": f"measured on a development host ({meta.get('device')}); "
-                       "not a deployment latency",
+                       "not a deployment latency, so the budgets aren't gated",
         })  # fmt: skip
     if pcfg.warmup_iterations == 0:
         findings.append({
@@ -242,7 +279,7 @@ def run_probe(
     if spread > pcfg.max_repeat_p99_spread:
         findings.append({
             "severity": "warn", "code": "PERF_UNSTABLE",
-            "message": f"p99 e2e varies by {spread:.1%} across repeats "
+            "message": f"p99 {spread_span} varies by {spread:.1%} across repeats "
                        f"(limit {pcfg.max_repeat_p99_spread:.0%}): "
                        f"{', '.join(f'{p:.2f}' for p in p99s)} ms",
         })  # fmt: skip
@@ -254,6 +291,9 @@ def run_probe(
                        "the device finished (missing synchronization)",
             "where": "infer_timed",
         })  # fmt: skip
+    if not dev_host:
+        during = [rep["telemetry_during"] for rep in repeats if rep["telemetry_during"]]
+        findings.extend(clock_findings(during, pcfg.gpu_clock_mhz))
     if telemetry_errors:
         findings.append({
             "severity": "warn", "code": "PERF_TELEMETRY_UNAVAILABLE",
@@ -264,12 +304,32 @@ def run_probe(
             "severity": "info", "code": "PERF_BUDGET_UNSET",
             "message": "configs/budgets.yaml has no latency budget yet (set in C4b)",
         })  # fmt: skip
-    elif spans[budget["span"]]["p99"] > budget["p99_ms_max"]:
+    elif not dev_host and spans[budget["span"]]["p99"] > budget["p99_ms_max"]:
         findings.append({
             "severity": "error", "code": "PERF_BUDGET_EXCEEDED",
             "message": f"p99 {budget['span']} {spans[budget['span']]['p99']:.2f} ms "
                        f"> budget {budget['p99_ms_max']} ms",
             "where": budget["span"],
         })  # fmt: skip
+    if mem_budget is not None and not dev_host:
+        # GPU-wide memory.used from the snapshots around each repeat, taken with the engine
+        # loaded: it includes the CUDA context and anything else on the GPU, so it can't
+        # undercount the process (D-026).
+        used = [snap["memory.used"] for rep in repeats
+                for snap in (rep["telemetry_before"], rep["telemetry_after"])
+                if snap and isinstance(snap.get("memory.used"), float)]  # fmt: skip
+        limit = mem_budget["device_used_mib_max"]
+        if not used:
+            findings.append({
+                "severity": "error", "code": "PERF_MEMORY_UNMEASURED",
+                "message": f"no GPU memory reading, so the {limit} MiB budget can't be checked",
+            })  # fmt: skip
+        else:
+            metrics["device_used_mib_max"] = max(used)
+            if max(used) > limit:
+                findings.append({
+                    "severity": "error", "code": "PERF_MEMORY_EXCEEDED",
+                    "message": f"GPU memory used {max(used):.0f} MiB > budget {limit} MiB",
+                })  # fmt: skip
     passed = not any(f["severity"] == "error" for f in findings)
     return metrics, findings, passed

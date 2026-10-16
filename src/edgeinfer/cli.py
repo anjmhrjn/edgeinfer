@@ -654,7 +654,13 @@ def cmd_perf(args: argparse.Namespace) -> int:
     from edgeinfer.config import ConfigError, load_budgets, load_model_config
     from edgeinfer.data.cityscapes import cityscapes_root, iter_samples
     from edgeinfer.data.manifests import load_manifest
-    from edgeinfer.perf.probe import PerfConfig, latency_budget, load_perf_config, run_probe
+    from edgeinfer.perf.probe import (
+        PerfConfig,
+        latency_budget,
+        load_perf_config,
+        memory_budget,
+        run_probe,
+    )
     from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
 
     cfg = load_model_config(args.model)
@@ -668,6 +674,7 @@ def cmd_perf(args: argparse.Namespace) -> int:
         pcfg = PerfConfig.from_dict(merged, where="perf config + CLI overrides")
         budgets = load_budgets()
         latency_budget(budgets)
+        memory_budget(budgets)
     except ConfigError as e:
         print(f"error: {e}")
         return 2
@@ -705,7 +712,7 @@ def cmd_perf(args: argparse.Namespace) -> int:
         inputs={"frames": source, "frame_hw": list(frames[0].shape[:2]),
                 "artifact": Path(args.artifact).name if args.artifact else None,
                 "perf_config": asdict(pcfg), "gc": "enabled; collected before each repeat"},
-        thresholds={"latency": budgets.get("latency")},
+        thresholds={"latency": budgets.get("latency"), "memory": budgets.get("memory")},
         metrics=metrics, findings=findings, passed=passed,
     )  # fmt: skip
     name = f"perf__{cfg.name}__{meta['backend']}__{meta['precision']}"

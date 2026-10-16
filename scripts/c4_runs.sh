@@ -6,8 +6,10 @@
 #   scripts/c4_runs.sh smoke    GPU, driver, container, TensorRT/CUDA imports, gpu tests
 #   scripts/c4_runs.sh ops      configs/supported_ops.yaml vs the real ONNX parser
 #   scripts/c4_runs.sh build    FP32 and FP16 engines for both models
-#   scripts/c4_runs.sh perf     performance probe on every engine
-#   scripts/c4_runs.sh trtexec  trtexec cross-check of compute latency
+#   scripts/c4_runs.sh clocks-lock   lock the SM clock to configs/perf.yaml gpu_clock_mhz (D-027)
+#   scripts/c4_runs.sh clocks-reset  give clock control back to the driver
+#   scripts/c4_runs.sh perf     performance probe on every engine (locks clocks first)
+#   scripts/c4_runs.sh trtexec  trtexec cross-check of compute latency (locks clocks first)
 #   scripts/c4_runs.sh parity   golden parity for every engine
 #   scripts/c4_runs.sh eval     full-val mIoU for every engine (500 images, ~10 min each)
 #   scripts/c4_runs.sh nsys     Nsight Systems trace of the end-to-end path (one model)
@@ -22,7 +24,7 @@ if [ "${1:-}" = "--print" ]; then
     PRINT=1
     shift
 fi
-phase=${1:?usage: scripts/c4_runs.sh [--print] push|push-data|smoke|ops|build|perf|trtexec|parity|eval|nsys}
+phase=${1:?usage: scripts/c4_runs.sh [--print] push|push-data|smoke|ops|build|clocks-lock|clocks-reset|perf|trtexec|parity|eval|nsys}
 MODELS=(segformer_b0 deeplabv3plus_mbv2)
 
 run() {  # run <remote.sh args...>
@@ -42,6 +44,18 @@ engine() {  # engine <model> <precision>
 }
 perf_report() {  # perf_report <model> <precision>: newest full perf report on TensorRT
     echo "\$(ls -t artifacts/reports/perf__$1__trt__$2__*.json | grep -v __nsys | head -1)"
+}
+# Clock locking is a host setting (the container has no privileges). It lasts until
+# clocks-reset or a reboot; gpu-down.sh stops the instance, which resets it.
+lock_clocks() {
+    local mhz
+    mhz=$(uv run --no-sync python -c \
+        'from edgeinfer.perf.probe import load_perf_config; print(load_perf_config().gpu_clock_mhz)')
+    if [ "$mhz" = "None" ]; then
+        echo "configs/perf.yaml gpu_clock_mhz is null: nothing to lock" >&2
+        exit 2
+    fi
+    run host "sudo nvidia-smi --lock-gpu-clocks=$mhz,$mhz && nvidia-smi --query-gpu=clocks.sm,clocks.max.sm --format=csv"
 }
 onnx() {  # onnx <model> <precision>
     echo "\$(ls -t artifacts/onnx/$1/$1__$2__*.onnx | head -1)"
@@ -80,7 +94,14 @@ case "$phase" in
             done
         done
         ;;
+    clocks-lock)
+        lock_clocks
+        ;;
+    clocks-reset)
+        run host "sudo nvidia-smi --reset-gpu-clocks"
+        ;;
     perf)
+        lock_clocks
         for m in "${MODELS[@]}"; do
             for p in fp32 fp16; do
                 run run "edgeinfer perf --model $m --backend trt --artifact $(engine "$m" "$p")"
@@ -88,6 +109,7 @@ case "$phase" in
         done
         ;;
     trtexec)
+        lock_clocks
         # Compute-only latency from NVIDIA's tool, to cross-check the probe's compute span.
         # The wrapper records trtexec's flags and writes a report with the SHA and environment.
         for m in "${MODELS[@]}"; do
@@ -113,6 +135,7 @@ case "$phase" in
         done
         ;;
     nsys)
+        lock_clocks
         m=segformer_b0
         run run "nsys profile --trace=cuda,nvtx,osrt --output=artifacts/reports/nsys__${m}__fp16 --force-overwrite=true \
 edgeinfer perf --model $m --backend trt --artifact $(engine "$m" fp16) --warmup 20 --iterations 100 --repeats 1 \
