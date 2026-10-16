@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C3 — INT8 quantization and sensitivity analysis on ORT (CPU)
-**Next step:** CI green on GitHub, then Anuj's sign-off.
+**Next step:** Anuj's sign-off of C3, then plan C4.
 
 ## C3 — INT8 quantization and sensitivity analysis on ORT
 Plan agreed 2026-10-15: ORT `quantize_static` (ModelOpt compared in C5), TRT-style Q/DQ placement (inputs of Conv/MatMul/Gemm), medium sensitivity groups from exporter name scopes, sensitivity scored on a seeded 100-image val subset.
@@ -16,7 +16,7 @@ Plan agreed 2026-10-15: ORT `quantize_static` (ModelOpt compared in C5), TRT-sty
 - [x] CI fixture: quantize → validate → eval → parity → sensitivity, plus config-only faults
 - [x] Decision records (D-015..D-019), report codes and CLI exit codes, results
 - [x] Teach-back: model answers in `private/teach-back-C3.md`
-- [ ] CI green
+- [x] CI green on GitHub (run 38843730928, Python 3.11 + 3.12, commit `c4b5dc6`)
 - [ ] Sign-off (Anuj)
 
 ### C3 results — INT8 PTQ on ORT CPU (arm64), Cityscapes val, 512×1024
