@@ -6,6 +6,7 @@
 #   scripts/c3_runs.sh calibsize  calibration-size study (needs METHOD_<model> set)
 #   scripts/c3_runs.sh sens       sensitivity (needs METHOD_<model> and MARGIN set)
 #   scripts/c3_runs.sh final      suggested exclusions end to end (needs METHOD_<model>)
+#   scripts/c3_runs.sh faults     config-only faults on the real models, each must be caught
 # Run from a clean checkout: each report records the git SHA it was produced at.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -102,6 +103,44 @@ final() {
     done
     gated uv run edgeinfer parity --model "$m" --artifact "$a" --per-layer --ref-artifact "$(fp32 "$m")" \
       --out "artifacts/reports/parity__${m}__ort_cpu__int8_${q}__sens__golden_val32__images__layers__$(sha).json"
+  done
+}
+
+# expect CODE REPORT CMD...: CMD must fail its checks (exit 1) with CODE in REPORT.
+expect() {
+  local code=$1 rep=$2 rc=0; shift 2
+  "$@" --out "$rep" || rc=$?
+  [[ $rc -eq 1 ]] || { echo "expected exit 1 ($code), got $rc: $*" >&2; exit 2; }
+  uv run python -c 'import json, sys; r = json.load(open(sys.argv[1]))
+assert sys.argv[2] in [f["code"] for f in r["findings"]], f"{sys.argv[2]} not in {sys.argv[1]}"' \
+    "$rep" "$code"
+  echo "CAUGHT $code -> $rep"
+}
+
+# Faults injected through configuration only, as the triage tool will: a calibration
+# manifest swapped to val, a misspelt exclusion group, an unsigned INT8 quant config.
+faults() {
+  local d=artifacts/quant_configs
+  mkdir -p "$d"
+  for m in "${MODELS[@]}"; do
+    q=$(method "$m")
+    sed -e "s/^name: int8_${q}$/name: int8_${q}_calibval/" \
+      -e "s/^  manifest: calib_train200 .*/  manifest: eval_val/" "configs/quant/int8_${q}.yaml" \
+      > "$d/int8_${q}_calibval.yaml"
+    sed -e "s/^name: int8_${q}$/name: int8_${q}_uint8/" -e "s/^activation_type: int8$/activation_type: uint8/" \
+      -e "s/^weight_type: int8$/weight_type: uint8/" "configs/quant/int8_${q}.yaml" > "$d/int8_${q}_uint8.yaml"
+    grep -q "^  manifest: eval_val$" "$d/int8_${q}_calibval.yaml" || { echo "manifest not swapped"; exit 2; }
+    grep -q "^weight_type: uint8$" "$d/int8_${q}_uint8.yaml" || { echo "dtype not swapped"; exit 2; }
+    printf 'name: %s__typo\nmodel: %s\ngroups: [no_such_group]\nnodes: []\n' "$m" "$m" > "$d/${m}__typo.yaml"
+
+    local base=(uv run edgeinfer quantize --model "$m" --artifact "$(fp32 "$m")")
+    expect QUANT_CALIB_ON_EVAL_SPLIT "artifacts/reports/quantize__${m}__fault-calibval__$(sha).json" \
+      "${base[@]}" --quant-config "$d/int8_${q}_calibval.yaml"
+    expect QUANT_UNKNOWN_EXCLUSION "artifacts/reports/quantize__${m}__fault-typo__$(sha).json" \
+      "${base[@]}" --quant-config "int8_$q" --exclusions "$d/${m}__typo.yaml"
+    a=$(quant "$m" "$d/int8_${q}_uint8.yaml" fault-uint8)
+    expect VALIDATE_QDQ_DTYPE "artifacts/reports/validate__${m}__fault-uint8__$(sha).json" \
+      uv run edgeinfer validate --model "$m" --artifact "$a"
   done
 }
 
