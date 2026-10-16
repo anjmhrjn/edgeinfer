@@ -1,0 +1,6 @@
+# Suggested by `edgeinfer sensitivity` (sensitivity__segformer_b0__int8_percentile__sens_val100__cb60f28.json): groups kept in float so
+# the drop on sens_val100 is within the budget minus margin.
+name: segformer_b0__sens
+model: segformer_b0
+groups: []
+nodes: []

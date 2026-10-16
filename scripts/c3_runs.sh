@@ -10,7 +10,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-MODELS=(segformer_b0 deeplabv3plus_mbv2)
+# MODELS="deeplabv3plus_mbv2" runs a phase for a subset of the models.
+read -ra MODELS <<< "${MODELS:-segformer_b0 deeplabv3plus_mbv2}"
 METHODS=(minmax entropy percentile)
 
 fp32() { ls artifacts/onnx/"$1"/"$1"__fp32__*.onnx; }

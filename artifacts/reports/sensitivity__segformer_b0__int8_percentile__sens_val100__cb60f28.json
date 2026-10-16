@@ -1,0 +1,276 @@
+{
+  "schema_version": "1",
+  "tool": "sensitivity",
+  "created_at": "2026-10-15T23:42:21+00:00",
+  "git_sha": "cb60f28345ec22f9d8cd30437ff39e7cea68d024",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": 4,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "onnxruntime": "1.31.0"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "ort_cpu",
+  "precision": "int8",
+  "artifact_id": "8b88379284a9c161eafc898995d177f2344dcea8676afb3787b89220af6b368e",
+  "inputs": {
+    "artifact": "segformer_b0__fp32__0ef7fcdb0cdc.onnx",
+    "quant_config": {
+      "name": "int8_percentile",
+      "activation_type": "int8",
+      "weight_type": "int8",
+      "activation_symmetric": true,
+      "weight_symmetric": true,
+      "per_channel": true,
+      "op_types": [
+        "Conv",
+        "MatMul",
+        "Gemm"
+      ],
+      "quantize_outputs": false,
+      "quantize_bias": false,
+      "calibration": {
+        "manifest": "calib_train200",
+        "limit": null,
+        "method": "percentile",
+        "num_bins": 2048,
+        "num_quantized_bins": null,
+        "percentile": 99.99,
+        "chunk_images": 2
+      }
+    },
+    "calibration_id": "59a94b20667a9f49ee7786b2120ceab86cdabc2a5a331ccf97a9fa00324cbdbf",
+    "groups": "segformer_b0.yaml",
+    "manifest": "sens_val100",
+    "limit": null,
+    "modes": [
+      "only",
+      "except"
+    ]
+  },
+  "thresholds": {
+    "miou_drop_budget_points": 1.0,
+    "margin_points": 0.7,
+    "target_drop_points": 0.30000000000000004,
+    "non_additive_min_points": 0.1
+  },
+  "metrics": {
+    "n_images": 100,
+    "fp32_miou": 0.6915524262123391,
+    "fp32_artifact_id": "0ef7fcdb0cdc344827ec5243eb2f914c1f53a3385ad4d21cdca71488cff55288",
+    "noise_run": {
+      "threads": 1,
+      "delta_points": -0.2543994322752652
+    },
+    "full_int8": {
+      "miou": 0.6887319572044336,
+      "delta_points": -0.2820469007905557,
+      "argmax_agreement": 0.9929879760742187,
+      "artifact_id": "8b88379284a9c161eafc898995d177f2344dcea8676afb3787b89220af6b368e"
+    },
+    "noise_floor_points": 0.02764746851529054,
+    "groups": [
+      {
+        "group": "s0.patch_embed",
+        "only_delta": -0.027268725099249824,
+        "only_agreement": 0.9982586669921875,
+        "except_delta": -0.20841706198381216,
+        "except_agreement": 0.993238525390625,
+        "recovery": 0.07362983880674356,
+        "distinguishable": true
+      },
+      {
+        "group": "s0.attn_matmul",
+        "only_delta": -0.022375118582440567,
+        "only_agreement": 0.999312744140625,
+        "except_delta": -0.2751075219957766,
+        "except_agreement": 0.9929971313476562,
+        "recovery": 0.0069393787947791274,
+        "distinguishable": false
+      },
+      {
+        "group": "s0.attn_proj",
+        "only_delta": 0.0033929688981526596,
+        "only_agreement": 0.9997891235351563,
+        "except_delta": -0.22038773227340824,
+        "except_agreement": 0.9929974365234375,
+        "recovery": 0.06165916851714748,
+        "distinguishable": true
+      },
+      {
+        "group": "s0.mlp",
+        "only_delta": 0.0810437462007707,
+        "only_agreement": 0.9980935668945312,
+        "except_delta": -0.3547126802203371,
+        "except_agreement": 0.9932510375976562,
+        "recovery": -0.07266577942978136,
+        "distinguishable": true
+      },
+      {
+        "group": "s1.patch_embed",
+        "only_delta": 0.0007656185450732877,
+        "only_agreement": 0.999520263671875,
+        "except_delta": -0.3511504256425324,
+        "except_agreement": 0.993009033203125,
+        "recovery": -0.06910352485197668,
+        "distinguishable": true
+      },
+      {
+        "group": "s1.attn_matmul",
+        "only_delta": -0.0036459949255496227,
+        "only_agreement": 0.9992449951171875,
+        "except_delta": -0.33828673241030893,
+        "except_agreement": 0.9931137084960937,
+        "recovery": -0.05623983161975321,
+        "distinguishable": true
+      },
+      {
+        "group": "s1.attn_proj",
+        "only_delta": -0.005844031536872407,
+        "only_agreement": 0.9997381591796874,
+        "except_delta": -0.2453947499206799,
+        "except_agreement": 0.9930746459960937,
+        "recovery": 0.03665215086987583,
+        "distinguishable": true
+      },
+      {
+        "group": "s1.mlp",
+        "only_delta": -0.062277628337670254,
+        "only_agreement": 0.9987310791015624,
+        "except_delta": -0.22392280045080426,
+        "except_agreement": 0.9932583618164063,
+        "recovery": 0.05812410033975146,
+        "distinguishable": true
+      },
+      {
+        "group": "s2.patch_embed",
+        "only_delta": 0.0061847689511784765,
+        "only_agreement": 0.9996279907226563,
+        "except_delta": -0.2818076208778386,
+        "except_agreement": 0.9930422973632812,
+        "recovery": 0.00023927991271710525,
+        "distinguishable": false
+      },
+      {
+        "group": "s2.attn_matmul",
+        "only_delta": -0.01025584815006475,
+        "only_agreement": 0.9967266845703125,
+        "except_delta": -0.17562053062963878,
+        "except_agreement": 0.9939495849609375,
+        "recovery": 0.10642637016091694,
+        "distinguishable": true
+      },
+      {
+        "group": "s2.attn_proj",
+        "only_delta": 0.0026184930384864913,
+        "only_agreement": 0.9996212768554688,
+        "except_delta": -0.2729634977544526,
+        "except_agreement": 0.9929989624023438,
+        "recovery": 0.00908340303610311,
+        "distinguishable": false
+      },
+      {
+        "group": "s2.mlp",
+        "only_delta": -0.09464960235068265,
+        "only_agreement": 0.9974237060546876,
+        "except_delta": -0.13091564314102744,
+        "except_agreement": 0.99358154296875,
+        "recovery": 0.15113125764952828,
+        "distinguishable": true
+      },
+      {
+        "group": "s3.patch_embed",
+        "only_delta": -0.0060017874066842225,
+        "only_agreement": 0.9996429443359375,
+        "except_delta": -0.24965268273123842,
+        "except_agreement": 0.9930093383789063,
+        "recovery": 0.032394218059317303,
+        "distinguishable": true
+      },
+      {
+        "group": "s3.attn_matmul",
+        "only_delta": -0.02539693817220634,
+        "only_agreement": 0.9965509033203125,
+        "except_delta": -0.17020473453108753,
+        "except_agreement": 0.9940179443359375,
+        "recovery": 0.11184216625946819,
+        "distinguishable": true
+      },
+      {
+        "group": "s3.attn_proj",
+        "only_delta": 0.017812410908957244,
+        "only_agreement": 0.9995098876953125,
+        "except_delta": -0.31720243760771094,
+        "except_agreement": 0.9930172729492187,
+        "recovery": -0.03515553681715522,
+        "distinguishable": true
+      },
+      {
+        "group": "s3.mlp",
+        "only_delta": -0.05826638200885359,
+        "only_agreement": 0.9984390258789062,
+        "except_delta": -0.2622766117071018,
+        "except_agreement": 0.9932064819335937,
+        "recovery": 0.019770289083453907,
+        "distinguishable": false
+      },
+      {
+        "group": "head.proj",
+        "only_delta": -0.0018997674500642603,
+        "only_agreement": 0.9995980834960938,
+        "except_delta": -0.2751546433137131,
+        "except_agreement": 0.9930047607421875,
+        "recovery": 0.006892257476842634,
+        "distinguishable": false
+      },
+      {
+        "group": "head.fuse_cls",
+        "only_delta": 0.0012646381129743922,
+        "only_agreement": 0.9988742065429688,
+        "except_delta": -0.2868070377875509,
+        "except_agreement": 0.9931216430664063,
+        "recovery": -0.004760136996995179,
+        "distinguishable": false
+      }
+    ],
+    "ranking": [
+      "s2.mlp",
+      "s3.attn_matmul",
+      "s2.attn_matmul",
+      "s0.patch_embed",
+      "s0.attn_proj",
+      "s1.mlp",
+      "s1.attn_proj",
+      "s3.patch_embed",
+      "s3.mlp",
+      "s2.attn_proj",
+      "s0.attn_matmul",
+      "head.proj",
+      "s2.patch_embed",
+      "head.fuse_cls",
+      "s3.attn_proj",
+      "s1.attn_matmul",
+      "s1.patch_embed",
+      "s0.mlp"
+    ],
+    "n_distinguishable": 12,
+    "greedy": [],
+    "suggested_exclusions": [],
+    "suggested_delta_points": -0.2820469007905557
+  },
+  "passed": true,
+  "findings": [
+    {
+      "severity": "info",
+      "code": "SENS_FULL_INT8_WITHIN_BUDGET",
+      "message": "full INT8 drops 0.282 points on the scoring set, within 0.3 (budget 1 - margin 0.7); nothing needs to stay in float"
+    }
+  ]
+}
