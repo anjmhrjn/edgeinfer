@@ -26,7 +26,7 @@ C4b (T4, first GPU session 2026-10-16, 3.94 GPU-hours):
 - [x] Perf probe at a locked clock (D-027); trtexec cross-check; iteration counts confirmed (D-028); builder optimization level measured (D-029)
 - [x] Budgets finalized: latency on the engine's `infer` span, memory on GPU-wide memory used (D-026)
 - [x] Nsight Systems trace of SegFormer FP16, summarized below
-- [ ] Teach-back: model answers in `private/teach-back-C4.md`
+- [x] Teach-back: model answers in `private/teach-back-C4.md`
 - [ ] CI green on GitHub for the C4b commits
 - [ ] Sign-off (Anuj)
 
