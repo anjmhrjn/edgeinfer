@@ -29,6 +29,7 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 | `VALIDATE_QDQ_DTYPE` | validate | error | A Quantize/DequantizeLinear uses a type other than signed INT8 (e.g. UINT8, or the ONNX default UINT8 when no zero point is given). TensorRT explicit quantization needs signed INT8 (D-016). `where` is the first such node. |
 | `VALIDATE_QDQ_BIAS` | validate | warn | A Conv/Gemm bias goes through an INT32 DequantizeLinear. Our TensorRT format keeps bias in float (D-016). |
 | `VALIDATE_QDQ_WEIGHT_PER_TENSOR` | validate | warn | A Conv/MatMul/Gemm weight is quantized with one scale for the whole tensor instead of per output channel. |
+| `VALIDATE_FLOAT_PRECISION` | validate | error (int8_fp16), warn (fp16) | The model is labelled `fp16` or `int8_fp16`, but some compute nodes produce FP32. TensorRT 11 runs them in FP32 (strong typing, D-024), so the engine would be slower than its label says. Error for `int8_fp16`, because `convert_to_f16` never keeps a node in FP32. Warn for `fp16`, because AutoCast can keep a node in FP32 on purpose (`data_max`, `init_max`). `where` is the first such node. |
 | `QUANT_CALIB_ON_EVAL_SPLIT` | quantize, fp16 | error | The calibration manifest contains images outside the train split. Calibrating on val would tune the quantizer on the evaluation images. |
 | `QUANT_CALIB_TOO_SMALL` | quantize, fp16 | error | `calibration.limit` asks for more images than the calibration manifest has. |
 | `QUANT_CALIB_MISMATCH` | quantize | error | The calibration cache was computed on a different FP32 model. |
@@ -36,6 +37,9 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 | `QUANT_GROUP_UNMATCHED` | quantize | error | A quantizable node matches no layer-group rule, a rule matches no node, or the model lacks the exporter's name-scope metadata (`configs/quant/groups/`). |
 | `QUANT_UNKNOWN_EXCLUSION` | quantize | error | An exclusion list names a group or node the model doesn't have. A typo must never silently quantize a layer meant to stay in float. |
 | `QUANT_PLACEMENT_MISMATCH` | quantize | error | After quantizing, a node meant to be INT8 reads a float input, or an excluded node reads a dequantized one. |
+| `QUANT_INPUT_NOT_INT8` | quantize (`--float-dtype fp16`) | error | The model given to the INT8+FP16 conversion isn't an INT8 Q/DQ model from `edgeinfer quantize` (D-031). |
+| `QUANT_FP16_CONVERT_FAILED` | quantize (`--float-dtype fp16`) | error | ModelOpt `convert_to_f16` (run in `tools/modelopt/`) exited with an error; the message ends with its log. No `int8_fp16` artifact is written. |
+| `QUANT_FP16_PLACEMENT_CHANGED` | quantize (`--float-dtype fp16`) | error | The FP16 conversion changed the Q/DQ nodes or the set of quantized nodes. The conversion must only change float types, so the INT8 parent's calibration and exclusions still describe the model (D-031). A node that lost its Q/DQ input is reported as `QUANT_PLACEMENT_MISMATCH`. |
 | `SENS_FULL_INT8_WITHIN_BUDGET` | sensitivity | info | The fully quantized model's drop on the scoring set is already within budget − margin; no exclusions needed. |
 | `SENS_EXCLUSION_SUGGESTED` | sensitivity | info | Keeping the listed groups in float (greedy, in leave-one-out order, each step measured) brings the drop within budget − margin. `where` is the comma-separated group list. |
 | `SENS_BUDGET_UNREACHABLE` | sensitivity | error | Even with every group in float the drop exceeds budget − margin: the loss isn't in the quantized layers (or the margin is too large). |

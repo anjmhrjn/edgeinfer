@@ -19,6 +19,10 @@ THREADS = 4
 # layer_outputs() splits requests so that one session returns at most this many bytes.
 # SegFormer-B0's intermediate tensors at 512x1024 add up to more than 1 GB per image.
 LAYER_CHUNK_BYTES = 1 << 30
+# ORT 1.31's CPU graph optimizations break INT8 Q/DQ models with FP16 scales: they fuse
+# MatMul+Add into QGemm, which rejects FP16 scales, and run DeepLab's wrongly (D-031).
+# Those models run unoptimized; the result is a check of the conversion, not a benchmark.
+UNOPTIMIZED_PRECISIONS = ("int8_fp16",)
 
 
 class OrtCpuBackend:
@@ -30,13 +34,14 @@ class OrtCpuBackend:
         self._session: ort.InferenceSession | None = None
         self._meta: dict[str, Any] = {}
         self._layer_sessions: dict[tuple[str, ...], list[ort.InferenceSession]] = {}
+        self._opt_level = "ORT_ENABLE_ALL"
 
     def _options(self) -> ort.SessionOptions:
         opts = ort.SessionOptions()
         opts.intra_op_num_threads = self._threads
         opts.inter_op_num_threads = 1
         opts.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
-        opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+        opts.graph_optimization_level = getattr(ort.GraphOptimizationLevel, self._opt_level)
         return opts
 
     def _session_for(self, model: onnx.ModelProto) -> ort.InferenceSession:
@@ -49,6 +54,8 @@ class OrtCpuBackend:
             raise ValueError("ort_cpu needs an ONNX artifact (--artifact path/to/model.onnx)")
         artifact = Path(artifact)
         identity = artifact_identity(artifact)
+        self._opt_level = ("ORT_DISABLE_ALL" if identity["precision"] in UNOPTIMIZED_PRECISIONS
+                           else "ORT_ENABLE_ALL")  # fmt: skip
         self._model = onnx.load(str(artifact))
         self._session = self._session_for(self._model)
         self._layer_sessions = {}
@@ -95,6 +102,6 @@ class OrtCpuBackend:
             "artifact_id": self._meta["artifact_id"],
             "artifact": self._meta["artifact"],
             "threads": self._threads,
-            "session": {"graph_optimization_level": "ORT_ENABLE_ALL", "providers": ["CPU"]},
+            "session": {"graph_optimization_level": self._opt_level, "providers": ["CPU"]},
             "versions": {"onnxruntime": ort.__version__, "onnx": onnx.__version__},
         }

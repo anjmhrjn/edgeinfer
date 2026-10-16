@@ -22,7 +22,7 @@ import onnx
 import yaml
 from onnx import numpy_helper, shape_inference
 
-from edgeinfer.artifacts import CONTRACT_KEY, INPUT_NAME, OUTPUT_NAME, io_contract
+from edgeinfer.artifacts import CONTRACT_KEY, INPUT_NAME, META_PREFIX, OUTPUT_NAME, io_contract
 from edgeinfer.config import CONFIG_DIR, ModelConfig
 
 SUPPORTED_OPS_PATH = CONFIG_DIR / "supported_ops.yaml"
@@ -312,6 +312,30 @@ def _check_contract(model: onnx.ModelProto, cfg: ModelConfig) -> list[Finding]:
     return findings
 
 
+# Precisions whose float compute should be FP16 under TensorRT 11's strong typing (D-024).
+# AutoCast may keep a node in FP32 on purpose (warn); convert_to_f16 never does (error).
+_FP16_PRECISIONS = {"fp16": "warn", "int8_fp16": "error"}
+
+
+def _check_float_precision(model: onnx.ModelProto) -> list[Finding]:
+    """An FP16 or INT8+FP16 model whose float compute is partly FP32 would build into a
+    slower engine than its label says, without any error from TensorRT."""
+    from edgeinfer.quant.fp16 import precision_summary
+
+    props = {p.key: p.value for p in model.metadata_props}
+    precision = props.get(META_PREFIX + "precision")
+    if precision not in _FP16_PRECISIONS:
+        return []
+    fp32 = precision_summary(model)["fp32_nodes"]
+    if not fp32:
+        return []
+    return [_finding(
+        _FP16_PRECISIONS[precision], "VALIDATE_FLOAT_PRECISION",
+        f"precision is {precision}, but {len(fp32)} compute nodes produce FP32; TensorRT 11 "
+        f"runs them in FP32 (first: {fp32[0]})", fp32[0],
+    )]  # fmt: skip
+
+
 def validate_onnx(
     path: Path, cfg: ModelConfig, supported: dict[str, Any] | None = None
 ) -> tuple[dict[str, Any], list[Finding]]:
@@ -323,6 +347,7 @@ def validate_onnx(
     findings += _check_restrictions(model)
     qdq_findings, qdq_metrics = _check_qdq(model)
     findings += qdq_findings
+    findings += _check_float_precision(model)
     findings += _check_io((inferred or model).graph, cfg)
     weight_findings, weight_metrics = _check_weights(model)
     findings += weight_findings

@@ -146,9 +146,9 @@ def write_calibration_inputs(
 Runner = Callable[[dict[str, Any]], dict[str, Any]]
 
 
-def run_autocast_subprocess(args: dict[str, Any]) -> dict[str, Any]:
-    """Run tools/modelopt/autocast_fp16.py in the ModelOpt environment; returns its summary."""
-    cmd = ["uv", "run", "--frozen", "--project", str(MODELOPT_PROJECT), "python", str(RUNNER),
+def run_modelopt_script(script: Path, args: dict[str, Any], what: str, code: str) -> dict[str, Any]:
+    """Run a tools/modelopt/ script in the ModelOpt environment; returns its summary."""
+    cmd = ["uv", "run", "--frozen", "--project", str(MODELOPT_PROJECT), "python", str(script),
            json.dumps(args)]  # fmt: skip
     env = {k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"}  # not the main venv
     proc = subprocess.run(cmd, capture_output=True, text=True, env=env, check=False)
@@ -162,12 +162,17 @@ def run_autocast_subprocess(args: dict[str, Any]) -> dict[str, Any]:
             if killed
             else (f"exited {proc.returncode}")
         )
-        raise QuantError("FP16_AUTOCAST_FAILED", f"AutoCast {why}:\n{tail}")
+        raise QuantError(code, f"{what} {why}:\n{tail}")
     # ModelOpt logs to stdout; the runner's last line is its JSON summary. The log says
     # which nodes AutoCast kept in FP32 and why, so it's kept with the artifact.
     *log, last = proc.stdout.strip().splitlines()
     sys.stderr.write("\n".join(log) + "\n" + proc.stderr)
     return json.loads(last) | {"log": log}
+
+
+def run_autocast_subprocess(args: dict[str, Any]) -> dict[str, Any]:
+    """Run tools/modelopt/autocast_fp16.py in the ModelOpt environment; returns its summary."""
+    return run_modelopt_script(RUNNER, args, "AutoCast", "FP16_AUTOCAST_FAILED")
 
 
 def precision_summary(model: onnx.ModelProto) -> dict[str, Any]:

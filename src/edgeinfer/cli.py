@@ -370,6 +370,7 @@ def cmd_quantize(args: argparse.Namespace) -> int:
         load_quant_config,
         no_exclusions,
     )
+    from edgeinfer.quant.mixed import convert_int8_fp16
     from edgeinfer.quant.ptq import PRECISION, quantize
     from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
 
@@ -386,7 +387,7 @@ def cmd_quantize(args: argparse.Namespace) -> int:
     inputs = {
         "artifact": fp32_path.name, "config": Path(args.model).name, "quant_config": qcfg.to_dict(),
         "exclusions": exclusions.to_dict(), "groups": Path(args.groups).name if args.groups
-        else f"{cfg.name}.yaml",
+        else f"{cfg.name}.yaml", "float_dtype": args.float_dtype,
     }  # fmt: skip
     backend_meta = {"backend": "onnxruntime.quantization", "precision": PRECISION,
                     "device": f"cpu ({platform.machine()})", "versions": {}}  # fmt: skip
@@ -399,12 +400,21 @@ def cmd_quantize(args: argparse.Namespace) -> int:
         out_root = Path(args.out_root) if args.out_root else None
         path, meta = quantize(fp32_path, cfg, qcfg, cal, rules, exclusions,
                               **({"out_root": out_root} if out_root else {}))  # fmt: skip
+        extra = {}
+        if args.float_dtype == "fp16":
+            # TensorRT 11 runs unquantized layers in the model's float type (D-024, D-031).
+            int8_id = meta["artifact_id"]
+            path, meta = convert_int8_fp16(path, cfg, **({"out_root": out_root} if out_root
+                                                         else {}))  # fmt: skip
+            backend_meta["precision"] = meta["precision"]
+            extra = {"int8_artifact_id": int8_id, "float_precision": meta["float_precision"],
+                     "scale_rounding": meta["scale_rounding"]}  # fmt: skip
         backend_meta |= {"artifact_id": meta["artifact_id"], "versions": meta["versions"]}
         metrics = {
             "file": meta["file"], "sha256": meta["sha256"], "size_bytes": meta["size_bytes"],
             "parent_artifact_id": meta["parent_artifact_id"], "calibration": meta["calibration"],
             "calibration_dev": {k: cal[1][k] for k in ("seconds", "peak_rss_bytes", "n_tensors")},
-            "placement": meta["placement"], "excluded_nodes": meta["excluded_nodes"],
+            "placement": meta["placement"], "excluded_nodes": meta["excluded_nodes"], **extra,
         }  # fmt: skip
         print(f"{path} ({meta['size_bytes'] / 1e6:.1f} MB), quantized "
               f"{meta['placement']['quantized_nodes']}, excluded "
@@ -425,7 +435,8 @@ def cmd_quantize(args: argparse.Namespace) -> int:
         out = Path(args.out)
     else:
         report_dir = Path(args.report_dir) if args.report_dir else REPORTS_DIR
-        out = report_dir / f"quantize__{cfg.name}__{qcfg.name}__{exclusions.name}__{sha[:7]}.json"
+        label = qcfg.name + ("_fp16" if args.float_dtype == "fp16" else "")
+        out = report_dir / f"quantize__{cfg.name}__{label}__{exclusions.name}__{sha[:7]}.json"
     write_report(report, out)
     _print_findings(findings)
     print(f"{'PASS' if passed else 'FAIL'} -> {out}")
@@ -822,6 +833,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--quant-config", required=True, help="configs/quant/<name>.yaml, or a path")
     p.add_argument("--exclusions", help="groups/nodes kept in float (configs/quant/exclusions/)")
     p.add_argument("--groups", help="group rules (default: configs/quant/groups/<model>.yaml)")
+    p.add_argument("--float-dtype", choices=("fp32", "fp16"), default="fp32",
+                   help="type of everything outside the Q/DQ pairs; fp16 converts the INT8 "
+                        "model with ModelOpt (precision int8_fp16, D-031)")  # fmt: skip
     p.add_argument("--root", help="Cityscapes root (default: $CITYSCAPES_ROOT)")
     p.add_argument("--calib-dir", help="calibration cache root (default: artifacts/calib)")
     p.add_argument("--out-root", help="artifact root (default: artifacts/onnx)")

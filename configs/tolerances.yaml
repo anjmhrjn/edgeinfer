@@ -34,3 +34,13 @@ int8:
   miou_delta_max: 1.0
   layer_cosine_min: null
   layer_rel_max_abs: null
+# int8_fp16 (D-031): the same INT8 Q/DQ model with FP16 outside the Q/DQ pairs, for
+# TensorRT 11's strong typing. Its error is INT8's plus FP16's, so it is gated like int8.
+int8_fp16:
+  input_max_abs: 1.0e-5
+  logits_max_abs: null
+  logits_cosine_min: null
+  argmax_agreement_min: null
+  miou_delta_max: 1.0
+  layer_cosine_min: null
+  layer_rel_max_abs: null
