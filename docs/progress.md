@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C5 — TensorRT INT8 and mixed precision (GPU)
-**Next step:** C5 code on the Mac (B1: `tools/modelopt/qdq_fp16.py` and the `int8_fp16` artifact). The GPU instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
+**Next step:** C5 Mac code: `edgeinfer candidates`, the TensorRT scorer and the ModelOpt placement artifact. The GPU instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
 
 ## C5 — TensorRT INT8 and mixed precision
 Plan agreed 2026-10-16:
@@ -13,17 +13,22 @@ Plan agreed 2026-10-16:
 - **Plotting.** matplotlib in a Mac-only `plots` dependency group.
 - **GPU time.** Two GPU sessions (accuracy, then latency), ~6 GPU-hours.
 
-Spike (Mac, 2026-10-16; scratch scripts, no reports yet):
-- [x] **TensorRT 11 INT8.** TensorRT 11.x removes `IInt8Calibrator` and its subclasses and `BuilderFlag.INT8`; explicit Q/DQ (ModelOpt or manual) is the documented replacement ([10→11 migration](https://docs.nvidia.com/deeplearning/tensorrt/latest/api/migration/tensorrt-10x-to-11x-python-api-patterns.html)). The 11.4 `ITensor` API lists no dynamic-range methods. To confirm on 11.3 in the container during smoke.
-- [x] **`convert_to_f16` on the C3 models** (SegFormer full INT8, DeepLab full INT8 and with `bb.stem_16` excluded):
-  - The structure is preserved: the same Q/DQ nodes and quantized consumers, identical INT8 weights, zero points and axes; float compute in FP16; I/O float32 (two boundary Casts); about 1 s.
-  - The embedded `edgeinfer.*` metadata is dropped, so it is restored as in `edgeinfer fp16`.
-  - Scale rounding: activation scales ≤ 0.05%, weight scales ≤ 0.05% except DeepLab channels below FP16's normal range: 42 of 17,635 values, worst 1.5% on a scale of 2e-6.
-- [x] **ORT CPU check.** ORT 1.31's CPU graph optimizations mishandle FP16-scale Q/DQ: SegFormer fails to load (MatMul+Add fused to `QGemm`, which rejects FP16 scales), and DeepLab runs with argmax agreement vs FP32 of 0.84. With optimizations off, both match their FP32-scale INT8 models (DeepLab 0.9847 vs 0.9854, SegFormer 0.9947 vs 0.9950 on 4 golden images). The Mac pre-check therefore runs with graph optimizations off.
-- [x] **ModelOpt `quantize()` placement** (max, FP16, 8 images):
-  - DeepLab: Q/DQ also on residual `Add` (10), `Resize` (2) and `ReduceMean` (1).
-  - SegFormer: also on `LayerNormalization` (26), `Add` (16), `Transpose` (6), `Reshape` (3) and `Resize` (4).
-  - DeepLab's calibration peaked at 7 GB resident memory with 8 images, so 200 images need per-node calibration.
+Spike (Mac, 2026-10-16):
+- [x] **TensorRT 11 INT8.** TensorRT 11.x removes `IInt8Calibrator` and its subclasses and `BuilderFlag.INT8`; explicit Q/DQ is the documented replacement (D-031). The 11.4 `ITensor` API lists no dynamic-range methods. To confirm on 11.3 in the container during smoke.
+- [x] **INT8+FP16 route** (D-031). ModelOpt `convert_to_f16` keeps the C3 placement and scales. It drops the embedded metadata, which is restored, as in `edgeinfer fp16`.
+- [x] **ORT CPU.** ORT 1.31's CPU graph optimizations break FP16-scale Q/DQ models: SegFormer fails to load (MatMul+Add fused into `QGemm`, which rejects FP16 scales), and DeepLab loads but gives wrong outputs. `ort_cpu` therefore runs `int8_fp16` unoptimized.
+- [x] **ModelOpt `quantize()` placement** (8 images, scratch run, placement only; it doesn't depend on the calibration images):
+  - DeepLab: Q/DQ also on residual `Add`, `Resize` and `ReduceMean`.
+  - SegFormer: also on `LayerNormalization`, `Add`, `Transpose`, `Reshape` and `Resize`.
+  - Calibration memory grows with the image count, so the 200-image run needs per-node calibration.
+
+Mac:
+- [x] `int8_fp16` artifacts: `edgeinfer quantize --float-dtype fp16`, placement and scale-rounding checks, `VALIDATE_FLOAT_PRECISION`; `int8_fp16` tolerance set = `int8` (D-031)
+- [x] Precheck on ORT CPU (`scripts/c5_runs.sh precheck`, reports `*int8_fp16*__439d506.json`): validator clean, golden parity passes, `sens_val100` within 0.055 points of the C3 INT8 models (D-031 Evidence)
+- [x] Candidate sets (`analyze/candidates.py`), engine layer summary and per-layer profile attribution (`backends/trt_layers.py`); code and tests, not yet wired into the CLI
+- [ ] ModelOpt placement artifact (`edgeinfer quantize --tool modelopt`)
+- [ ] `edgeinfer candidates`, TensorRT scorer (`edgeinfer sensitivity --candidates`), build layer check, trtexec per-layer profile
+- [ ] `scripts/c5_runs.sh` GPU phases, `scripts/pareto.py`, decision records D-032+
 
 ## C4 — GPU environment, TensorRT FP32/FP16, performance probe
 The GPU quota request (2026-10-14) is still pending, so C4 is split. **C4a** prepares everything that can be written and tested on the Mac; **C4b** runs it on the T4. The roadmap's C4 exit criteria are met in C4b. Plan agreed 2026-10-16: NGC TensorRT container, `cuda-python` for device buffers and timing, an optional `TimedBackend` protocol for per-stage times, SSH limited to the current IP.
