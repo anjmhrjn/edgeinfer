@@ -27,7 +27,7 @@ C4b (T4, first GPU session 2026-10-16, 3.94 GPU-hours):
 - [x] Budgets finalized: latency on the engine's `infer` span, memory on GPU-wide memory used (D-026)
 - [x] Nsight Systems trace of SegFormer FP16, summarized below
 - [x] Teach-back: model answers in `private/teach-back-C4.md`
-- [ ] CI green on GitHub for the C4b commits
+- [x] CI green on GitHub for the C4b commits (run 38974421217, Python 3.11 + 3.12, commit `aa50457`)
 - [x] Sign-off (Anuj)
 
 ### C4 results — TensorRT 11.3 on the T4 (g4dn.xlarge), Cityscapes, 512×1024, batch 1
