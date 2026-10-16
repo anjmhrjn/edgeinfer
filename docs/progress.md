@@ -1,7 +1,29 @@
 # Progress
 
 **Current checkpoint:** C5 — TensorRT INT8 and mixed precision (GPU)
-**Next step:** plan C5 in plan mode from `docs/roadmap.md`. The GPU instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
+**Next step:** C5 code on the Mac (B1: `tools/modelopt/qdq_fp16.py` and the `int8_fp16` artifact). The GPU instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
+
+## C5 — TensorRT INT8 and mixed precision
+Plan agreed 2026-10-16:
+- **INT8+FP16 models.** C3's Q/DQ models are converted to FP16 outside the Q/DQ (ModelOpt `convert_to_f16`), keeping C3's placement and percentile scales. Precision label `int8_fp16`, using the `int8` tolerance set.
+- **TensorRT sensitivity.** Leave-one-out on the top 5 ORT groups per model, with every subset of them generated on the Mac in advance. Greedy selection scored for real (D-017), with a noise floor from two builds of full INT8.
+- **ModelOpt comparison.** Placement only: ModelOpt `quantize()` placement against ours, both max-calibrated and FP16 elsewhere.
+- **Pareto latency.** trtexec compute p50 at the 990 MHz lock for every config; the probe only for finalists and FP16.
+- **Final-engine rule, fixed before the results.** The lowest probe `infer` p99 within the accuracy budget on full val, checked held out. Differences under ~3.5% are ties (D-029), and a tie goes to the config with fewer INT8 groups. If no INT8 config beats FP16 beyond that, FP16 is the final engine.
+- **Plotting.** matplotlib in a Mac-only `plots` dependency group.
+- **GPU time.** Two GPU sessions (accuracy, then latency), ~6 GPU-hours.
+
+Spike (Mac, 2026-10-16; scratch scripts, no reports yet):
+- [x] **TensorRT 11 INT8.** TensorRT 11.x removes `IInt8Calibrator` and its subclasses and `BuilderFlag.INT8`; explicit Q/DQ (ModelOpt or manual) is the documented replacement ([10→11 migration](https://docs.nvidia.com/deeplearning/tensorrt/latest/api/migration/tensorrt-10x-to-11x-python-api-patterns.html)). The 11.4 `ITensor` API lists no dynamic-range methods. To confirm on 11.3 in the container during smoke.
+- [x] **`convert_to_f16` on the C3 models** (SegFormer full INT8, DeepLab full INT8 and with `bb.stem_16` excluded):
+  - The structure is preserved: the same Q/DQ nodes and quantized consumers, identical INT8 weights, zero points and axes; float compute in FP16; I/O float32 (two boundary Casts); about 1 s.
+  - The embedded `edgeinfer.*` metadata is dropped, so it is restored as in `edgeinfer fp16`.
+  - Scale rounding: activation scales ≤ 0.05%, weight scales ≤ 0.05% except DeepLab channels below FP16's normal range: 42 of 17,635 values, worst 1.5% on a scale of 2e-6.
+- [x] **ORT CPU check.** ORT 1.31's CPU graph optimizations mishandle FP16-scale Q/DQ: SegFormer fails to load (MatMul+Add fused to `QGemm`, which rejects FP16 scales), and DeepLab runs with argmax agreement vs FP32 of 0.84. With optimizations off, both match their FP32-scale INT8 models (DeepLab 0.9847 vs 0.9854, SegFormer 0.9947 vs 0.9950 on 4 golden images). The Mac pre-check therefore runs with graph optimizations off.
+- [x] **ModelOpt `quantize()` placement** (max, FP16, 8 images):
+  - DeepLab: Q/DQ also on residual `Add` (10), `Resize` (2) and `ReduceMean` (1).
+  - SegFormer: also on `LayerNormalization` (26), `Add` (16), `Transpose` (6), `Reshape` (3) and `Resize` (4).
+  - DeepLab's calibration peaked at 7 GB resident memory with 8 images, so 200 images need per-node calibration.
 
 ## C4 — GPU environment, TensorRT FP32/FP16, performance probe
 The GPU quota request (2026-10-14) is still pending, so C4 is split. **C4a** prepares everything that can be written and tested on the Mac; **C4b** runs it on the T4. The roadmap's C4 exit criteria are met in C4b. Plan agreed 2026-10-16: NGC TensorRT container, `cuda-python` for device buffers and timing, an optional `TimedBackend` protocol for per-stage times, SSH limited to the current IP.
