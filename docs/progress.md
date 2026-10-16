@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C3 — INT8 quantization and sensitivity analysis on ORT (CPU)
-**Next step:** Calibration-method comparison runs (`scripts/c3_runs.sh evals`), then choose the method per model, then sensitivity.
+**Next step:** Teach-back (`private/teach-back-C3.md`), CI green on GitHub, then Anuj's sign-off.
 
 ## C3 — INT8 quantization and sensitivity analysis on ORT
 Plan agreed 2026-10-15: ORT `quantize_static` (ModelOpt compared in C5), TRT-style Q/DQ placement (inputs of Conv/MatMul/Gemm), medium sensitivity groups from exporter name scopes, sensitivity scored on a seeded 100-image val subset.
@@ -10,14 +10,43 @@ Plan agreed 2026-10-15: ORT `quantize_static` (ModelOpt compared in C5), TRT-sty
 - [x] `edgeinfer quantize`: chunked calibration cache, content-addressed QDQ ONNX + sidecar, placement check, report
 - [x] Validator Q/DQ checks
 - [x] INT8 parity tolerances (mIoU gate, other metrics report-only; D-018)
-- [ ] Calibration methods (minmax / entropy / percentile) on both models; calibration-size study
+- [x] Calibration methods (minmax / entropy / percentile) on both models; calibration-size study (D-019)
 - [x] `edgeinfer sensitivity`: one-at-a-time, leave-one-out, noise floor, greedy exclusion suggestion
-- [ ] Exclusion list end to end + config-only faults caught
+- [x] Exclusion list end to end + config-only faults caught on both real models
 - [x] CI fixture: quantize → validate → eval → parity → sensitivity, plus config-only faults
-- [ ] Decision records, report codes, results
+- [x] Decision records (D-015..D-019), report codes and CLI exit codes, results
 - [ ] Teach-back: model answers in `private/teach-back-C3.md`
 - [ ] CI green
 - [ ] Sign-off (Anuj)
+
+### C3 results — INT8 PTQ on ORT CPU (arm64), Cityscapes val, 512×1024
+All runs come from `scripts/c3_runs.sh` on a clean checkout; each report records its git SHA. "Change" is INT8 minus ORT FP32 mIoU on the same images, in points. FP32 references: full val `eval__<model>__ort_cpu__eval_val__512x1024__e264b0b.json`; subsets `eval__<model>__ort_cpu__{sens_val100,val_minus_sens100}__512x1024__cb60f28.json`. These are ORT CPU results; TensorRT INT8 is measured in C5.
+
+**Deployed configuration** (percentile 99.99 calibration on `calib_train200`, plus the exclusions suggested by sensitivity; reports `{quantize,validate}__<model>__int8_percentile__sens__da584fa.json`, `eval__<model>__ort_cpu__int8_percentile__sens__<manifest>__512x1024__da584fa.json`, `parity__<model>__ort_cpu__int8_percentile__sens__golden_val32__images__layers__da584fa.json`):
+
+| Model | Kept in float | Full val mIoU (FP32 → INT8) | Change, full val | Change, held-out 400 | Golden parity (gate ≤ 1.0) | Validator |
+|---|---|---|---|---|---|---|
+| SegFormer-B0 | nothing (88/88 Conv/MatMul in INT8) | 70.58 → 70.42 | −0.16 | −0.07 | pass (−0.37; argmax agreement 0.992) | 0 errors, 0 warnings |
+| DeepLabV3+ MobileNetV2 | `bb.stem_16` (3/60 Convs) | 67.09 → 66.87 | −0.22 | −0.28 | pass (−0.19; argmax agreement 0.989) | 0 errors, 0 warnings |
+
+Both are within the provisional 1.0-point budget on full val and on the 400 held-out images that played no part in choosing the method or the exclusions.
+
+**Calibration method** (D-019, `eval__<model>__ort_cpu__int8_<method>__<manifest>__512x1024__cb60f28.json`): percentile is best for both models; entropy (TensorRT's legacy calibrator) is worst for both and fails the parity gate on both. Full val change, minmax / entropy / percentile: SegFormer −0.53 / −2.29 / −0.16; DeepLab −3.52 / −6.53 / −1.12. Calibration size (25/50/100/200 images) doesn't change SegFormer; it moves DeepLab non-monotonically by up to 0.6 points on `sens_val100`, which mostly didn't hold up on held-out images.
+
+**Sensitivity** (D-017; `sensitivity__segformer_b0__int8_percentile__sens_val100__cb60f28.json`, `sensitivity__deeplabv3plus_mbv2__int8_percentile__sens_val100__da584fa.json`; 100 images, margin 0.7, target ≤ 0.3):
+- SegFormer: full INT8 −0.28 → `SENS_FULL_INT8_WITHIN_BUDGET`. No group recovers more than 0.15 points when kept in float (largest: `s2.mlp` 0.15, `s3.attn_matmul` 0.11, `s2.attn_matmul` 0.11).
+- DeepLab: full INT8 −1.16. Quantizing only `bb.stem_16` (the first Conv and the first inverted-residual block) costs 0.95; keeping it in float recovers 1.03, and the first greedy step meets the target (−0.13). No other group recovers more than 0.17 (`bb.s24`).
+
+**CNN vs transformer.** The expected contrast (CNN quantizes cleanly, transformer degrades) did not appear under this setup. With the same TensorRT-style Q/DQ format, the transformer loses 0.16 points in full INT8, and the CNN loses 1.12, nearly all of it in its first three Convs.
+- Per-layer drift on the golden images (full INT8, `parity__<model>__ort_cpu__int8_percentile__golden_val32__images__layers__cb60f28.json`): SegFormer's worst tensors are in attention (`o_proj`, softmax and the attention MatMuls of stages 0 and 3; cosine ≥ 0.938). DeepLab's worst are the last backbone blocks (`high_level_features.14–17`, groups `bb.s160` and `bb.s320`; cosine down to 0.640).
+- Drift doesn't predict accuracy impact: keeping either of those groups in float recovers nothing (`bb.s160` −0.11, `bb.s320` +0.01), and with the stem in float those blocks still have the worst drift (cosine 0.716) while the model is within budget. Per-layer drift locates where numbers diverge; sensitivity locates what costs accuracy.
+- Not yet verified, so not a finding: the stem result fits the known difficulty of MobileNetV2's early depthwise layers, whose per-channel activation ranges differ widely under one per-tensor scale. SegFormer's LayerNorm, softmax and GELU stay in FP32 under this placement (D-016), so this comparison doesn't test quantizing them.
+
+**Config-only faults** (`*__fault-*__6ec36eb.json`, `scripts/c3_runs.sh faults`), each caught on both models with a non-zero exit: calibration manifest swapped to `eval_val` → `QUANT_CALIB_ON_EVAL_SPLIT`; an exclusion list naming an unknown group → `QUANT_UNKNOWN_EXCLUSION` (lists the known groups); uint8 activation/weight types → `VALIDATE_QDQ_DTYPE` (names the config fields).
+
+**Found and fixed during the runs:** ORT routes excluded readers of a quantized activation through the shared Q/DQ, so an excluded layer could silently run on quantized values. The placement check stopped the run, and a post-pass now keeps them in float (D-016). A crashing CLI command exited 1, the code for a failed check, so a crash could read as a gate result; crashes now exit 3 (`docs/report-codes.md`).
+
+**Execution noise:** rescoring full INT8 with 1 thread instead of 4 changed SegFormer's subset mIoU by 0.028 points and DeepLab's by 0.000. Group effects below about 0.15 points aren't meaningful (D-017).
 
 ## C2 — ONNX export, validator, ORT backend, parity
 - [x] Python floor 3.11; `onnx`, `onnxruntime`, `onnxscript` added (D-011)
