@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C4 — GPU environment, TensorRT FP32/FP16, performance probe
-**Next step:** C4b — first GPU session: re-check the container pin (D-020; 26.10 not out on 2026-10-16), `gpu-create.sh --yes` (Anuj's approval), `c4_runs.sh push` and `smoke`.
+**Next step:** C4 close-out — push the C4b commits (Anuj's approval) and check CI, teach-back `private/teach-back-C4.md`, Anuj's sign-off. The GPU instance is stopped.
 
 ## C4 — GPU environment, TensorRT FP32/FP16, performance probe
 The GPU quota request (2026-10-14) is still pending, so C4 is split. **C4a** prepares everything that can be written and tested on the Mac; **C4b** runs it on the T4. The roadmap's C4 exit criteria are met in C4b. Plan agreed 2026-10-16: NGC TensorRT container, `cuda-python` for device buffers and timing, an optional `TimedBackend` protocol for per-stage times, SSH limited to the current IP.
@@ -17,7 +17,50 @@ C4a (Mac):
 - [x] `scripts/c4_runs.sh` (push, smoke, ops, build, perf, trtexec, parity, nsys); `scripts/check_supported_ops.py`
 - [x] CI green on GitHub (run 38943467616, Python 3.11 + 3.12, commit `865eb70`)
 
-C4b (T4): the `c4_runs.sh` phases, Nsight Systems summary, finalized budgets, teach-back, sign-off.
+C4b (T4, first GPU session 2026-10-16, 3.94 GPU-hours):
+- [x] Instance created (D-023); container re-checked (26.10 still absent); smoke 46/46 on the T4
+- [x] Ops check: all 201 listed ops agree with the TensorRT 11.3 parser (`ops_check__trt11.3.0.99__c6ee043.json`)
+- [x] FP32 and FP16 engines for both models (`build__<model>__<precision>__d2bf208.json`)
+- [x] Golden parity for all four engines; FP16 tolerances (D-030)
+- [x] Full-val mIoU on TensorRT
+- [x] Perf probe at a locked clock (D-027); trtexec cross-check; iteration counts confirmed (D-028); builder optimization level measured (D-029)
+- [x] Budgets finalized: latency on the engine's `infer` span, memory on GPU-wide memory used (D-026)
+- [x] Nsight Systems trace of SegFormer FP16, summarized below
+- [ ] Teach-back: model answers in `private/teach-back-C4.md`
+- [ ] CI green on GitHub for the C4b commits
+- [ ] Sign-off (Anuj)
+
+### C4 results — TensorRT 11.3 on the T4 (g4dn.xlarge), Cityscapes, 512×1024, batch 1
+Perf: `perf__<model>__trt__<precision>__3a086ea.json` (20 warmup + 3 × 400 frames, SM clock locked at 990 MHz and confirmed in every 100 ms sample, no throttle reason). trtexec: `trtexec__<model>__<precision>__990MHz__3a086ea.json`. Parity: `parity__<model>__trt__<precision>__golden_val32__golden__d188731.json`. Full val: `eval__<model>__trt__<precision>__eval_val__512x1024__<sha>.json`. Engines: `build__<model>__<precision>__d2bf208.json`.
+
+| Engine | `infer` p50 / p99 (budget ≤ 33.3) | compute p50 | trtexec compute p50 | GPU memory used (≤ 953 MiB) | Full val mIoU | Golden parity |
+|---|---|---|---|---|---|---|
+| SegFormer-B0 FP32 | 23.77 / 25.92 ms | 20.40 ms | 20.26 ms | 427 MiB | 70.577 | pass (max abs 6.1e-5) |
+| SegFormer-B0 FP16 | 9.40 / 11.82 ms | 6.07 ms | 5.99 ms | 299 MiB | 70.583 | pass (max abs 0.21, argmax 0.99915) |
+| DeepLabV3+ MBv2 FP32 | 19.56 / 21.74 ms | 16.28 ms | 15.91 ms | 239 MiB | 67.086 | pass (max abs 5.4e-5) |
+| DeepLabV3+ MBv2 FP16 | 8.41 / 10.36 ms | 5.09 ms | 4.99 ms | 193 MiB | 67.100 | pass (max abs 0.26, argmax 0.99799) |
+
+- **Accuracy.** TensorRT FP32 matches ORT FP32 exactly on full val (70.577, 67.086). FP16 is 0.006 / 0.013 points *above* FP32: argmax near-ties resolving differently, not a gain.
+- **FP16 speed.** Against FP32 at the same clock, compute is 3.4× faster for SegFormer and 3.2× for DeepLab, and `infer` p99 2.2× / 2.1×. H2D (6.3 MB input, 1.07 ms) and D2H (2.5 MB logits, 0.39 ms) don't change with precision.
+- **Engines.** FP16 halves activation memory (SegFormer 275.7 → 133.8 MiB, DeepLab 87.5 → 43.8 MiB). SegFormer's FP16 engine file is about the same size as FP32 (16.4 vs 16.5 MB), unlike DeepLab's (23.6 → 10.9 MB); why isn't established.
+- **trtexec cross-check.** The probe's compute is 0.7–2.3% above trtexec's at the locked clock, as it should be: trtexec uses CUDA graphs and no copies, so it's a lower bound.
+- **End to end is the Python pipeline, not the engine.** e2e p99 is 781.6–795.8 ms for every engine: postprocess (upsampling 19 logit channels to 1024×2048, then argmax, single-threaded NumPy) p99 699.7–707.8 ms, preprocess p99 80.4–83.4 ms. That is why the budget gates `infer` (D-026). Moving pre/postprocessing to the GPU is the downstream C++/CUDA runtime's job (D-003).
+
+**Nsight Systems** (`nsys__segformer_b0__fp16__1f0ceb2.json`; 10 warmup + 50 frames captured between `cudaProfilerStart/Stop`, engine loading excluded; the trace is in `artifacts/nsys/`, not committed):
+- The GPU is busy 1.0% of a frame: 6.09 ms of kernels and 1.41 ms of copies per frame (H2D 72% of copy time, D2H 28%) against a 754 ms mean frame. The rest is CPU work.
+- 88 distinct kernels. The three kernel-launch calls in the report's top five CUDA API entries alone make 10,260 calls over 60 frames, so at least 171 launches per frame. The largest kernels by name: an FP16 tensor-core GEMM with fused ReLU (9.4% of kernel time, once per frame), a 3×3 FP16 convolution (7.9%, 8 per frame), cuTENSOR permutation kernels (7.1% + 3.0%), fused multi-head-attention GEMMs (5.0% + 3.0%) and bilinear resize (4.0%, 3 per frame). Which layers they belong to isn't established yet; that needs the engine's layer information (C5).
+- `cudaEventSynchronize` accounts for 330 ms over 60 frames (5.5 ms per frame): the host waiting for the GPU inside `infer`, as expected with one stream and synchronous inference.
+
+**Clock policy** (D-027): with free clocks the GPU sat idle 97–99% of each frame and ran inference at the 1590 MHz boost, while trtexec's continuous load drove it into the 70 W power cap, so trtexec measured *slower* than the probe (`trtexec__*__0bb207f.json`). At the 990 MHz lock, the highest clock all four engines hold without throttling, compute is 20–48% slower than at boost (`perf__*__950b85d.json` vs `perf__*__3a086ea.json`), and the two tools agree.
+
+**Builder optimization level** (D-029): level 5 was 7.5% slower than level 3 for SegFormer FP16 and 0.5% faster for DeepLab FP16, at twice the build time. Two level-3 builds of the same DeepLab engine differ by 3.4%, so TensorRT builds aren't reproducible at the plan level. Reports now record the plan's sha256 next to the engine id.
+
+**Run-to-run variation:** DeepLab FP16 warns `PERF_UNSTABLE`: its per-repeat `infer` p99 is 10.74 / 10.59 / 8.54 ms, while its device stages' p99 are identical across repeats. That is host jitter inside an 8 ms span, a third of the budget (D-028).
+
+**Found and fixed during the runs:**
+- `remote.sh` didn't pull a failed check's report (exit 1) until the next run, because `set -e` stopped it first. Reports are now always pulled, and the exit status is passed on.
+- Reports written from a working tree with uncommitted edits are marked `git_dirty` and were re-run, never used.
+- The before/after nvidia-smi snapshots missed throttling, because the GPU is idle at those moments. Clocks are now sampled throughout each run.
 
 ## C3 — INT8 quantization and sensitivity analysis on ORT
 Plan agreed 2026-10-15: ORT `quantize_static` (ModelOpt compared in C5), TRT-style Q/DQ placement (inputs of Conv/MatMul/Gemm), medium sensitivity groups from exporter name scopes, sensitivity scored on a seeded 100-image val subset.
