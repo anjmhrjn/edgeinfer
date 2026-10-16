@@ -1,7 +1,7 @@
 # Progress
 
-**Current checkpoint:** C4 — GPU environment, TensorRT FP32/FP16, performance probe
-**Next step:** C4 close-out — push the C4b commits (Anuj's approval) and check CI, teach-back `private/teach-back-C4.md`, Anuj's sign-off. The GPU instance is stopped.
+**Current checkpoint:** C5 — TensorRT INT8 and mixed precision (GPU)
+**Next step:** plan C5 in plan mode from `docs/roadmap.md`. The GPU instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
 
 ## C4 — GPU environment, TensorRT FP32/FP16, performance probe
 The GPU quota request (2026-10-14) is still pending, so C4 is split. **C4a** prepares everything that can be written and tested on the Mac; **C4b** runs it on the T4. The roadmap's C4 exit criteria are met in C4b. Plan agreed 2026-10-16: NGC TensorRT container, `cuda-python` for device buffers and timing, an optional `TimedBackend` protocol for per-stage times, SSH limited to the current IP.
@@ -28,7 +28,7 @@ C4b (T4, first GPU session 2026-10-16, 3.94 GPU-hours):
 - [x] Nsight Systems trace of SegFormer FP16, summarized below
 - [x] Teach-back: model answers in `private/teach-back-C4.md`
 - [ ] CI green on GitHub for the C4b commits
-- [ ] Sign-off (Anuj)
+- [x] Sign-off (Anuj)
 
 ### C4 results — TensorRT 11.3 on the T4 (g4dn.xlarge), Cityscapes, 512×1024, batch 1
 Perf: `perf__<model>__trt__<precision>__3a086ea.json` (20 warmup + 3 × 400 frames, SM clock locked at 990 MHz and confirmed in every 100 ms sample, no throttle reason). trtexec: `trtexec__<model>__<precision>__990MHz__3a086ea.json`. Parity: `parity__<model>__trt__<precision>__golden_val32__golden__d188731.json`. Full val: `eval__<model>__trt__<precision>__eval_val__512x1024__<sha>.json`. Engines: `build__<model>__<precision>__d2bf208.json`.
@@ -61,6 +61,8 @@ Perf: `perf__<model>__trt__<precision>__3a086ea.json` (20 warmup + 3 × 400 fram
 - `remote.sh` didn't pull a failed check's report (exit 1) until the next run, because `set -e` stopped it first. Reports are now always pulled, and the exit status is passed on.
 - Reports written from a working tree with uncommitted edits are marked `git_dirty` and were re-run, never used.
 - The before/after nvidia-smi snapshots missed throttling, because the GPU is idle at those moments. Clocks are now sampled throughout each run.
+
+**Sign-off:** Anuj, 2026-10-16
 
 ## C3 — INT8 quantization and sensitivity analysis on ORT
 Plan agreed 2026-10-15: ORT `quantize_static` (ModelOpt compared in C5), TRT-style Q/DQ placement (inputs of Conv/MatMul/Gemm), medium sensitivity groups from exporter name scopes, sensitivity scored on a seeded 100-image val subset.
