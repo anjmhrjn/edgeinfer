@@ -1,0 +1,84 @@
+{
+  "schema_version": "1",
+  "tool": "validate",
+  "created_at": "2026-10-16T02:02:43+00:00",
+  "git_sha": "da584faa439999339e3cd948076b91f2c340d8e4",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "onnx": "1.23.2"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "onnx",
+  "precision": "int8",
+  "artifact_id": "8b88379284a9c161eafc898995d177f2344dcea8676afb3787b89220af6b368e",
+  "inputs": {
+    "artifact": "segformer_b0__int8__8b88379284a9.onnx",
+    "config": "segformer_b0"
+  },
+  "thresholds": {
+    "supported_ops": {
+      "tensorrt_version": "11.4",
+      "source_commit": "8f60063873ddc9cc69125c60425fb93189851f18",
+      "status": "provisional",
+      "opset": {
+        "min": 9,
+        "max": 24
+      }
+    }
+  },
+  "metrics": {
+    "opset": {
+      "ai.onnx": 20
+    },
+    "n_nodes": 660,
+    "op_counts": {
+      "Add": 68,
+      "Concat": 1,
+      "Conv": 20,
+      "DequantizeLinear": 166,
+      "Gelu": 8,
+      "LayerNormalization": 30,
+      "MatMul": 68,
+      "Mul": 16,
+      "QuantizeLinear": 94,
+      "Relu": 1,
+      "Reshape": 92,
+      "Resize": 4,
+      "Softmax": 8,
+      "Transpose": 84
+    },
+    "inputs": {
+      "input": [
+        1,
+        3,
+        512,
+        1024
+      ]
+    },
+    "outputs": {
+      "logits": [
+        1,
+        19,
+        128,
+        256
+      ]
+    },
+    "n_float_params": 38533,
+    "max_abs_weight": 14.266263008117676,
+    "n_quantize_linear": 94,
+    "n_dequantize_linear": 166,
+    "n_errors": 0,
+    "n_warnings": 0
+  },
+  "passed": true,
+  "findings": []
+}
