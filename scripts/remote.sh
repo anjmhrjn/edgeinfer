@@ -50,6 +50,9 @@ case "$action" in
         # uv.lock or Dockerfile triggers a rebuild and an unchanged one reuses the image.
         tty=""
         [ -t 1 ] && tty="-t"
+        # A failed check (exit 1) still writes its report, so reports are pulled whatever
+        # the exit status, and that status is passed on afterwards.
+        status=0
         remote_sh "set -euo pipefail
 cd ~/$GPU_REMOTE_DIR
 mkdir -p artifacts/reports
@@ -62,8 +65,9 @@ sudo docker run --rm $tty --gpus all --hostname $GPU_NAME \\
     --user \$(id -u):\$(id -g) -e HOME=/tmp \\
     -v \$HOME/$GPU_REMOTE_DIR:/workspace/edgeinfer -v /data:/data:ro \\
     -e CITYSCAPES_ROOT=$GPU_DATA_DIR \\
-    edgeinfer-trt:\$tag bash -c $(printf '%q' "$1")"
+    edgeinfer-trt:\$tag bash -c $(printf '%q' "$1")" || status=$?
         pull_reports
+        exit "$status"
         ;;
     host)
         [ $# -eq 1 ] || usage
