@@ -370,10 +370,14 @@ def cmd_quantize(args: argparse.Namespace) -> int:
         load_quant_config,
         no_exclusions,
     )
-    from edgeinfer.quant.mixed import convert_int8_fp16
+    from edgeinfer.quant.mixed import convert_int8_fp16, quantize_modelopt
     from edgeinfer.quant.ptq import PRECISION, quantize
     from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
 
+    if args.tool == "modelopt" and (args.float_dtype != "fp16" or args.exclusions):
+        print("error: --tool modelopt writes INT8+FP16 models with ModelOpt's own placement: "
+              "pass --float-dtype fp16 and no --exclusions")  # fmt: skip
+        return 2
     cfg = load_model_config(args.model)
     qcfg = load_quant_config(args.quant_config)
     rules = load_group_rules(cfg.name, args.groups)
@@ -387,7 +391,7 @@ def cmd_quantize(args: argparse.Namespace) -> int:
     inputs = {
         "artifact": fp32_path.name, "config": Path(args.model).name, "quant_config": qcfg.to_dict(),
         "exclusions": exclusions.to_dict(), "groups": Path(args.groups).name if args.groups
-        else f"{cfg.name}.yaml", "float_dtype": args.float_dtype,
+        else f"{cfg.name}.yaml", "float_dtype": args.float_dtype, "tool": args.tool,
     }  # fmt: skip
     backend_meta = {"backend": "onnxruntime.quantization", "precision": PRECISION,
                     "device": f"cpu ({platform.machine()})", "versions": {}}  # fmt: skip
@@ -395,30 +399,45 @@ def cmd_quantize(args: argparse.Namespace) -> int:
     findings = []
     try:
         calibration_entries(qcfg.calibration)  # refuse a bad manifest before loading data
-        cal = calibrate(fp32_path, cfg, qcfg, cityscapes_root(args.root),
-                        Path(args.calib_dir) if args.calib_dir else CALIB_DIR)  # fmt: skip
         out_root = Path(args.out_root) if args.out_root else None
-        path, meta = quantize(fp32_path, cfg, qcfg, cal, rules, exclusions,
-                              **({"out_root": out_root} if out_root else {}))  # fmt: skip
-        extra = {}
-        if args.float_dtype == "fp16":
-            # TensorRT 11 runs unquantized layers in the model's float type (D-024, D-031).
-            int8_id = meta["artifact_id"]
-            path, meta = convert_int8_fp16(path, cfg, **({"out_root": out_root} if out_root
-                                                         else {}))  # fmt: skip
-            backend_meta["precision"] = meta["precision"]
-            extra = {"int8_artifact_id": int8_id, "float_precision": meta["float_precision"],
-                     "scale_rounding": meta["scale_rounding"]}  # fmt: skip
-        backend_meta |= {"artifact_id": meta["artifact_id"], "versions": meta["versions"]}
-        metrics = {
-            "file": meta["file"], "sha256": meta["sha256"], "size_bytes": meta["size_bytes"],
-            "parent_artifact_id": meta["parent_artifact_id"], "calibration": meta["calibration"],
-            "calibration_dev": {k: cal[1][k] for k in ("seconds", "peak_rss_bytes", "n_tensors")},
-            "placement": meta["placement"], "excluded_nodes": meta["excluded_nodes"], **extra,
-        }  # fmt: skip
-        print(f"{path} ({meta['size_bytes'] / 1e6:.1f} MB), quantized "
-              f"{meta['placement']['quantized_nodes']}, excluded "
-              f"{meta['placement']['excluded_nodes'] or 'none'}")  # fmt: skip
+        if args.tool == "modelopt":
+            path, meta = quantize_modelopt(
+                fp32_path, cfg, qcfg, cityscapes_root(args.root),
+                **({"out_root": out_root} if out_root else {}),
+                calib_root=Path(args.calib_dir) if args.calib_dir else CALIB_DIR,
+            )  # fmt: skip
+            backend_meta |= {"backend": "modelopt.onnx.quantization",
+                             "precision": meta["precision"], "artifact_id": meta["artifact_id"],
+                             "versions": meta["versions"]}  # fmt: skip
+            metrics = {k: meta[k] for k in ("file", "sha256", "size_bytes", "parent_artifact_id",
+                                            "calibration", "modelopt_settings", "placement",
+                                            "float_precision", "quantize_seconds",
+                                            "modelopt_peak_rss_bytes")}  # fmt: skip
+            print(f"{path} ({meta['size_bytes'] / 1e6:.1f} MB), ModelOpt placement "
+                  f"{meta['placement']['quantized_nodes']}")  # fmt: skip
+        else:
+            cal = calibrate(fp32_path, cfg, qcfg, cityscapes_root(args.root),
+                            Path(args.calib_dir) if args.calib_dir else CALIB_DIR)  # fmt: skip
+            path, meta = quantize(fp32_path, cfg, qcfg, cal, rules, exclusions,
+                                  **({"out_root": out_root} if out_root else {}))  # fmt: skip
+            extra = {}
+            if args.float_dtype == "fp16":
+                # TensorRT 11 runs unquantized layers in the model's float type (D-024, D-031).
+                int8_id = meta["artifact_id"]
+                path, meta = convert_int8_fp16(path, cfg, **({"out_root": out_root} if out_root
+                                                             else {}))  # fmt: skip
+                backend_meta["precision"] = meta["precision"]
+                extra = {"int8_artifact_id": int8_id, "float_precision": meta["float_precision"],
+                         "scale_rounding": meta["scale_rounding"]}  # fmt: skip
+            backend_meta |= {"artifact_id": meta["artifact_id"], "versions": meta["versions"]}
+            keys = ("file", "sha256", "size_bytes", "parent_artifact_id", "calibration",
+                    "placement", "excluded_nodes")  # fmt: skip
+            metrics = {k: meta[k] for k in keys} | extra
+            metrics["calibration_dev"] = {k: cal[1][k] for k in
+                                          ("seconds", "peak_rss_bytes", "n_tensors")}  # fmt: skip
+            print(f"{path} ({meta['size_bytes'] / 1e6:.1f} MB), quantized "
+                  f"{meta['placement']['quantized_nodes']}, excluded "
+                  f"{meta['placement']['excluded_nodes'] or 'none'}")  # fmt: skip
     except QuantError as e:
         backend_meta["artifact_id"] = "none"
         findings.append({"severity": "error", "code": e.code, "message": str(e)})
@@ -436,6 +455,7 @@ def cmd_quantize(args: argparse.Namespace) -> int:
     else:
         report_dir = Path(args.report_dir) if args.report_dir else REPORTS_DIR
         label = qcfg.name + ("_fp16" if args.float_dtype == "fp16" else "")
+        label += "_modelopt" if args.tool == "modelopt" else ""
         out = report_dir / f"quantize__{cfg.name}__{label}__{exclusions.name}__{sha[:7]}.json"
     write_report(report, out)
     _print_findings(findings)
@@ -1011,6 +1031,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--quant-config", required=True, help="configs/quant/<name>.yaml, or a path")
     p.add_argument("--exclusions", help="groups/nodes kept in float (configs/quant/exclusions/)")
     p.add_argument("--groups", help="group rules (default: configs/quant/groups/<model>.yaml)")
+    p.add_argument("--tool", choices=("ort", "modelopt"), default="ort",
+                   help="ort: our placement (D-016); modelopt: ModelOpt's placement and "
+                        "calibrator, for comparison (D-015; needs --float-dtype fp16)")  # fmt: skip
     p.add_argument("--float-dtype", choices=("fp32", "fp16"), default="fp32",
                    help="type of everything outside the Q/DQ pairs; fp16 converts the INT8 "
                         "model with ModelOpt (precision int8_fp16, D-031)")  # fmt: skip

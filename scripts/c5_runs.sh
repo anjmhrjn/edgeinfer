@@ -5,6 +5,8 @@
 #   scripts/c5_runs.sh precheck   INT8+FP16 models of the C3 configurations (full INT8 and
 #                                 the deployed exclusions): quantize, validate, ORT CPU
 #                                 eval on sens_val100 and golden parity (D-031)
+#   scripts/c5_runs.sh placement  ModelOpt's Q/DQ placement vs ours, both min/max-calibrated on
+#                                 calib_train200 and FP16 elsewhere (D-015), then validated
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -23,8 +25,9 @@ gated() {
   if [[ $rc -eq 1 ]]; then echo "GATE FAILED (report written): $*"; elif [[ $rc -ne 0 ]]; then exit "$rc"; fi
 }
 
-# quant MODEL TAG [quantize args...]: quantize with QCFG (instant when the content-addressed
-# artifact exists), write the report, print the artifact path from it.
+# quant MODEL TAG [quantize args...]: quantize with QCFG (override: QCFG=... quant ...), to
+# INT8+FP16 (instant when the content-addressed artifact exists), write the report, print
+# the artifact path from it.
 quant() {
   local m=$1 tag=$2; shift 2
   local rep="artifacts/reports/quantize__${m}__${QCFG}_fp16__${tag}__$(sha).json"
@@ -50,8 +53,19 @@ precheck() {
   done
 }
 
-phase=${1:?usage: scripts/c5_runs.sh precheck}
+placement() {
+  for m in "${MODELS[@]}"; do
+    for tool in ort modelopt; do
+      a=$(QCFG=int8_minmax quant "$m" "$tool" --tool "$tool")
+      gated uv run edgeinfer validate --model "$m" --artifact "$a" \
+        --out "artifacts/reports/validate__${m}__int8_fp16__minmax_${tool}__$(sha).json"
+    done
+  done
+}
+
+phase=${1:?usage: scripts/c5_runs.sh precheck|placement}
 case "$phase" in
   precheck) precheck ;;
+  placement) placement ;;
   *) echo "unknown phase: $phase" >&2; exit 2 ;;
 esac

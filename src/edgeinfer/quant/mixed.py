@@ -36,6 +36,7 @@ import onnx
 from onnx import numpy_helper
 
 from edgeinfer.artifacts import (
+    INPUT_NAME,
     META_PREFIX,
     ONNX_DIR,
     canonical_json,
@@ -44,13 +45,17 @@ from edgeinfer.artifacts import (
     sidecar_path,
 )
 from edgeinfer.config import ModelConfig
+from edgeinfer.data.manifests import format_manifest
 from edgeinfer.quant import QuantError
+from edgeinfer.quant.calib import CALIB_DIR, calibration_entries
+from edgeinfer.quant.config import QuantConfig
 from edgeinfer.quant.fp16 import (
     MODELOPT_PROJECT,
     Runner,
     precision_summary,
     run_modelopt_script,
     toolchain_id,
+    write_calibration_inputs,
 )
 from edgeinfer.quant.ptq import PRECISION as INT8
 from edgeinfer.quant.ptq import check_placement
@@ -188,6 +193,135 @@ def convert_int8_fp16(
         "contract": parent["contract"],
         "convert_seconds": round(time.perf_counter() - t0, 2),
         "converter_log": summary.get("log", []),
+    }
+    sidecar_path(path).write_text(json.dumps(meta, indent=2) + "\n")
+    return path, meta
+
+
+# ModelOpt's own quantizer, for the placement comparison (D-015): ModelOpt chooses where
+# the Q/DQ go (it also quantizes residual Adds, Resize, LayerNorm inputs, ...); the float
+# parts are FP16 as above. Only the calibration settings of our quant config apply.
+MODELOPT_QUANTIZER = "modelopt.onnx.quantization.quantize"
+QUANT_RUNNER = MODELOPT_PROJECT / "quantize_int8.py"
+MODELOPT_METHODS = {"minmax": "max", "entropy": "entropy"}  # ModelOpt has no percentile
+CALIBRATE_PER_NODE = True  # whole-model calibration keeps every image's tensors (> 7 GB)
+
+
+def run_modelopt_quantize_subprocess(args: dict[str, Any]) -> dict[str, Any]:
+    """Run tools/modelopt/quantize_int8.py in the ModelOpt environment; returns its summary."""
+    return run_modelopt_script(QUANT_RUNNER, args, "ModelOpt quantize", "QUANT_MODELOPT_FAILED")
+
+
+def modelopt_placement(model: onnx.ModelProto) -> dict[str, Any]:
+    """Nodes reading a dequantized tensor, by op type: where ModelOpt put the Q/DQ."""
+    dq_out = {n.output[0] for n in model.graph.node if n.op_type == "DequantizeLinear"}
+    readers: dict[str, int] = {}
+    for node in model.graph.node:
+        if node.op_type not in ("QuantizeLinear", "DequantizeLinear") and any(
+            i in dq_out for i in node.input
+        ):
+            readers[node.op_type] = readers.get(node.op_type, 0) + 1
+    ops = [n.op_type for n in model.graph.node]
+    return {"quantized_nodes": dict(sorted(readers.items())),
+            "n_quantize_linear": ops.count("QuantizeLinear"),
+            "n_dequantize_linear": ops.count("DequantizeLinear")}  # fmt: skip
+
+
+def quantize_modelopt(
+    fp32_path: Path,
+    cfg: ModelConfig,
+    qcfg: QuantConfig,
+    root: Path,
+    out_root: Path = ONNX_DIR,
+    calib_root: Path = CALIB_DIR,
+    runner: Runner = run_modelopt_quantize_subprocess,
+) -> tuple[Path, dict[str, Any]]:
+    """FP32 export -> INT8+FP16 Q/DQ model with ModelOpt's placement and calibrator. Returns
+    (path, sidecar); reuses an existing artifact with the same id."""
+    fp32_meta = load_sidecar(fp32_path)
+    if fp32_meta["precision"] != "fp32":
+        raise QuantError(
+            "QUANT_INPUT_NOT_FP32",
+            f"{fp32_path.name} has precision {fp32_meta['precision']!r}; quantize the FP32 export",
+        )
+    spec = qcfg.calibration
+    if spec.method not in MODELOPT_METHODS:
+        raise QuantError(
+            "QUANT_TOOL_UNSUPPORTED",
+            f"ModelOpt calibrates with {sorted(MODELOPT_METHODS)}, not {spec.method!r}",
+        )
+    entries = calibration_entries(spec)
+    images_sha = hashlib.sha256(format_manifest(entries).encode()).hexdigest()
+    settings = {"quantize_mode": "int8", "calibration_method": MODELOPT_METHODS[spec.method],
+                "calibrate_per_node": CALIBRATE_PER_NODE, "high_precision_dtype": "fp16",
+                "keep_io_types": True}  # fmt: skip
+    key = {"fp32_artifact_id": fp32_meta["artifact_id"], "quantizer": MODELOPT_QUANTIZER,
+           "settings": settings, "calibration_sha256": images_sha,
+           "modelopt_lock_sha256": toolchain_id()}  # fmt: skip
+    art_id = hashlib.sha256(canonical_json(key).encode()).hexdigest()
+    path = out_root / cfg.name / f"{cfg.name}__{PRECISION}__{art_id[:12]}.onnx"
+    if path.is_file() and sidecar_path(path).is_file():
+        return path, load_sidecar(path)
+
+    t0 = time.perf_counter()
+    calib_dir = write_calibration_inputs(
+        cfg, entries, root, calib_root / cfg.name / f"images__{images_sha[:12]}"
+    )
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp_name = tempfile.mkstemp(suffix=".onnx", dir=path.parent)
+    os.close(fd)
+    tmp = Path(tmp_name)
+    try:
+        summary = runner({"onnx_path": str(fp32_path.resolve()), "output_path": str(tmp.resolve()),
+                          "calibration_data": str(calib_dir.resolve()), "input_name": INPUT_NAME,
+                          "calibration_method": settings["calibration_method"],
+                          "calibrate_per_node": CALIBRATE_PER_NODE})  # fmt: skip
+        model = onnx.load(str(tmp))
+        props = {p.key: p.value for p in onnx.load(str(fp32_path)).metadata_props}
+        onnx.helper.set_model_props(model, {
+            **props,
+            META_PREFIX + "artifact_id": art_id,
+            META_PREFIX + "parent_artifact_id": fp32_meta["artifact_id"],
+            META_PREFIX + "precision": PRECISION,
+        })  # fmt: skip
+        placement = modelopt_placement(model)
+        floats = precision_summary(model)
+        onnx.save(model, str(tmp))
+        tmp.replace(path)
+    finally:
+        tmp.unlink(missing_ok=True)
+
+    meta = {
+        "artifact_id": art_id,
+        "kind": "onnx",
+        "model": cfg.name,
+        "precision": PRECISION,
+        "file": path.name,
+        "sha256": sha256_file(path),
+        "size_bytes": path.stat().st_size,
+        "parent_artifact_id": fp32_meta["artifact_id"],
+        "fp32_artifact_id": fp32_meta["artifact_id"],
+        "quantizer": MODELOPT_QUANTIZER,
+        "modelopt_settings": settings,
+        "calibration": {
+            "manifest": spec.manifest,
+            "limit": spec.limit,
+            "n_images": len(entries),
+            "method": spec.method,
+            "quant_config": qcfg.name,
+        },
+        "exclusions": None,
+        "excluded_nodes": [],
+        "placement": placement,
+        "float_precision": floats,
+        "versions": {
+            **{f"modelopt_env.{k}": v for k, v in summary["versions"].items()},
+            "modelopt_env.lock_sha256": toolchain_id(),
+        },
+        "contract": fp32_meta["contract"],
+        "quantize_seconds": round(time.perf_counter() - t0, 2),
+        "modelopt_peak_rss_bytes": summary.get("peak_rss_bytes"),
+        "quantizer_log": summary.get("log", []),
     }
     sidecar_path(path).write_text(json.dumps(meta, indent=2) + "\n")
     return path, meta

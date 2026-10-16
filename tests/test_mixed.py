@@ -7,6 +7,7 @@ environment. Tests marked `modelopt` run the real `convert_to_f16` in tools/mode
 import json
 import shutil
 from dataclasses import replace
+from pathlib import Path
 
 import numpy as np
 import onnx
@@ -19,7 +20,12 @@ from edgeinfer.cli import main
 from edgeinfer.config import load_model_config
 from edgeinfer.quant import QuantError
 from edgeinfer.quant.config import load_group_rules, load_quant_config
-from edgeinfer.quant.mixed import convert_int8_fp16, int8_fp16_artifact_id, scale_rounding
+from edgeinfer.quant.mixed import (
+    convert_int8_fp16,
+    int8_fp16_artifact_id,
+    quantize_modelopt,
+    scale_rounding,
+)
 from edgeinfer.validate.onnx_validator import validate_onnx
 from tests.conftest import TINY_CONFIG
 from tests.test_quant import TINY_GROUPS, _manifest, _run
@@ -186,3 +192,72 @@ def test_validator_flags_fp32_compute_in_an_int8_fp16_model(setup):
     # The INT8 parent is FP32 outside the Q/DQ by design: no finding.
     _, findings = validate_onnx(int8_path, cfg)
     assert "VALIDATE_FLOAT_PRECISION" not in {f["code"] for f in findings}
+
+
+class FakeModelOptQuantize:
+    """Stands in for tools/modelopt/quantize_int8.py: copies the FP32 model, drops metadata."""
+
+    def __init__(self):
+        self.calls = []
+
+    def __call__(self, args):
+        self.calls.append(args)
+        model = onnx.load(args["onnx_path"])
+        del model.metadata_props[:]
+        onnx.save(model, args["output_path"])
+        return {"versions": {"nvidia-modelopt": "fake"}, "seconds": 0.0, "peak_rss_bytes": 1}
+
+
+def _minmax(setup):
+    _, q, *_ = setup
+    return replace(q, name="int8_minmax", calibration=replace(q.calibration, method="minmax"))
+
+
+def test_modelopt_quantize_plumbing(setup):
+    cfg, _, _, root, tmp, fp32 = setup
+    fake = FakeModelOptQuantize()
+    path, meta = quantize_modelopt(fp32, cfg, _minmax(setup), root, tmp / "onnx",
+                                   tmp / "calib", runner=fake)  # fmt: skip
+    call = fake.calls[0]
+    assert call["calibration_method"] == "max" and call["calibrate_per_node"] is True
+    assert (
+        len(list(Path(call["calibration_data"]).glob("*.npz"))) == meta["calibration"]["n_images"]
+    )
+    assert meta["precision"] == "int8_fp16" and meta["quantizer"].startswith("modelopt")
+    props = {p.key: p.value for p in onnx.load(str(path)).metadata_props}
+    assert props["edgeinfer.precision"] == "int8_fp16" and "edgeinfer.contract" in props
+    again, _ = quantize_modelopt(fp32, cfg, _minmax(setup), root, tmp / "onnx", tmp / "calib",
+                                 runner=fake)  # fmt: skip
+    assert again == path and len(fake.calls) == 1
+
+
+def test_modelopt_has_no_percentile_calibrator(setup):
+    cfg, q, _, root, tmp, fp32 = setup
+    q = replace(q, calibration=replace(q.calibration, method="percentile"))
+    with pytest.raises(QuantError) as e:
+        quantize_modelopt(fp32, cfg, q, root, tmp / "onnx", tmp / "calib",
+                          runner=FakeModelOptQuantize())  # fmt: skip
+    assert e.value.code == "QUANT_TOOL_UNSUPPORTED"
+
+
+def test_modelopt_tool_refuses_exclusions_and_fp32(tmp_path):
+    base = ["quantize", "--model", str(TINY_CONFIG), "--artifact", "x.onnx",
+            "--quant-config", "int8_minmax", "--tool", "modelopt"]  # fmt: skip
+    assert main(base) == 2  # no --float-dtype fp16
+    assert main([*base, "--float-dtype", "fp16", "--exclusions", "e.yaml"]) == 2
+
+
+@pytest.mark.modelopt
+def test_real_modelopt_quantize_on_tiny_model(setup):
+    if shutil.which("uv") is None:
+        pytest.fail("uv is needed to run the ModelOpt environment")
+    cfg, _, _, root, tmp, fp32 = setup
+    path, meta = quantize_modelopt(fp32, cfg, _minmax(setup), root, tmp / "onnx", tmp / "calib")
+    assert meta["placement"]["n_quantize_linear"] > 0
+    assert meta["float_precision"]["fp32_nodes"] == []
+    _, findings = validate_onnx(path, cfg)
+    assert not [f for f in findings if f["severity"] == "error"], findings
+    x = np.random.default_rng(0).standard_normal((1, 3, 32, 64)).astype(np.float32)
+    backend = get_backend("ort_cpu")
+    backend.load(path, cfg)
+    assert backend.infer(x).dtype == np.float32
