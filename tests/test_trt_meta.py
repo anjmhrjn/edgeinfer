@@ -14,6 +14,7 @@ from edgeinfer.backends.trt_meta import (
     check_io,
     engine_artifact_id,
     engine_path,
+    layer_datatypes,
     load_build_config,
 )
 from edgeinfer.config import ConfigError, load_model_config
@@ -109,3 +110,11 @@ def test_cli_without_tensorrt_exits_2_with_the_code(tiny_onnx, monkeypatch, caps
     argv = ["perf", "--model", str(TINY_CONFIG), "--backend", "trt", "--artifact", "x.engine",
             "--synthetic", "64x128"]  # fmt: skip
     assert main(argv) == 2
+
+
+def test_layer_datatypes():
+    layers = {"Layers": [{"Outputs": [{"Datatype": "Half"}, {"Datatype": "Half"}]},
+                         {"Outputs": [{"Datatype": "Float"}]}]}  # fmt: skip
+    assert layer_datatypes(layers) == {"Float": 1, "Half": 2}
+    with pytest.raises(ValueError, match="detailed"):
+        layer_datatypes({"Layers": ["conv1", "relu1"]})

@@ -590,9 +590,11 @@ def cmd_sensitivity(args: argparse.Namespace) -> int:
 
 
 def cmd_build(args: argparse.Namespace) -> int:
+    import json
+
     from edgeinfer.artifacts import artifact_identity
     from edgeinfer.backends.trt import build_engine, runtime_fingerprint
-    from edgeinfer.backends.trt_meta import BackendError, load_build_config
+    from edgeinfer.backends.trt_meta import BackendError, layer_datatypes, load_build_config
     from edgeinfer.config import load_model_config
     from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
 
@@ -625,6 +627,9 @@ def cmd_build(args: argparse.Namespace) -> int:
                 "num_layers", "layers_file", "device_memory_bytes", "timing_cache",
                 "build_seconds")  # fmt: skip
         metrics = {k: meta[k] for k in keys}
+        # What the engine actually runs in (strong typing should match the ONNX model).
+        layers = json.loads((path.parent / meta["layers_file"]).read_text())
+        metrics["layer_output_datatypes"] = layer_datatypes(layers)
         print(f"{path} ({meta['size_bytes'] / 1e6:.1f} MB, {meta['num_layers']} layers, "
               f"built in {meta['build_seconds']} s)")  # fmt: skip
     except BackendError as e:

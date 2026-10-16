@@ -139,3 +139,17 @@ def check_io(io: list[dict[str, Any]], contract: dict[str, Any], num_classes: in
         problems.append(f"output {out['name']}: {out['shape']} {out['dtype']}, "
                         f"expected [1, {num_classes}, h, w] float32")  # fmt: skip
     return problems
+
+
+def layer_datatypes(layers: dict[str, Any]) -> dict[str, int]:
+    """Count of layer outputs by data type, from the engine inspector's JSON (detailed
+    profiling verbosity). Shows what precision the built engine actually runs in."""
+    counts: dict[str, int] = {}
+    for layer in layers.get("Layers", []):
+        if not isinstance(layer, dict):
+            raise ValueError("engine inspector output has layer names only; build with "
+                             "profiling_verbosity: detailed")  # fmt: skip
+        for out in layer.get("Outputs", []):
+            dtype = out.get("Datatype", "unknown")
+            counts[dtype] = counts.get(dtype, 0) + 1
+    return dict(sorted(counts.items()))
