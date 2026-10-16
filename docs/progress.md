@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C4 — GPU environment, TensorRT FP32/FP16, performance probe
-**Next step:** C4a — CI green, then C4b: first GPU session (`gpu-create.sh`, `c4_runs.sh push` and `smoke`).
+**Next step:** C4b — first GPU session: re-check the container pin (D-020; 26.10 not out on 2026-10-16), `gpu-create.sh --yes` (Anuj's approval), `c4_runs.sh push` and `smoke`.
 
 ## C4 — GPU environment, TensorRT FP32/FP16, performance probe
 The GPU quota request (2026-10-14) is still pending, so C4 is split. **C4a** prepares everything that can be written and tested on the Mac; **C4b** runs it on the T4. The roadmap's C4 exit criteria are met in C4b. Plan agreed 2026-10-16: NGC TensorRT container, `cuda-python` for device buffers and timing, an optional `TimedBackend` protocol for per-stage times, SSH limited to the current IP.
@@ -15,7 +15,7 @@ C4a (Mac):
 - [x] `trt` backend and `edgeinfer build` (D-025): builder settings, engine sidecar, mismatch refusal, debug engine, CUDA-event stage timing; TensorRT code untested until the smoke phase
 - [x] Report codes and decision records (D-020..D-025)
 - [x] `scripts/c4_runs.sh` (push, smoke, ops, build, perf, trtexec, parity, nsys); `scripts/check_supported_ops.py`
-- [ ] CI green
+- [x] CI green on GitHub (run 38943467616, Python 3.11 + 3.12, commit `865eb70`)
 
 C4b (T4): the `c4_runs.sh` phases, Nsight Systems summary, finalized budgets, teach-back, sign-off.
 
