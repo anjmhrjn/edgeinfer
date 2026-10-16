@@ -142,6 +142,13 @@ def test_autocast_failure_is_a_finding(monkeypatch):
         fp16_mod.run_autocast_subprocess({})
     assert e.value.code == "FP16_AUTOCAST_FAILED" and "Boom" in str(e.value)
 
+    def killed(*args, **kwargs):
+        return subprocess.CompletedProcess(args, 137, stdout="INFO - Running ...", stderr="")
+
+    monkeypatch.setattr(fp16_mod.subprocess, "run", killed)
+    with pytest.raises(QuantError, match="out of memory"):
+        fp16_mod.run_autocast_subprocess({})
+
 
 def test_precision_summary():
     # float input -> Cast(fp16) -> Relu (fp16) -> Cast(float) -> Relu (fp32) -> float output

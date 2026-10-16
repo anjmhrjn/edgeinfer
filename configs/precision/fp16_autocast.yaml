@@ -9,4 +9,4 @@ nodes_to_exclude: []     # node names forced to stay FP32
 op_types_to_exclude: []  # op types forced to stay FP32
 calibration:             # inputs for AutoCast's range check (reference run on ORT CPU)
   manifest: calib_train200  # train split only, like INT8 calibration
-  limit: 32
+  limit: 8  # AutoCast keeps every image's intermediates: SegFormer peaks at ~9.4 GB with 8 (D-024)

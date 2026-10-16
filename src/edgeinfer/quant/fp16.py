@@ -153,8 +153,16 @@ def run_autocast_subprocess(args: dict[str, Any]) -> dict[str, Any]:
     env = {k: v for k, v in os.environ.items() if k != "VIRTUAL_ENV"}  # not the main venv
     proc = subprocess.run(cmd, capture_output=True, text=True, env=env, check=False)
     if proc.returncode != 0:
-        tail = "\n".join(proc.stderr.strip().splitlines()[-15:])
-        raise QuantError("FP16_AUTOCAST_FAILED", f"AutoCast exited {proc.returncode}:\n{tail}")
+        tail = "\n".join((proc.stdout + proc.stderr).strip().splitlines()[-15:])
+        # SIGKILL: on macOS the usual cause is memory pressure; AutoCast keeps every
+        # calibration image's intermediate tensors (lower calibration.limit).
+        killed = proc.returncode in (-9, 137)
+        why = (
+            "was killed (likely out of memory; lower calibration.limit)"
+            if killed
+            else (f"exited {proc.returncode}")
+        )
+        raise QuantError("FP16_AUTOCAST_FAILED", f"AutoCast {why}:\n{tail}")
     # ModelOpt logs to stdout; the runner's last line is its JSON summary. The log says
     # which nodes AutoCast kept in FP32 and why, so it's kept with the artifact.
     *log, last = proc.stdout.strip().splitlines()
