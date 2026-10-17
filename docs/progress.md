@@ -1,7 +1,7 @@
 # Progress
 
-**Current checkpoint:** C6 — Gated deployment pipeline (CPU + GPU)
-**Next step:** C6 write-up: teach-back (`private/teach-back-C6.md`), then Anuj signs off C6 below. C7 is next. The GPU instance is stopped, not terminated; its engines back the registry's `production` versions (D-037).
+**Current checkpoint:** C7 — Results and write-up
+**Next step:** plan C7 in plan mode from `docs/roadmap.md`. The GPU instance is stopped, not terminated; its engines back the registry's `production` versions (D-037). Before the next GPU session's first `remote.sh` call, delete the four overwritten C6 runs on the instance (see C6).
 
 ## C6 — Gated deployment pipeline
 Plan agreed 2026-10-17:
@@ -90,7 +90,7 @@ GPU session (2026-10-17, 19:16–21:44 UTC, 2.47 GPU-hours; plan ~2):
 
 **Teach-back:** model answers in `private/teach-back-C6.md`.
 
-**Sign-off:** pending (Anuj)
+**Sign-off:** Anuj, 2026-10-17
 
 ## C5 — TensorRT INT8 and mixed precision
 Plan agreed 2026-10-16:
