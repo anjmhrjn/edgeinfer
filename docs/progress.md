@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C7 — Results and write-up
-**Next step:** plan C7 in plan mode from `docs/roadmap.md`. The GPU instance is stopped, not terminated; its engines back the registry's `production` versions (D-037). Before the next GPU session's first `remote.sh` call, delete the four overwritten C6 runs on the instance (see C6).
+**Next step:** C7 clean-clone check (D-043), then the definition of done, resume bullets, the final mock interview and sign-off. The GPU instance is terminated (D-044).
 
 ## C7 — Results and write-up
 Plan agreed 2026-10-17:
@@ -41,7 +41,7 @@ Mac:
   - TensorRT engines don't run on an older runtime, and hardware compatibility isn't supported on JetPack ([engine compatibility](https://docs.nvidia.com/deeplearning/tensorrt/latest/inference-library/engine-compatibility.html)).
 - [ ] Clean-clone check (D-043)
 - [ ] Definition of done, each item with output
-- [ ] GPU instance terminated (D-044)
+- [x] GPU instance terminated (D-044, 2026-10-17): `gpu-destroy.sh` dry run, then `--yes`. `gpu-status.sh` finds no instance; no EBS volumes or snapshots remain in us-east-1. The project used 11.60 GPU-hours of the ~25 budgeted.
 - [ ] Resume bullets (`private/`), final mock interview, sign-off
 
 ## C6 — Gated deployment pipeline
@@ -116,7 +116,7 @@ GPU session (2026-10-17, 19:16–21:44 UTC, 2.47 GPU-hours; plan ~2):
   - Republished after the reset by a rerun that reused every gate, 20.0 s (`…/20261017T213412Z/deploy.json`).
 - [x] **Rollback** `production` v3 → v2 (`registry/rollback__deeplabv3plus_mbv2__production__20261017T213644Z.json`). It checked v2's engine sha256 on the instance first (`remote.sh sha256`), and `deploy status` shows v3 "rolled back from production".
 - [x] **Airflow DAG on the TensorRT target** (`airflow dags test deploy_model -c '{"recipe": "segformer_b0"}'`, Mac → instance). All nine tasks succeeded (`deploy/segformer_b0/20261017T213659Z/deploy.json`, 11.0 s across stages, every stage skipped or reused).
-- [ ] **Next GPU session, before any `remote.sh` call:** delete those four run directories on the instance (`scripts/remote.sh host 'cd ~/edgeinfer/artifacts/reports/deploy && rm -r …'`), or the first sync's pull brings them back.
+- [x] The four run directories on the instance went with it when the instance was terminated (C7, D-044).
 - [x] `deploy status` printed `vNone` for an alias's first move; it now prints `-`.
 
 ### C6 exit criteria
