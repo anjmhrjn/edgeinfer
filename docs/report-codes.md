@@ -40,10 +40,16 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 | `QUANT_INPUT_NOT_INT8` | quantize (`--float-dtype fp16`) | error | The model given to the INT8+FP16 conversion isn't an INT8 Q/DQ model from `edgeinfer quantize` (D-031). |
 | `QUANT_FP16_CONVERT_FAILED` | quantize (`--float-dtype fp16`) | error | ModelOpt `convert_to_f16` (run in `tools/modelopt/`) exited with an error; the message ends with its log. No `int8_fp16` artifact is written. |
 | `QUANT_FP16_PLACEMENT_CHANGED` | quantize (`--float-dtype fp16`) | error | The FP16 conversion changed the Q/DQ nodes or the set of quantized nodes. The conversion must only change float types, so the INT8 parent's calibration and exclusions still describe the model (D-031). A node that lost its Q/DQ input is reported as `QUANT_PLACEMENT_MISMATCH`. |
+| `QUANT_MODELOPT_FAILED` | quantize (`--tool modelopt`) | error | ModelOpt's quantizer (run in `tools/modelopt/`) exited with an error; the message ends with its log. No artifact is written. |
+| `QUANT_TOOL_UNSUPPORTED` | quantize (`--tool modelopt`) | error | The quant config's calibration method has no ModelOpt equivalent (ModelOpt calibrates with min/max or entropy, not percentile). |
 | `SENS_FULL_INT8_WITHIN_BUDGET` | sensitivity | info | The fully quantized model's drop on the scoring set is already within budget − margin; no exclusions needed. |
 | `SENS_EXCLUSION_SUGGESTED` | sensitivity | info | Keeping the listed groups in float (greedy, in leave-one-out order, each step measured) brings the drop within budget − margin. `where` is the comma-separated group list. |
 | `SENS_BUDGET_UNREACHABLE` | sensitivity | error | Even with every group in float the drop exceeds budget − margin: the loss isn't in the quantized layers (or the margin is too large). |
 | `SENS_NON_ADDITIVE` | sensitivity | warn | The final greedy configuration's measured delta differs from the sum of its groups' single-group recoveries by more than max(2 × noise floor, 0.1 points): group effects interact. |
+| `SENS_RANKING_MISMATCH` | candidates, sensitivity | error | The ranking report isn't a sensitivity report for this model, `--top` exceeds its ranking, or `--candidates` isn't a candidates report (D-032). |
+| `SENS_CANDIDATE_INVALID` | candidates | error | A generated configuration fails the validator (e.g. `VALIDATE_FLOAT_PRECISION`); generation stops so no TensorRT run uses it. |
+| `SENS_CANDIDATE_MISSING` | sensitivity (`--candidates`) | error | The greedy search needs a configuration the candidates report doesn't list, or a listed file isn't on this machine. The message names the groups to generate or the file to push. |
+| `SENS_CANDIDATE_MISMATCH` | sensitivity (`--candidates`) | error | A listed file's sidecar names a different artifact than the candidates report: the file was replaced after the report was written. |
 | `PERF_DEBUG_ENGINE` | perf | error | The backend's artifact is a debug engine with marked layer outputs. Marking outputs disables layer fusion, so its latency doesn't describe the deployed engine; the probe refuses to measure it. |
 | `PERF_SPAN_INCONSISTENT` | perf | error | In some iterations the device stages (H2D + compute + D2H, measured with device events) took longer than the host-measured inference call that contains them. A timer was read before the device finished: missing synchronization. |
 | `PERF_BUDGET_EXCEEDED` | perf | error | The p99 of the budgeted span (`configs/budgets.yaml` `latency.span`) is above `latency.p99_ms_max`. `where` is the span. |
@@ -67,5 +73,7 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 | `BUILD_UNKNOWN_DEBUG_OUTPUT` | build | error | `--debug-outputs` names a tensor that doesn't exist in the parsed network. |
 | `BUILD_FAILED` | build | error | TensorRT's builder returned no engine (see its log). |
 | `BUILD_IO_MISMATCH` | build | error | The built engine's inputs/outputs don't match the model's contract (see `TRT_IO_MISMATCH`). |
+| `BUILD_QDQ_UNFUSED` | build | warn | An INT8 engine: a quantized ONNX Conv/MatMul/Gemm is named by an engine layer without INT8 inputs or weights, so its Q/DQ wasn't fused and it runs in float with separate scale operations (accuracy as planned, speed not). `where` is the first such node. |
+| `BUILD_LAYER_INFO_UNMAPPED` | build | info | An INT8 engine: some quantized ONNX nodes aren't named in any engine layer's metadata, so their fusion can't be checked from the inspector output. |
 | `OPS_LISTED_BUT_REJECTED` | ops_check | error | `configs/supported_ops.yaml` lists an op as supported but the pinned TensorRT's ONNX parser rejects it. `where` is the op. |
 | `OPS_UNLISTED_BUT_ACCEPTED` | ops_check | warn | `configs/supported_ops.yaml` lists an op as unsupported but the parser accepts it. `where` is the op. |

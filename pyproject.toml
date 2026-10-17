@@ -38,6 +38,10 @@ models = [
 gpu = [
     "cuda-bindings~=13.4.4; sys_platform == 'linux'",
 ]
+# Pareto plots from reports (scripts/pareto.py, D-033). Mac only; not installed by default.
+plots = [
+    "matplotlib>=3.10",
+]
 
 [tool.uv]
 default-groups = ["dev", "models"]
