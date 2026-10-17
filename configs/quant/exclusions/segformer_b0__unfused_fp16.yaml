@@ -1,0 +1,24 @@
+# SegFormer nodes whose Q/DQ TensorRT 11.3 doesn't fuse in an INT8+FP16 engine on the T4
+# (build__segformer_b0__int8fp16_none__5efd53c.json, `not_int8`): the 8 depthwise convs,
+# 6 MatMuls and the 3 stride-2 patch-embedding convs. Kept in FP16 (D-034).
+name: segformer_b0__unfused_fp16
+model: segformer_b0
+groups: []
+nodes:
+  - node_MatMul_6
+  - node_conv2d_2
+  - node_MatMul_86
+  - node_conv2d_4
+  - node_conv2d_5
+  - node_MatMul_174
+  - node_conv2d_7
+  - node_MatMul_251
+  - node_conv2d_9
+  - node_conv2d_10
+  - node_MatMul_339
+  - node_conv2d_12
+  - node_MatMul_416
+  - node_conv2d_14
+  - node_conv2d_15
+  - node_conv2d_16
+  - node_conv2d_17
