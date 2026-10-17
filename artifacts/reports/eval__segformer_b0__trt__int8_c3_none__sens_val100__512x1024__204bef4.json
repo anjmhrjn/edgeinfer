@@ -1,0 +1,69 @@
+{
+  "schema_version": "1",
+  "tool": "eval",
+  "created_at": "2026-10-17T01:04:01+00:00",
+  "git_sha": "204bef4111872940d4d219c4ab108801be095497",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "cuda:0 (Tesla T4, sm_75)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99",
+      "cuda_driver": "13040",
+      "cuda_runtime": "13040"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "trt",
+  "precision": "int8",
+  "artifact_id": "392e80b246227748e35d71d2372948a7a532a52650fc4f82a9acc550a0b82e47",
+  "inputs": {
+    "manifest": "sens_val100",
+    "artifact": "segformer_b0__int8__392e80b24622.engine",
+    "limit": null,
+    "input_hw": [
+      512,
+      1024
+    ],
+    "eval_resolution": "label (full)",
+    "artifact_sha256": "962782f0fa081dc1d64de76889343a7799f44aff4b8c5dc3803f9b26da81af32"
+  },
+  "thresholds": {},
+  "metrics": {
+    "miou": 0.6885168314472092,
+    "pixel_accuracy": 0.9436572245105803,
+    "per_class_iou": {
+      "road": 0.9728969003817308,
+      "sidewalk": 0.7995097853771406,
+      "building": 0.8941108685400015,
+      "wall": 0.36546493152089193,
+      "fence": 0.29814351623480256,
+      "pole": 0.5169874351257047,
+      "traffic light": 0.5929557539392165,
+      "traffic sign": 0.6587946393227354,
+      "vegetation": 0.8994499878215179,
+      "terrain": 0.6248322123595647,
+      "sky": 0.9359464155898489,
+      "person": 0.7244042752014952,
+      "rider": 0.4643576295951978,
+      "car": 0.9216458474482396,
+      "truck": 0.8613416070497029,
+      "bus": 0.6749091685442948,
+      "train": 0.6854128945396181,
+      "motorcycle": 0.5987308751978427,
+      "bicycle": 0.5919250537074273
+    },
+    "n_images": 100,
+    "dev_timing_s": {
+      "infer_mean": 0.013282551740010149,
+      "wall_total": 84.15494517299999
+    }
+  },
+  "passed": true,
+  "findings": []
+}

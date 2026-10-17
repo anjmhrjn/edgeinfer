@@ -1,0 +1,818 @@
+{
+  "schema_version": "1",
+  "tool": "build",
+  "created_at": "2026-10-17T00:59:10+00:00",
+  "git_sha": "204bef4111872940d4d219c4ab108801be095497",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "cuda:0 (Tesla T4, sm_75)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "trt",
+  "precision": "int8_fp16",
+  "artifact_id": "321eeafa4a499ed3d999d97e3ab7df5af639dbf30f273082d3732200a0906ab1",
+  "inputs": {
+    "artifact": "segformer_b0__int8_fp16__4031ccefacfb.onnx",
+    "onnx_artifact_id": "4031ccefacfbc25b049248b9f19e9a5a8a05c9c03e80c6f1e8ef6c10c2a1bf39",
+    "build_config": {
+      "name": "build_default",
+      "workspace_mib": 2048,
+      "builder_optimization_level": 3,
+      "timing_cache": true,
+      "profiling_verbosity": "detailed"
+    },
+    "debug_outputs": [
+      "conv2d",
+      "layer_norm",
+      "layer_norm_1",
+      "conv2d_1",
+      "layer_norm_2",
+      "val_68",
+      "layer_norm_3",
+      "conv2d_2",
+      "layer_norm_4",
+      "conv2d_3",
+      "layer_norm_5",
+      "val_151",
+      "layer_norm_6",
+      "conv2d_4",
+      "layer_norm_7",
+      "conv2d_5",
+      "layer_norm_8",
+      "layer_norm_9",
+      "conv2d_6",
+      "layer_norm_10",
+      "val_249",
+      "layer_norm_11",
+      "conv2d_7",
+      "layer_norm_12",
+      "conv2d_8",
+      "layer_norm_13",
+      "val_332",
+      "layer_norm_14",
+      "conv2d_9",
+      "layer_norm_15",
+      "conv2d_10",
+      "layer_norm_16",
+      "layer_norm_17",
+      "conv2d_11",
+      "layer_norm_18",
+      "val_430",
+      "layer_norm_19",
+      "conv2d_12",
+      "layer_norm_20",
+      "conv2d_13",
+      "layer_norm_21",
+      "val_513",
+      "layer_norm_22",
+      "conv2d_14",
+      "layer_norm_23",
+      "conv2d_15",
+      "layer_norm_24",
+      "layer_norm_25",
+      "val_598",
+      "layer_norm_26",
+      "conv2d_16",
+      "layer_norm_27",
+      "val_668",
+      "layer_norm_28",
+      "conv2d_17",
+      "layer_norm_29",
+      "getitem",
+      "logits_pre_cast"
+    ]
+  },
+  "thresholds": {},
+  "metrics": {
+    "file": "segformer_b0__int8_fp16__debug__321eeafa4a49.engine",
+    "sha256": "db1ba8bf18a31aa3298bdac7517faa11f13904b511c1dd9745cd0fdcb129b789",
+    "size_bytes": 9336508,
+    "parent_artifact_id": "4031ccefacfbc25b049248b9f19e9a5a8a05c9c03e80c6f1e8ef6c10c2a1bf39",
+    "runtime": {
+      "tensorrt": "11.3.0.99",
+      "gpu_name": "Tesla T4",
+      "compute_capability": "7.5",
+      "cuda_driver": 13040,
+      "cuda_runtime": 13040
+    },
+    "io": [
+      {
+        "name": "input",
+        "mode": "input",
+        "shape": [
+          1,
+          3,
+          512,
+          1024
+        ],
+        "dtype": "float32"
+      },
+      {
+        "name": "logits",
+        "mode": "output",
+        "shape": [
+          1,
+          19,
+          128,
+          256
+        ],
+        "dtype": "float32"
+      },
+      {
+        "name": "conv2d",
+        "mode": "output",
+        "shape": [
+          1,
+          32,
+          128,
+          256
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm",
+        "mode": "output",
+        "shape": [
+          1,
+          32768,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_1",
+        "mode": "output",
+        "shape": [
+          1,
+          32768,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_1",
+        "mode": "output",
+        "shape": [
+          1,
+          32,
+          16,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_2",
+        "mode": "output",
+        "shape": [
+          1,
+          512,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "val_68",
+        "mode": "output",
+        "shape": [
+          1,
+          1,
+          32768,
+          512
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_3",
+        "mode": "output",
+        "shape": [
+          1,
+          32768,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_2",
+        "mode": "output",
+        "shape": [
+          1,
+          128,
+          128,
+          256
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_4",
+        "mode": "output",
+        "shape": [
+          1,
+          32768,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_3",
+        "mode": "output",
+        "shape": [
+          1,
+          32,
+          16,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_5",
+        "mode": "output",
+        "shape": [
+          1,
+          512,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "val_151",
+        "mode": "output",
+        "shape": [
+          1,
+          1,
+          32768,
+          512
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_6",
+        "mode": "output",
+        "shape": [
+          1,
+          32768,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_4",
+        "mode": "output",
+        "shape": [
+          1,
+          128,
+          128,
+          256
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_7",
+        "mode": "output",
+        "shape": [
+          1,
+          32768,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_5",
+        "mode": "output",
+        "shape": [
+          1,
+          64,
+          64,
+          128
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_8",
+        "mode": "output",
+        "shape": [
+          1,
+          8192,
+          64
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_9",
+        "mode": "output",
+        "shape": [
+          1,
+          8192,
+          64
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_6",
+        "mode": "output",
+        "shape": [
+          1,
+          64,
+          16,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_10",
+        "mode": "output",
+        "shape": [
+          1,
+          512,
+          64
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "val_249",
+        "mode": "output",
+        "shape": [
+          1,
+          2,
+          8192,
+          512
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_11",
+        "mode": "output",
+        "shape": [
+          1,
+          8192,
+          64
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_7",
+        "mode": "output",
+        "shape": [
+          1,
+          256,
+          64,
+          128
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_12",
+        "mode": "output",
+        "shape": [
+          1,
+          8192,
+          64
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_8",
+        "mode": "output",
+        "shape": [
+          1,
+          64,
+          16,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_13",
+        "mode": "output",
+        "shape": [
+          1,
+          512,
+          64
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "val_332",
+        "mode": "output",
+        "shape": [
+          1,
+          2,
+          8192,
+          512
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_14",
+        "mode": "output",
+        "shape": [
+          1,
+          8192,
+          64
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_9",
+        "mode": "output",
+        "shape": [
+          1,
+          256,
+          64,
+          128
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_15",
+        "mode": "output",
+        "shape": [
+          1,
+          8192,
+          64
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_10",
+        "mode": "output",
+        "shape": [
+          1,
+          160,
+          32,
+          64
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_16",
+        "mode": "output",
+        "shape": [
+          1,
+          2048,
+          160
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_17",
+        "mode": "output",
+        "shape": [
+          1,
+          2048,
+          160
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_11",
+        "mode": "output",
+        "shape": [
+          1,
+          160,
+          16,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_18",
+        "mode": "output",
+        "shape": [
+          1,
+          512,
+          160
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "val_430",
+        "mode": "output",
+        "shape": [
+          1,
+          5,
+          2048,
+          512
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_19",
+        "mode": "output",
+        "shape": [
+          1,
+          2048,
+          160
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_12",
+        "mode": "output",
+        "shape": [
+          1,
+          640,
+          32,
+          64
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_20",
+        "mode": "output",
+        "shape": [
+          1,
+          2048,
+          160
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_13",
+        "mode": "output",
+        "shape": [
+          1,
+          160,
+          16,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_21",
+        "mode": "output",
+        "shape": [
+          1,
+          512,
+          160
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "val_513",
+        "mode": "output",
+        "shape": [
+          1,
+          5,
+          2048,
+          512
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_22",
+        "mode": "output",
+        "shape": [
+          1,
+          2048,
+          160
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_14",
+        "mode": "output",
+        "shape": [
+          1,
+          640,
+          32,
+          64
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_23",
+        "mode": "output",
+        "shape": [
+          1,
+          2048,
+          160
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_15",
+        "mode": "output",
+        "shape": [
+          1,
+          256,
+          16,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_24",
+        "mode": "output",
+        "shape": [
+          1,
+          512,
+          256
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_25",
+        "mode": "output",
+        "shape": [
+          1,
+          512,
+          256
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "val_598",
+        "mode": "output",
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_26",
+        "mode": "output",
+        "shape": [
+          1,
+          512,
+          256
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_16",
+        "mode": "output",
+        "shape": [
+          1,
+          1024,
+          16,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_27",
+        "mode": "output",
+        "shape": [
+          1,
+          512,
+          256
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "val_668",
+        "mode": "output",
+        "shape": [
+          1,
+          8,
+          512,
+          512
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_28",
+        "mode": "output",
+        "shape": [
+          1,
+          512,
+          256
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_17",
+        "mode": "output",
+        "shape": [
+          1,
+          1024,
+          16,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "layer_norm_29",
+        "mode": "output",
+        "shape": [
+          1,
+          512,
+          256
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "getitem",
+        "mode": "output",
+        "shape": [
+          1,
+          256,
+          128,
+          256
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "logits_pre_cast",
+        "mode": "output",
+        "shape": [
+          1,
+          19,
+          128,
+          256
+        ],
+        "dtype": "float16"
+      }
+    ],
+    "num_layers": 281,
+    "layers_file": "segformer_b0__int8_fp16__debug__321eeafa4a49.layers.json",
+    "device_memory_bytes": 123207680,
+    "timing_cache": {
+      "used": true,
+      "file": "timing_cache__trt11.3.0.99__sm7.5.cache",
+      "sha256_before_build": "241f815bca5c3072b5d73174f214de16f72a607cb7d75b606090cf5aec1c4482"
+    },
+    "build_seconds": 82.22,
+    "layer_output_datatypes": {
+      "Float": 17,
+      "Half": 179,
+      "Int8": 109
+    },
+    "layers": {
+      "n_layers": 281,
+      "by_type": {
+        "kgen": 105,
+        "Reformat": 46,
+        "fusion": 36,
+        "gemm": 22,
+        "CaskConvolution": 20,
+        "signal": 13,
+        "wait": 13,
+        "Constant": 11,
+        "Scale": 11,
+        "Resize": 3,
+        "NoOp": 1
+      },
+      "by_precision": {
+        "int8": 92,
+        "Half": 68,
+        "Int8": 43,
+        "?": 26,
+        "Float": 6
+      },
+      "reformat_layers": 46,
+      "reformats": {
+        "Half->Int8": 19,
+        "Half->Half": 18,
+        "Int8->Half": 8,
+        "Float->Int8": 1
+      },
+      "layers_without_detail": 0,
+      "quantized_onnx_nodes": {
+        "expected": 88,
+        "int8": 71,
+        "not_int8": [
+          "node_MatMul_6",
+          "node_conv2d_2",
+          "node_MatMul_86",
+          "node_conv2d_4",
+          "node_conv2d_5",
+          "node_MatMul_174",
+          "node_conv2d_7",
+          "node_MatMul_251",
+          "node_conv2d_9",
+          "node_conv2d_10",
+          "node_MatMul_339",
+          "node_conv2d_12",
+          "node_MatMul_416",
+          "node_conv2d_14",
+          "node_conv2d_15",
+          "node_conv2d_16",
+          "node_conv2d_17"
+        ],
+        "unmapped": []
+      }
+    }
+  },
+  "passed": true,
+  "findings": [
+    {
+      "severity": "warn",
+      "code": "BUILD_QDQ_UNFUSED",
+      "message": "17/88 quantized ONNX nodes run in an engine layer without INT8 inputs (Q/DQ not fused)",
+      "where": "node_MatMul_6"
+    }
+  ]
+}

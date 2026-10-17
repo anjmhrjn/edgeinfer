@@ -1,0 +1,69 @@
+{
+  "schema_version": "1",
+  "tool": "eval",
+  "created_at": "2026-10-17T00:54:29+00:00",
+  "git_sha": "66c7af8970a7d8fcebcaee733e8efa06d613b424",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "cuda:0 (Tesla T4, sm_75)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99",
+      "cuda_driver": "13040",
+      "cuda_runtime": "13040"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "trt",
+  "precision": "fp16",
+  "artifact_id": "baba668a26e9b7b389807717f263fbd7f2da3c1704419e6418b984f64c54efd6",
+  "inputs": {
+    "manifest": "sens_val100",
+    "artifact": "segformer_b0__fp16__baba668a26e9.engine",
+    "limit": null,
+    "input_hw": [
+      512,
+      1024
+    ],
+    "eval_resolution": "label (full)",
+    "artifact_sha256": "7fee0ed7744be6e30cccca57b59b92d529e71966d12813ab4b214837965bbc9e"
+  },
+  "thresholds": {},
+  "metrics": {
+    "miou": 0.6916141817713598,
+    "pixel_accuracy": 0.944781929957718,
+    "per_class_iou": {
+      "road": 0.9750012917285458,
+      "sidewalk": 0.81122501060178,
+      "building": 0.8943574459920819,
+      "wall": 0.3749895708516398,
+      "fence": 0.2937034702685066,
+      "pole": 0.5194520644750958,
+      "traffic light": 0.5931982919278745,
+      "traffic sign": 0.6609918092228931,
+      "vegetation": 0.8993088365977701,
+      "terrain": 0.630049011552207,
+      "sky": 0.9370175394246465,
+      "person": 0.7265200688605957,
+      "rider": 0.4645279312138804,
+      "car": 0.9219078749583994,
+      "truck": 0.8720038815379844,
+      "bus": 0.6735239107919893,
+      "train": 0.7014053420240374,
+      "motorcycle": 0.6011563036605228,
+      "bicycle": 0.5903297979653871
+    },
+    "n_images": 100,
+    "dev_timing_s": {
+      "infer_mean": 0.009025727689997893,
+      "wall_total": 87.23398295899983
+    }
+  },
+  "passed": true,
+  "findings": []
+}

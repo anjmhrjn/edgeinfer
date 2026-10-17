@@ -1,0 +1,69 @@
+{
+  "schema_version": "1",
+  "tool": "eval",
+  "created_at": "2026-10-17T01:14:12+00:00",
+  "git_sha": "204bef4111872940d4d219c4ab108801be095497",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "cuda:0 (Tesla T4, sm_75)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99",
+      "cuda_driver": "13040",
+      "cuda_runtime": "13040"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "trt",
+  "precision": "int8_fp16",
+  "artifact_id": "8ff4db1b28722b234bd6becb50008ded9f9aef06f7e71fd1757d5fcb305954be",
+  "inputs": {
+    "manifest": "sens_val100",
+    "artifact": "deeplabv3plus_mbv2__int8_fp16__8ff4db1b2872.engine",
+    "limit": null,
+    "input_hw": [
+      512,
+      1024
+    ],
+    "eval_resolution": "label (full)",
+    "artifact_sha256": "c43ca142094c9341b3ab386df708fbcac4b4356f277a192061240e2dbe6032d2"
+  },
+  "thresholds": {},
+  "metrics": {
+    "miou": 0.6662240990892632,
+    "pixel_accuracy": 0.9379906560839703,
+    "per_class_iou": {
+      "road": 0.9712321146558394,
+      "sidewalk": 0.7845213379286009,
+      "building": 0.882863410731589,
+      "wall": 0.3935825236806812,
+      "fence": 0.2755448087959819,
+      "pole": 0.5038857949278606,
+      "traffic light": 0.4951346966153623,
+      "traffic sign": 0.640522736478564,
+      "vegetation": 0.8812782854537957,
+      "terrain": 0.5583446937692976,
+      "sky": 0.9305161597694048,
+      "person": 0.7111898809072837,
+      "rider": 0.48670490004750694,
+      "car": 0.9215373541334656,
+      "truck": 0.7901623482640368,
+      "bus": 0.6621284198083695,
+      "train": 0.73813737998626,
+      "motorcycle": 0.4872238653375689,
+      "bicycle": 0.5437471714045324
+    },
+    "n_images": 100,
+    "dev_timing_s": {
+      "infer_mean": 0.00609999560003871,
+      "wall_total": 88.36054358299998
+    }
+  },
+  "passed": true,
+  "findings": []
+}

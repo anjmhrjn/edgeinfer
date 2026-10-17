@@ -1,0 +1,69 @@
+{
+  "schema_version": "1",
+  "tool": "eval",
+  "created_at": "2026-10-17T01:06:51+00:00",
+  "git_sha": "204bef4111872940d4d219c4ab108801be095497",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "cuda:0 (Tesla T4, sm_75)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99",
+      "cuda_driver": "13040",
+      "cuda_runtime": "13040"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "trt",
+  "precision": "int8_fp16",
+  "artifact_id": "321eeafa4a499ed3d999d97e3ab7df5af639dbf30f273082d3732200a0906ab1",
+  "inputs": {
+    "manifest": "sens_val100",
+    "artifact": "segformer_b0__int8_fp16__debug__321eeafa4a49.engine",
+    "limit": null,
+    "input_hw": [
+      512,
+      1024
+    ],
+    "eval_resolution": "label (full)",
+    "artifact_sha256": "db1ba8bf18a31aa3298bdac7517faa11f13904b511c1dd9745cd0fdcb129b789"
+  },
+  "thresholds": {},
+  "metrics": {
+    "miou": 6.544135772506062e-05,
+    "pixel_accuracy": 0.0012433857967761516,
+    "per_class_iou": {
+      "road": 0.0,
+      "sidewalk": 0.0,
+      "building": 0.0,
+      "wall": 0.0,
+      "fence": 0.0,
+      "pole": 0.0,
+      "traffic light": 0.0,
+      "traffic sign": 0.0,
+      "vegetation": 0.0,
+      "terrain": 0.0,
+      "sky": 0.0,
+      "person": 0.0,
+      "rider": 0.0,
+      "car": 0.0,
+      "truck": 0.0,
+      "bus": 0.0,
+      "train": 0.0,
+      "motorcycle": 0.0012433857967761516,
+      "bicycle": 0.0
+    },
+    "n_images": 100,
+    "dev_timing_s": {
+      "infer_mean": 0.012240801580001062,
+      "wall_total": 84.34941290899997
+    }
+  },
+  "passed": true,
+  "findings": []
+}
