@@ -129,13 +129,20 @@ def int8_models(m: str) -> dict[str, str]:
     return models
 
 
-def latest(pattern: str) -> str | None:
+def latest(pattern: str, artifact_id: str | None = None) -> str | None:
     """The newest clean report matching `pattern`, by creation time; None if there is none.
     Phases run at different SHAs within a session, so reports are found by what they
-    describe, not by the SHA in their name."""
-    found = [(json.loads(p.read_text()), p.name) for p in REPORTS_DIR.glob(pattern)]
-    found = [(r["created_at"], name) for r, name in found if not r.get("git_dirty")]
+    describe, not by the SHA in their name. Debug builds and their reports (marked outputs,
+    not the deployed engine) never count; `artifact_id` keeps only reports of that artifact."""
+    found = [(json.loads(p.read_text()), p.name) for p in REPORTS_DIR.glob(pattern)
+             if "__debug__" not in p.name]  # fmt: skip
+    found = [(r["created_at"], name) for r, name in found
+             if not r.get("git_dirty") and artifact_id in (None, r["artifact_id"])]  # fmt: skip
     return max(found)[1] if found else None
+
+
+def engine_id(build_report: str) -> str:
+    return report(build_report)["artifact_id"]
 
 
 def built(m: str) -> dict[str, str]:
@@ -167,7 +174,8 @@ def engines(m: str) -> dict[str, Path]:
 def sub(sha: str) -> None:
     for m in MODELS:
         for label, eng in engines(m).items():
-            if latest(f"eval__{m}__trt__{label}__sens_val100__512x1024__*.json"):
+            aid = engine_id((baselines(m) | built(m))[label])
+            if latest(f"eval__{m}__trt__{label}__sens_val100__512x1024__*.json", aid):
                 continue  # evaluated in an earlier run
             out = REPORTS_DIR / f"eval__{m}__trt__{label}__sens_val100__512x1024__{sha}.json"
             edgeinfer("eval", "--model", m, "--backend", "trt", "--artifact", str(eng),
@@ -242,8 +250,9 @@ def points(m: str) -> list[dict]:
     sens = sens_report(m)
     fp32 = sens["metrics"]["fp32_miou"]
     pts, seen = [], set()
-    for label in baselines(m) | built(m):
-        name = latest(f"eval__{m}__trt__{label}__sens_val100__512x1024__*.json")
+    for label, build_report in (baselines(m) | built(m)).items():
+        aid = engine_id(build_report)
+        name = latest(f"eval__{m}__trt__{label}__sens_val100__512x1024__*.json", aid)
         if name is None:
             sys.exit(f"{m} {label} has no sens_val100 eval: run the sub phase")
         ev = report(name)

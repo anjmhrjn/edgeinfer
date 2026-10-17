@@ -1,0 +1,82 @@
+{
+  "schema_version": "1",
+  "tool": "trtexec",
+  "created_at": "2026-10-17T13:56:37+00:00",
+  "git_sha": "de889fd3b6b77c944e7a63a4bffc8c96768d7739",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "Tesla T4 (sm_7.5)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99",
+      "cuda_driver": "13040",
+      "cuda_runtime": "13040"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "trtexec",
+  "precision": "fp32",
+  "artifact_id": "9f849b8cbe004b16f48d5fb5522d0f9fe3ff18a076eb545e0fd8846817a25bb8",
+  "inputs": {
+    "artifact": "deeplabv3plus_mbv2__fp32__9f849b8cbe00.engine",
+    "trtexec_flags": [
+      "--warmUp=2000",
+      "--iterations=1000",
+      "--duration=0"
+    ],
+    "gpu_clock_mhz": 990,
+    "profile_flags": null,
+    "perf_report": null,
+    "artifact_sha256": "f10c17df4b0d31288e38cf36cf3f3a31b157295f185dbd4b7134d8650a1e60c4"
+  },
+  "thresholds": {},
+  "metrics": {
+    "spans_ms": {
+      "compute": {
+        "n": 1001,
+        "mean": 16.284636763236765,
+        "std": 0.2601050481769104,
+        "min": 15.8093,
+        "p50": 16.4126,
+        "p90": 16.5708,
+        "p99": 16.6143,
+        "max": 16.7031
+      },
+      "latency": {
+        "n": 1001,
+        "mean": 16.284636763236765,
+        "std": 0.2601050481769104,
+        "min": 15.8093,
+        "p50": 16.4126,
+        "p90": 16.5708,
+        "p99": 16.6143,
+        "max": 16.7031
+      }
+    },
+    "telemetry_during": {
+      "samples": 155,
+      "interval_ms": 100,
+      "clocks.sm_min": 960.0,
+      "clocks.sm_max": 990.0,
+      "power.draw_max": 71.5,
+      "temperature.gpu_max": 44.0,
+      "clocks_event_reasons": "0x4",
+      "throttle_reasons": [
+        "sw_power_cap"
+      ]
+    }
+  },
+  "passed": true,
+  "findings": [
+    {
+      "severity": "warn",
+      "code": "PERF_GPU_THROTTLED",
+      "message": "the GPU slowed itself during measurement (sw_power_cap); SM clock went down to 960 MHz"
+    }
+  ]
+}

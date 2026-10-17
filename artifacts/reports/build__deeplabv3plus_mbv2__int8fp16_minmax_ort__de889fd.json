@@ -1,0 +1,117 @@
+{
+  "schema_version": "1",
+  "tool": "build",
+  "created_at": "2026-10-17T13:46:57+00:00",
+  "git_sha": "de889fd3b6b77c944e7a63a4bffc8c96768d7739",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "cuda:0 (Tesla T4, sm_75)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "trt",
+  "precision": "int8_fp16",
+  "artifact_id": "400356bf45ca055760b522d509b4f27dae781110fbe70193ac3468dfc0b5637e",
+  "inputs": {
+    "artifact": "deeplabv3plus_mbv2__int8_fp16__d359e0346b30.onnx",
+    "onnx_artifact_id": "d359e0346b30d949a3b4005cccf4e0967d89fbbce7e438a006f5597b3100cb81",
+    "build_config": {
+      "name": "build_default",
+      "workspace_mib": 2048,
+      "builder_optimization_level": 3,
+      "timing_cache": true,
+      "profiling_verbosity": "detailed"
+    },
+    "debug_outputs": []
+  },
+  "thresholds": {},
+  "metrics": {
+    "file": "deeplabv3plus_mbv2__int8_fp16__400356bf45ca.engine",
+    "sha256": "2df8834508e505e27899d450e077cb9162fa52a0a39ec7773564e8cdad4aa831",
+    "size_bytes": 6026404,
+    "parent_artifact_id": "d359e0346b30d949a3b4005cccf4e0967d89fbbce7e438a006f5597b3100cb81",
+    "runtime": {
+      "tensorrt": "11.3.0.99",
+      "gpu_name": "Tesla T4",
+      "compute_capability": "7.5",
+      "cuda_driver": 13040,
+      "cuda_runtime": 13040
+    },
+    "io": [
+      {
+        "name": "input",
+        "mode": "input",
+        "shape": [
+          1,
+          3,
+          512,
+          1024
+        ],
+        "dtype": "float32"
+      },
+      {
+        "name": "logits",
+        "mode": "output",
+        "shape": [
+          1,
+          19,
+          128,
+          256
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "num_layers": 70,
+    "layers_file": "deeplabv3plus_mbv2__int8_fp16__400356bf45ca.layers.json",
+    "device_memory_bytes": 30605312,
+    "timing_cache": {
+      "used": true,
+      "file": "timing_cache__trt11.3.0.99__sm7.5.cache",
+      "sha256_before_build": "1b753e5e00a89c48a12002fefef0e2c65b989e529020cf38818be909276bf2f6"
+    },
+    "build_seconds": 3.13,
+    "layer_output_datatypes": {
+      "Float": 1,
+      "Half": 7,
+      "Int8": 62
+    },
+    "layers": {
+      "n_layers": 70,
+      "by_type": {
+        "CaskConvolution": 60,
+        "Reformat": 5,
+        "NoOp": 2,
+        "Resize": 2,
+        "CaskPooling": 1
+      },
+      "by_precision": {
+        "int8": 62,
+        "Half": 2
+      },
+      "reformat_layers": 6,
+      "reformats": {
+        "Half->Half": 2,
+        "Half->Int8": 2,
+        "Float->Int8": 1,
+        "Half->Float": 1
+      },
+      "layers_without_detail": 0,
+      "quantized_onnx_nodes": {
+        "expected": 60,
+        "int8": 60,
+        "not_int8": [],
+        "unmapped": []
+      }
+    }
+  },
+  "passed": true,
+  "findings": []
+}

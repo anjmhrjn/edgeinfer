@@ -1,0 +1,74 @@
+{
+  "schema_version": "1",
+  "tool": "trtexec",
+  "created_at": "2026-10-17T13:57:41+00:00",
+  "git_sha": "de889fd3b6b77c944e7a63a4bffc8c96768d7739",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "Tesla T4 (sm_7.5)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99",
+      "cuda_driver": "13040",
+      "cuda_runtime": "13040"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "trtexec",
+  "precision": "int8_fp16",
+  "artifact_id": "9c0e71d9c17648ad2a632c4d929abd91bb14346dad3642e4fa1ab749c10fe7d5",
+  "inputs": {
+    "artifact": "deeplabv3plus_mbv2__int8_fp16__9c0e71d9c176.engine",
+    "trtexec_flags": [
+      "--warmUp=2000",
+      "--iterations=1000",
+      "--duration=0"
+    ],
+    "gpu_clock_mhz": 990,
+    "profile_flags": null,
+    "perf_report": null,
+    "artifact_sha256": "6e93fc3b38d62d11ed7516694cd47d7d399f83c6475cca76e74781b474f04710"
+  },
+  "thresholds": {},
+  "metrics": {
+    "spans_ms": {
+      "compute": {
+        "n": 1001,
+        "mean": 3.803383256743257,
+        "std": 0.002587551039693138,
+        "min": 3.79517,
+        "p50": 3.80322,
+        "p90": 3.80664,
+        "p99": 3.80957,
+        "max": 3.81299
+      },
+      "latency": {
+        "n": 1001,
+        "mean": 3.803383256743257,
+        "std": 0.002587551039693138,
+        "min": 3.79517,
+        "p50": 3.80322,
+        "p90": 3.80664,
+        "p99": 3.80957,
+        "max": 3.81299
+      }
+    },
+    "telemetry_during": {
+      "samples": 50,
+      "interval_ms": 100,
+      "clocks.sm_min": 990.0,
+      "clocks.sm_max": 990.0,
+      "power.draw_max": 66.46,
+      "temperature.gpu_max": 42.0,
+      "clocks_event_reasons": "0x0",
+      "throttle_reasons": []
+    }
+  },
+  "passed": true,
+  "findings": []
+}
