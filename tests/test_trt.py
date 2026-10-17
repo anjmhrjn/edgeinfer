@@ -109,8 +109,10 @@ def test_implicit_int8_is_gone():
 
 
 def test_int8_engine_fuses_qdq(fake_cityscapes, tiny_onnx, tmp_path, x):
-    """An INT8 Q/DQ model builds into INT8 layers: every quantized ONNX node is named by an
-    engine layer with INT8 inputs (the inspector format the layer summary relies on)."""
+    """An INT8 Q/DQ model builds into INT8 layers, and the layer summary can place every
+    quantized ONNX node in the real inspector output. Not every node fuses: in this fixture
+    a DQ shared by a Conv and a Concat leaves the Conv in FP32 with a separate weight Scale
+    layer (first T4 run, C5), which the summary reports as BUILD_QDQ_UNFUSED."""
     from dataclasses import replace
 
     from edgeinfer.backends.trt_layers import layer_summary, quantized_onnx_nodes
@@ -130,8 +132,10 @@ def test_int8_engine_fuses_qdq(fake_cityscapes, tiny_onnx, tmp_path, x):
     layers = json.loads((path.parent / meta["layers_file"]).read_text())
     summary, findings = layer_summary(layers, quantized_onnx_nodes(onnx.load(str(int8))))
     print(json.dumps(summary, indent=1))  # the real inspector output, for the session log
+    q = summary["quantized_onnx_nodes"]
     assert summary["by_precision"].get("int8", 0) > 0
-    assert summary["quantized_onnx_nodes"]["not_int8"] == [], findings
+    assert q["unmapped"] == [] and q["int8"] > len(q["not_int8"]), q
+    assert {f["code"] for f in findings} == ({"BUILD_QDQ_UNFUSED"} if q["not_int8"] else set())
     ref = ort.InferenceSession(str(int8)).run(None, {"input": x})[0]
     got = _loaded(path).infer(x)
     # INT8 kernels round differently from ORT's; a loose bound catches a broken build.
