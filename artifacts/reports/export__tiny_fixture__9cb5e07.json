@@ -1,0 +1,60 @@
+{
+  "schema_version": "1",
+  "tool": "export",
+  "created_at": "2026-10-17T01:10:42+00:00",
+  "git_sha": "9cb5e0738ef5f3f7d0f23be8c01d8c4e249ea5a5",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "torch": "2.14.1",
+      "onnx": "1.23.2",
+      "onnxscript": "0.7.2"
+    }
+  },
+  "model": "tiny_fixture",
+  "backend": "onnx",
+  "precision": "fp32",
+  "artifact_id": "dbd8b799925a158a5d0acb8c2811f24f137d79d3e79a286d0e7759f90810557f",
+  "inputs": {
+    "weights_id": "seed:0",
+    "export": {
+      "exporter": "torch.onnx.export(dynamo=True)",
+      "opset": 20,
+      "optimize": true,
+      "external_data": false,
+      "static_shape": true
+    }
+  },
+  "thresholds": {},
+  "metrics": {
+    "file": "tiny_fixture__fp32__dbd8b799925a.onnx",
+    "sha256": "3319b9402f435d768a4b5bc959838b814fd79e75da90aa08f8ec22f9cbb15105",
+    "size_bytes": 101355,
+    "n_nodes": 25,
+    "op_counts": {
+      "Add": 3,
+      "Concat": 1,
+      "Conv": 4,
+      "LayerNormalization": 1,
+      "MatMul": 4,
+      "Mul": 1,
+      "Relu": 3,
+      "Reshape": 2,
+      "Resize": 1,
+      "Softmax": 1,
+      "Split": 1,
+      "Transpose": 3
+    },
+    "sanity_max_abs": 7.62939453125e-06,
+    "sanity_max_abs_ref": 16.411462783813477
+  },
+  "passed": true,
+  "findings": []
+}

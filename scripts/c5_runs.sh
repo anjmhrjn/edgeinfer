@@ -11,8 +11,9 @@
 #                                 calibration takes over an hour per model)
 #   scripts/c5_runs.sh candidates every subset of the top-5 ORT sensitivity groups as INT8 and
 #                                 INT8+FP16 models, validated, listed in a report (D-032);
-#                                 SegFormer keeps its depthwise convs in FP16 (D-034)
+#                                 SegFormer keeps the 17 nodes TensorRT doesn't fuse in FP16 (D-034)
 #   scripts/c5_runs.sh dwfp16     SegFormer full INT8+FP16 with the depthwise convs in FP16
+#                                 (superseded: not enough, D-034; kept for its reports)
 #
 # GPU sessions (start with gpu-up.sh, stop with gpu-down.sh; reports come back by themselves):
 #   scripts/c5_runs.sh push       the ONNX models every GPU phase needs, with sidecars
@@ -90,7 +91,7 @@ ort_ranking() {
 # Layers kept in float in every C5 configuration of a model (D-034), if any.
 base_exclusions() {
   case $1 in
-    segformer_b0) echo configs/quant/exclusions/segformer_b0__dwconv_fp16.yaml ;;
+    segformer_b0) echo configs/quant/exclusions/segformer_b0__unfused_fp16.yaml ;;
   esac
 }
 

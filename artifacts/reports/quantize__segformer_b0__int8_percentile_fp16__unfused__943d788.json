@@ -1,0 +1,220 @@
+{
+  "schema_version": "1",
+  "tool": "quantize",
+  "created_at": "2026-10-17T01:29:34+00:00",
+  "git_sha": "943d788c0fc6208a7b8d491b16118f0989852c61",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "onnxruntime": "1.31.0",
+      "onnx": "1.23.2",
+      "modelopt_env.nvidia-modelopt": "0.47.0",
+      "modelopt_env.onnx": "1.21.0",
+      "modelopt_env.onnxruntime": "1.24.4",
+      "modelopt_env.numpy": "2.5.4",
+      "modelopt_env.lock_sha256": "bd54ba9656050c98a3a728fc7e140e9f7bfaa3ccb2b23e7e475f45c66a8f98f0"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "onnxruntime.quantization",
+  "precision": "int8_fp16",
+  "artifact_id": "1a423bded7768944366a8f5414f041139c6b872d5f20bcc56ee18d8ddb1952e0",
+  "inputs": {
+    "artifact": "segformer_b0__fp32__0ef7fcdb0cdc.onnx",
+    "config": "segformer_b0",
+    "quant_config": {
+      "name": "int8_percentile",
+      "activation_type": "int8",
+      "weight_type": "int8",
+      "activation_symmetric": true,
+      "weight_symmetric": true,
+      "per_channel": true,
+      "op_types": [
+        "Conv",
+        "MatMul",
+        "Gemm"
+      ],
+      "quantize_outputs": false,
+      "quantize_bias": false,
+      "calibration": {
+        "manifest": "calib_train200",
+        "limit": null,
+        "method": "percentile",
+        "num_bins": 2048,
+        "num_quantized_bins": null,
+        "percentile": 99.99,
+        "chunk_images": 2
+      }
+    },
+    "exclusions": {
+      "name": "segformer_b0__unfused_fp16",
+      "model": "segformer_b0",
+      "groups": [],
+      "nodes": [
+        "node_MatMul_6",
+        "node_conv2d_2",
+        "node_MatMul_86",
+        "node_conv2d_4",
+        "node_conv2d_5",
+        "node_MatMul_174",
+        "node_conv2d_7",
+        "node_MatMul_251",
+        "node_conv2d_9",
+        "node_conv2d_10",
+        "node_MatMul_339",
+        "node_conv2d_12",
+        "node_MatMul_416",
+        "node_conv2d_14",
+        "node_conv2d_15",
+        "node_conv2d_16",
+        "node_conv2d_17"
+      ]
+    },
+    "groups": "segformer_b0.yaml",
+    "float_dtype": "fp16",
+    "tool": "ort"
+  },
+  "thresholds": {},
+  "metrics": {
+    "file": "segformer_b0__int8_fp16__1a423bded776.onnx",
+    "sha256": "a8e654cc3f309f38c2572dbf5f10fe953760f686ed9dd06de890717b8123719f",
+    "size_bytes": 4544952,
+    "parent_artifact_id": "51a788e321a45f901a60c0ba146929deddc1d6d9a0c938f824135e99591782cf",
+    "calibration": {
+      "calibration_id": "59a94b20667a9f49ee7786b2120ceab86cdabc2a5a331ccf97a9fa00324cbdbf",
+      "manifest": "calib_train200",
+      "limit": null,
+      "n_images": 200,
+      "method": "percentile",
+      "options": {
+        "symmetric": true,
+        "num_bins": 2048,
+        "percentile": 99.99
+      }
+    },
+    "placement": {
+      "quantized_nodes": {
+        "Conv": 9,
+        "MatMul": 62
+      },
+      "excluded_nodes": {
+        "Conv": 11,
+        "MatMul": 6
+      },
+      "n_quantize_linear": 77,
+      "n_dequantize_linear": 132,
+      "unshared_inputs": 0
+    },
+    "excluded_nodes": [
+      {
+        "node": "node_MatMul_6",
+        "group": "s0.attn_proj"
+      },
+      {
+        "node": "node_conv2d_2",
+        "group": "s0.mlp"
+      },
+      {
+        "node": "node_MatMul_86",
+        "group": "s0.attn_proj"
+      },
+      {
+        "node": "node_conv2d_4",
+        "group": "s0.mlp"
+      },
+      {
+        "node": "node_conv2d_5",
+        "group": "s1.patch_embed"
+      },
+      {
+        "node": "node_MatMul_174",
+        "group": "s1.attn_proj"
+      },
+      {
+        "node": "node_conv2d_7",
+        "group": "s1.mlp"
+      },
+      {
+        "node": "node_MatMul_251",
+        "group": "s1.attn_proj"
+      },
+      {
+        "node": "node_conv2d_9",
+        "group": "s1.mlp"
+      },
+      {
+        "node": "node_conv2d_10",
+        "group": "s2.patch_embed"
+      },
+      {
+        "node": "node_MatMul_339",
+        "group": "s2.attn_proj"
+      },
+      {
+        "node": "node_conv2d_12",
+        "group": "s2.mlp"
+      },
+      {
+        "node": "node_MatMul_416",
+        "group": "s2.attn_proj"
+      },
+      {
+        "node": "node_conv2d_14",
+        "group": "s2.mlp"
+      },
+      {
+        "node": "node_conv2d_15",
+        "group": "s3.patch_embed"
+      },
+      {
+        "node": "node_conv2d_16",
+        "group": "s3.mlp"
+      },
+      {
+        "node": "node_conv2d_17",
+        "group": "s3.mlp"
+      }
+    ],
+    "int8_artifact_id": "51a788e321a45f901a60c0ba146929deddc1d6d9a0c938f824135e99591782cf",
+    "float_precision": {
+      "fp16_nodes": 532,
+      "fp16_by_op": {
+        "Add": 68,
+        "Concat": 1,
+        "Conv": 20,
+        "DequantizeLinear": 132,
+        "Gelu": 8,
+        "LayerNormalization": 30,
+        "MatMul": 68,
+        "Mul": 16,
+        "Relu": 1,
+        "Reshape": 92,
+        "Resize": 4,
+        "Softmax": 8,
+        "Transpose": 84
+      },
+      "fp32_nodes": [],
+      "cast_nodes": 2
+    },
+    "scale_rounding": {
+      "n_values": 10701,
+      "subnormal_in_fp16": 2,
+      "max_rel_change": 0.0004779924270771892,
+      "max_rel_change_at": "val_555_DequantizeLinear_Output"
+    },
+    "calibration_dev": {
+      "seconds": 690.6,
+      "peak_rss_bytes": 4452614144,
+      "n_tensors": 182
+    }
+  },
+  "passed": true,
+  "findings": []
+}

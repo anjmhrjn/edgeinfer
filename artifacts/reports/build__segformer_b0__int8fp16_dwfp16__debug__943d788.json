@@ -1,0 +1,246 @@
+{
+  "schema_version": "1",
+  "tool": "build",
+  "created_at": "2026-10-17T01:31:20+00:00",
+  "git_sha": "943d788c0fc6208a7b8d491b16118f0989852c61",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "cuda:0 (Tesla T4, sm_75)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "trt",
+  "precision": "int8_fp16",
+  "artifact_id": "4b97e6ebe8b269f33f89c00ec9921d3b148339d53a1fd252cf692bfdfb35de2b",
+  "inputs": {
+    "artifact": "segformer_b0__int8_fp16__6f030beb43ba.onnx",
+    "onnx_artifact_id": "6f030beb43ba04eb70cd32e2f26966a58c2b2496aacd9819c2849b905c34e51f",
+    "build_config": {
+      "name": "build_default",
+      "workspace_mib": 2048,
+      "builder_optimization_level": 3,
+      "timing_cache": true,
+      "profiling_verbosity": "detailed"
+    },
+    "debug_outputs": [
+      "val_10",
+      "val_96",
+      "conv2d_5",
+      "val_194",
+      "val_277",
+      "conv2d_10",
+      "val_375",
+      "val_458",
+      "conv2d_15"
+    ]
+  },
+  "thresholds": {},
+  "metrics": {
+    "file": "segformer_b0__int8_fp16__debug__4b97e6ebe8b2.engine",
+    "sha256": "7af4b848d31d966dfaf6d34d3907ab621f9392d3d2b023e13ddceaef66987efa",
+    "size_bytes": 8535428,
+    "parent_artifact_id": "6f030beb43ba04eb70cd32e2f26966a58c2b2496aacd9819c2849b905c34e51f",
+    "runtime": {
+      "tensorrt": "11.3.0.99",
+      "gpu_name": "Tesla T4",
+      "compute_capability": "7.5",
+      "cuda_driver": 13040,
+      "cuda_runtime": 13040
+    },
+    "io": [
+      {
+        "name": "input",
+        "mode": "input",
+        "shape": [
+          1,
+          3,
+          512,
+          1024
+        ],
+        "dtype": "float32"
+      },
+      {
+        "name": "logits",
+        "mode": "output",
+        "shape": [
+          1,
+          19,
+          128,
+          256
+        ],
+        "dtype": "float32"
+      },
+      {
+        "name": "val_10",
+        "mode": "output",
+        "shape": [
+          1,
+          32768,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "val_96",
+        "mode": "output",
+        "shape": [
+          1,
+          32768,
+          32
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_5",
+        "mode": "output",
+        "shape": [
+          1,
+          64,
+          64,
+          128
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "val_194",
+        "mode": "output",
+        "shape": [
+          1,
+          8192,
+          64
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "val_277",
+        "mode": "output",
+        "shape": [
+          1,
+          8192,
+          64
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_10",
+        "mode": "output",
+        "shape": [
+          1,
+          160,
+          32,
+          64
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "val_375",
+        "mode": "output",
+        "shape": [
+          1,
+          2048,
+          160
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "val_458",
+        "mode": "output",
+        "shape": [
+          1,
+          2048,
+          160
+        ],
+        "dtype": "float16"
+      },
+      {
+        "name": "conv2d_15",
+        "mode": "output",
+        "shape": [
+          1,
+          256,
+          16,
+          32
+        ],
+        "dtype": "float16"
+      }
+    ],
+    "num_layers": 213,
+    "layers_file": "segformer_b0__int8_fp16__debug__4b97e6ebe8b2.layers.json",
+    "device_memory_bytes": 106692608,
+    "timing_cache": {
+      "used": true,
+      "file": "timing_cache__trt11.3.0.99__sm7.5.cache",
+      "sha256_before_build": "0d740be441c5d374c04d81df39cd07121b59221284229f8252a9b784f7755e9d"
+    },
+    "build_seconds": 7.25,
+    "layer_output_datatypes": {
+      "Float": 17,
+      "Half": 116,
+      "Int8": 80
+    },
+    "layers": {
+      "n_layers": 213,
+      "by_type": {
+        "kgen": 95,
+        "Reformat": 28,
+        "fusion": 28,
+        "CaskConvolution": 20,
+        "gemm": 14,
+        "signal": 9,
+        "wait": 9,
+        "Constant": 3,
+        "Scale": 3,
+        "Resize": 3,
+        "NoOp": 1
+      },
+      "by_precision": {
+        "int8": 71,
+        "Half": 54,
+        "Int8": 37,
+        "?": 18,
+        "Float": 5
+      },
+      "reformat_layers": 28,
+      "reformats": {
+        "Half->Half": 16,
+        "Half->Int8": 10,
+        "Float->Int8": 1,
+        "Half->Float": 1
+      },
+      "layers_without_detail": 0,
+      "quantized_onnx_nodes": {
+        "expected": 80,
+        "int8": 71,
+        "not_int8": [
+          "node_MatMul_6",
+          "node_MatMul_86",
+          "node_conv2d_5",
+          "node_MatMul_174",
+          "node_MatMul_251",
+          "node_conv2d_10",
+          "node_MatMul_339",
+          "node_MatMul_416",
+          "node_conv2d_15"
+        ],
+        "unmapped": []
+      }
+    }
+  },
+  "passed": true,
+  "findings": [
+    {
+      "severity": "warn",
+      "code": "BUILD_QDQ_UNFUSED",
+      "message": "9/80 quantized ONNX nodes run in an engine layer without INT8 inputs (Q/DQ not fused)",
+      "where": "node_MatMul_6"
+    }
+  ]
+}

@@ -86,9 +86,9 @@ def int8_models(m: str) -> dict[str, str]:
         "int8fp16_none": one(f"quantize__{m}__int8_percentile_fp16__none__*.json"),
         "int8fp16_sens": one(f"quantize__{m}__int8_percentile_fp16__sens__*.json"),
     }
-    dw = latest(f"quantize__{m}__int8_percentile_fp16__dwfp16__*.json")
-    if dw:  # SegFormer: depthwise convs in FP16 (D-034)
-        models["int8fp16_dwfp16"] = dw
+    unfused = latest(f"quantize__{m}__int8_percentile_fp16__unfused__*.json")
+    if unfused:  # SegFormer: the nodes TensorRT doesn't fuse kept in FP16 (D-034)
+        models["int8fp16_unfused"] = unfused
     pair = {f"int8fp16_minmax_{tool}": f"quantize__{m}__int8_minmax_fp16__{tool}__*.json"
             for tool in ("ort", "modelopt")}  # fmt: skip
     if all(any(REPORTS_DIR.glob(pattern)) for pattern in pair.values()):
@@ -148,7 +148,7 @@ def parity(sha: str) -> None:
         for label, eng in engines(m).items():
             if latest(f"parity__{m}__trt__{label}__golden_val32__golden__*.json"):
                 continue  # checked in an earlier run
-            if label.startswith(("int8_c3", "int8fp16_none", "int8fp16_sens", "int8fp16_dw")):
+            if label.startswith(("int8_c3", "int8fp16_none", "int8fp16_sens", "int8fp16_unf")):
                 out = REPORTS_DIR / f"parity__{m}__trt__{label}__golden_val32__golden__{sha}.json"
                 edgeinfer("parity", "--model", m, "--backend", "trt", "--artifact", str(eng),
                           "--inputs", "golden", "--out", str(out))  # fmt: skip

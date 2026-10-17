@@ -1,0 +1,923 @@
+{
+  "schema_version": "1",
+  "tool": "parity",
+  "created_at": "2026-10-17T01:27:27+00:00",
+  "git_sha": "9cb5e0738ef5f3f7d0f23be8c01d8c4e249ea5a5",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "cuda:0 (Tesla T4, sm_75)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99",
+      "cuda_driver": "13040",
+      "cuda_runtime": "13040"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "trt",
+  "precision": "int8_fp16",
+  "artifact_id": "321eeafa4a499ed3d999d97e3ab7df5af639dbf30f273082d3732200a0906ab1",
+  "inputs": {
+    "manifest": "golden_val32",
+    "limit": null,
+    "mode": "golden",
+    "artifact": "segformer_b0__int8_fp16__debug__321eeafa4a49.engine",
+    "config": "segformer_b0",
+    "golden_verified": true,
+    "tolerances": "int8_fp16",
+    "ref_artifact": "segformer_b0__fp32__0ef7fcdb0cdc.onnx",
+    "ref_artifact_id": "0ef7fcdb0cdc344827ec5243eb2f914c1f53a3385ad4d21cdca71488cff55288",
+    "artifact_sha256": "db1ba8bf18a31aa3298bdac7517faa11f13904b511c1dd9745cd0fdcb129b789"
+  },
+  "thresholds": {
+    "input_max_abs": 1e-05,
+    "logits_max_abs": null,
+    "logits_cosine_min": null,
+    "argmax_agreement_min": null,
+    "miou_delta_max": 1.0,
+    "layer_cosine_min": null,
+    "layer_rel_max_abs": null
+  },
+  "metrics": {
+    "n_images": 32,
+    "mode": "golden",
+    "logits_max_abs": 32.08531188964844,
+    "logits_mean_abs": 8.624522633159954,
+    "logits_cosine_min": 0.7539536953687259,
+    "argmax_agreement_min": 0.0,
+    "argmax_agreement_mean": 0.0016450881958007812,
+    "argmax_agreement_label_res_min": 0.0,
+    "miou_reference": 0.7144653589847592,
+    "miou_candidate": 8.531361746692218e-05,
+    "miou_delta_points": -71.43800453672922,
+    "per_image": [
+      {
+        "image_id": "frankfurt_000000_000576",
+        "nonfinite": 0,
+        "max_abs": 31.008502960205078,
+        "mean_abs": 8.822057406898221,
+        "cosine": 0.7569723490419841,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "frankfurt_000000_007365",
+        "nonfinite": 0,
+        "max_abs": 29.24276351928711,
+        "mean_abs": 8.46921186145158,
+        "cosine": 0.760504901694515,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "frankfurt_000000_013382",
+        "nonfinite": 0,
+        "max_abs": 31.016036987304688,
+        "mean_abs": 8.934279610296695,
+        "cosine": 0.7808188403174205,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "frankfurt_000000_022254",
+        "nonfinite": 0,
+        "max_abs": 25.062097549438477,
+        "mean_abs": 8.195288855375887,
+        "cosine": 0.7699427841573186,
+        "argmax_agreement": 0.012542724609375,
+        "argmax_agreement_label_res": 0.01230764389038086
+      },
+      {
+        "image_id": "frankfurt_000001_005184",
+        "nonfinite": 0,
+        "max_abs": 26.92218017578125,
+        "mean_abs": 8.247194456027524,
+        "cosine": 0.7783319071373846,
+        "argmax_agreement": 0.000518798828125,
+        "argmax_agreement_label_res": 0.00044155120849609375
+      },
+      {
+        "image_id": "frankfurt_000001_007973",
+        "nonfinite": 0,
+        "max_abs": 28.564952850341797,
+        "mean_abs": 8.156753922490578,
+        "cosine": 0.7576818519753472,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "frankfurt_000001_020287",
+        "nonfinite": 0,
+        "max_abs": 27.92502784729004,
+        "mean_abs": 8.927932849241843,
+        "cosine": 0.7596974177525478,
+        "argmax_agreement": 0.002593994140625,
+        "argmax_agreement_label_res": 0.0025815963745117188
+      },
+      {
+        "image_id": "frankfurt_000001_025921",
+        "nonfinite": 0,
+        "max_abs": 29.110633850097656,
+        "mean_abs": 8.480031486489597,
+        "cosine": 0.7605186008383128,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "frankfurt_000001_031416",
+        "nonfinite": 0,
+        "max_abs": 26.74559211730957,
+        "mean_abs": 8.601273552940908,
+        "cosine": 0.7672924110369901,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "frankfurt_000001_034047",
+        "nonfinite": 0,
+        "max_abs": 27.27029800415039,
+        "mean_abs": 8.450473070288913,
+        "cosine": 0.7628099846649796,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "frankfurt_000001_055603",
+        "nonfinite": 0,
+        "max_abs": 29.902389526367188,
+        "mean_abs": 8.363498697709824,
+        "cosine": 0.7608212967291406,
+        "argmax_agreement": 0.00042724609375,
+        "argmax_agreement_label_res": 0.00039768218994140625
+      },
+      {
+        "image_id": "frankfurt_000001_057954",
+        "nonfinite": 0,
+        "max_abs": 30.667888641357422,
+        "mean_abs": 8.652590079681472,
+        "cosine": 0.7539536953687259,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "frankfurt_000001_064305",
+        "nonfinite": 0,
+        "max_abs": 28.047042846679688,
+        "mean_abs": 8.60562067412839,
+        "cosine": 0.767450943578349,
+        "argmax_agreement": 0.02691650390625,
+        "argmax_agreement_label_res": 0.027054786682128906
+      },
+      {
+        "image_id": "frankfurt_000001_066092",
+        "nonfinite": 0,
+        "max_abs": 30.040752410888672,
+        "mean_abs": 7.867918210770552,
+        "cosine": 0.7581740645250887,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "frankfurt_000001_066574",
+        "nonfinite": 0,
+        "max_abs": 27.209749221801758,
+        "mean_abs": 7.285834719538422,
+        "cosine": 0.7553629078482169,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 4.76837158203125e-07
+      },
+      {
+        "image_id": "frankfurt_000001_069633",
+        "nonfinite": 0,
+        "max_abs": 28.28135108947754,
+        "mean_abs": 8.552222715643522,
+        "cosine": 0.7736806126491201,
+        "argmax_agreement": 0.00213623046875,
+        "argmax_agreement_label_res": 0.002037525177001953
+      },
+      {
+        "image_id": "frankfurt_000001_073464",
+        "nonfinite": 0,
+        "max_abs": 27.648406982421875,
+        "mean_abs": 8.49470792840656,
+        "cosine": 0.7635568693812709,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "frankfurt_000001_076502",
+        "nonfinite": 0,
+        "max_abs": 29.705474853515625,
+        "mean_abs": 8.385741141606308,
+        "cosine": 0.7623977288030105,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "lindau_000024_000019",
+        "nonfinite": 0,
+        "max_abs": 27.56252098083496,
+        "mean_abs": 8.445983466697294,
+        "cosine": 0.7663495142884926,
+        "argmax_agreement": 0.0028076171875,
+        "argmax_agreement_label_res": 0.002719402313232422
+      },
+      {
+        "image_id": "lindau_000044_000019",
+        "nonfinite": 0,
+        "max_abs": 27.983871459960938,
+        "mean_abs": 9.523237684588995,
+        "cosine": 0.7826336047255793,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "munster_000007_000019",
+        "nonfinite": 0,
+        "max_abs": 28.065933227539062,
+        "mean_abs": 8.57797636020136,
+        "cosine": 0.7759455468398788,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "munster_000030_000019",
+        "nonfinite": 0,
+        "max_abs": 29.338092803955078,
+        "mean_abs": 8.646684782010082,
+        "cosine": 0.7762659449789443,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "munster_000043_000019",
+        "nonfinite": 0,
+        "max_abs": 31.91744613647461,
+        "mean_abs": 9.510120665654513,
+        "cosine": 0.7770853239768787,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "munster_000063_000019",
+        "nonfinite": 0,
+        "max_abs": 29.381465911865234,
+        "mean_abs": 8.429688913258124,
+        "cosine": 0.7748039579700876,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "munster_000064_000019",
+        "nonfinite": 0,
+        "max_abs": 26.95766830444336,
+        "mean_abs": 8.545665364004332,
+        "cosine": 0.770100705951269,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "munster_000065_000019",
+        "nonfinite": 0,
+        "max_abs": 26.657880783081055,
+        "mean_abs": 8.562410118187717,
+        "cosine": 0.7800091042664097,
+        "argmax_agreement": 3.0517578125e-05,
+        "argmax_agreement_label_res": 2.0503997802734375e-05
+      },
+      {
+        "image_id": "munster_000066_000019",
+        "nonfinite": 0,
+        "max_abs": 29.398128509521484,
+        "mean_abs": 8.477773118698664,
+        "cosine": 0.7776822913796255,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "munster_000077_000019",
+        "nonfinite": 0,
+        "max_abs": 28.524925231933594,
+        "mean_abs": 9.340473094540238,
+        "cosine": 0.769774496725584,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "munster_000084_000019",
+        "nonfinite": 0,
+        "max_abs": 28.22677993774414,
+        "mean_abs": 8.490830588337102,
+        "cosine": 0.7563370851001086,
+        "argmax_agreement": 0.004669189453125,
+        "argmax_agreement_label_res": 0.004704952239990234
+      },
+      {
+        "image_id": "munster_000101_000019",
+        "nonfinite": 0,
+        "max_abs": 29.211578369140625,
+        "mean_abs": 8.849045615393822,
+        "cosine": 0.7764307845037387,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "munster_000107_000019",
+        "nonfinite": 0,
+        "max_abs": 32.08531188964844,
+        "mean_abs": 9.783620445299755,
+        "cosine": 0.7731425495208476,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      },
+      {
+        "image_id": "munster_000131_000019",
+        "nonfinite": 0,
+        "max_abs": 29.281368255615234,
+        "mean_abs": 9.308582805259718,
+        "cosine": 0.760991004992407,
+        "argmax_agreement": 0.0,
+        "argmax_agreement_label_res": 0.0
+      }
+    ],
+    "per_layer": {
+      "n_tensors": 57,
+      "n_images": 2,
+      "n_over_tolerance": 26,
+      "first_over_tolerance": {
+        "index": 15,
+        "tensor": "conv2d_5",
+        "op": "Conv",
+        "cosine_min": 1.0,
+        "rel_max_abs": 0.0,
+        "nonfinite_max": 0.5
+      },
+      "worst_by_cosine": [
+        {
+          "index": 24,
+          "tensor": "conv2d_8",
+          "op": "Conv",
+          "cosine_min": -0.2146640387251652,
+          "rel_max_abs": 2.709712188292835,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 25,
+          "tensor": "layer_norm_13",
+          "op": "LayerNormalization",
+          "cosine_min": -0.09952553668660284,
+          "rel_max_abs": 2.1943220377164026,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 10,
+          "tensor": "layer_norm_5",
+          "op": "LayerNormalization",
+          "cosine_min": -0.061302813644574135,
+          "rel_max_abs": 1.3309522584150306,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 56,
+          "tensor": "getitem",
+          "op": "Conv",
+          "cosine_min": -0.05746335014481413,
+          "rel_max_abs": 2.4129439338049727,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 40,
+          "tensor": "layer_norm_21",
+          "op": "LayerNormalization",
+          "cosine_min": -0.044069846019347145,
+          "rel_max_abs": 1.4654501668673292,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 19,
+          "tensor": "layer_norm_10",
+          "op": "LayerNormalization",
+          "cosine_min": -0.01452820536194584,
+          "rel_max_abs": 1.3058077995198163,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 13,
+          "tensor": "conv2d_4",
+          "op": "Conv",
+          "cosine_min": 0.01800745387788294,
+          "rel_max_abs": 11.584263949605072,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 39,
+          "tensor": "conv2d_13",
+          "op": "Conv",
+          "cosine_min": 0.020854230319387147,
+          "rel_max_abs": 0.6218661360935034,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 7,
+          "tensor": "conv2d_2",
+          "op": "Conv",
+          "cosine_min": 0.033193343873788896,
+          "rel_max_abs": 150.51109015168936,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 14,
+          "tensor": "layer_norm_7",
+          "op": "LayerNormalization",
+          "cosine_min": 0.04546092443301842,
+          "rel_max_abs": 1.4820752609311452,
+          "nonfinite_max": 0.0
+        }
+      ],
+      "tensors": [
+        {
+          "index": 0,
+          "tensor": "conv2d",
+          "op": "Conv",
+          "cosine_min": 0.9998296308113761,
+          "rel_max_abs": 0.00713387135797572,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 1,
+          "tensor": "layer_norm",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9978101916370361,
+          "rel_max_abs": 0.05276614693805333,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 2,
+          "tensor": "layer_norm_1",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9936368726991117,
+          "rel_max_abs": 0.18665348280034097,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 3,
+          "tensor": "conv2d_1",
+          "op": "Conv",
+          "cosine_min": 0.9956379675618915,
+          "rel_max_abs": 0.0794331022617525,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 4,
+          "tensor": "layer_norm_2",
+          "op": "LayerNormalization",
+          "cosine_min": 0.9873201077622604,
+          "rel_max_abs": 0.09576680798436915,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 5,
+          "tensor": "val_68",
+          "op": "Softmax",
+          "cosine_min": 0.9954296201834708,
+          "rel_max_abs": 0.114137655261419,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 6,
+          "tensor": "layer_norm_3",
+          "op": "LayerNormalization",
+          "cosine_min": 0.997178710061922,
+          "rel_max_abs": 0.13858828817950958,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 7,
+          "tensor": "conv2d_2",
+          "op": "Conv",
+          "cosine_min": 0.033193343873788896,
+          "rel_max_abs": 150.51109015168936,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 8,
+          "tensor": "layer_norm_4",
+          "op": "LayerNormalization",
+          "cosine_min": 0.06511564586012014,
+          "rel_max_abs": 1.377861471837768,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 9,
+          "tensor": "conv2d_3",
+          "op": "Conv",
+          "cosine_min": 0.16468941783206997,
+          "rel_max_abs": 1.339759336164044,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 10,
+          "tensor": "layer_norm_5",
+          "op": "LayerNormalization",
+          "cosine_min": -0.061302813644574135,
+          "rel_max_abs": 1.3309522584150306,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 11,
+          "tensor": "val_151",
+          "op": "Softmax",
+          "cosine_min": 0.31103531921758865,
+          "rel_max_abs": 0.9970315096741157,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 12,
+          "tensor": "layer_norm_6",
+          "op": "LayerNormalization",
+          "cosine_min": 0.11878570047643354,
+          "rel_max_abs": 1.3605003620957288,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 13,
+          "tensor": "conv2d_4",
+          "op": "Conv",
+          "cosine_min": 0.01800745387788294,
+          "rel_max_abs": 11.584263949605072,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 14,
+          "tensor": "layer_norm_7",
+          "op": "LayerNormalization",
+          "cosine_min": 0.04546092443301842,
+          "rel_max_abs": 1.4820752609311452,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 15,
+          "tensor": "conv2d_5",
+          "op": "Conv",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 0.5
+        },
+        {
+          "index": 16,
+          "tensor": "layer_norm_8",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 17,
+          "tensor": "layer_norm_9",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 18,
+          "tensor": "conv2d_6",
+          "op": "Conv",
+          "cosine_min": 0.17321217675456632,
+          "rel_max_abs": 1.761184245954723,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 19,
+          "tensor": "layer_norm_10",
+          "op": "LayerNormalization",
+          "cosine_min": -0.01452820536194584,
+          "rel_max_abs": 1.3058077995198163,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 20,
+          "tensor": "val_249",
+          "op": "Softmax",
+          "cosine_min": 0.3837440277746285,
+          "rel_max_abs": 0.9962088615547231,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 21,
+          "tensor": "layer_norm_11",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 22,
+          "tensor": "conv2d_7",
+          "op": "Conv",
+          "cosine_min": 0.09375397869881566,
+          "rel_max_abs": 80.51171898886608,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 23,
+          "tensor": "layer_norm_12",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 24,
+          "tensor": "conv2d_8",
+          "op": "Conv",
+          "cosine_min": -0.2146640387251652,
+          "rel_max_abs": 2.709712188292835,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 25,
+          "tensor": "layer_norm_13",
+          "op": "LayerNormalization",
+          "cosine_min": -0.09952553668660284,
+          "rel_max_abs": 2.1943220377164026,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 26,
+          "tensor": "val_332",
+          "op": "Softmax",
+          "cosine_min": 0.4297084724667395,
+          "rel_max_abs": 0.9957684860295665,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 27,
+          "tensor": "layer_norm_14",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 28,
+          "tensor": "conv2d_9",
+          "op": "Conv",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 0.00390625
+        },
+        {
+          "index": 29,
+          "tensor": "layer_norm_15",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 30,
+          "tensor": "conv2d_10",
+          "op": "Conv",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 0.19375
+        },
+        {
+          "index": 31,
+          "tensor": "layer_norm_16",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 32,
+          "tensor": "layer_norm_17",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 33,
+          "tensor": "conv2d_11",
+          "op": "Conv",
+          "cosine_min": 0.11777505177094331,
+          "rel_max_abs": 1.5040472206192719,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 34,
+          "tensor": "layer_norm_18",
+          "op": "LayerNormalization",
+          "cosine_min": 0.07091245081794594,
+          "rel_max_abs": 1.157354990827265,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 35,
+          "tensor": "val_430",
+          "op": "Softmax",
+          "cosine_min": 0.2641838166500062,
+          "rel_max_abs": 0.9979597301997226,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 36,
+          "tensor": "layer_norm_19",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 37,
+          "tensor": "conv2d_12",
+          "op": "Conv",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 0.5
+        },
+        {
+          "index": 38,
+          "tensor": "layer_norm_20",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 39,
+          "tensor": "conv2d_13",
+          "op": "Conv",
+          "cosine_min": 0.020854230319387147,
+          "rel_max_abs": 0.6218661360935034,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 40,
+          "tensor": "layer_norm_21",
+          "op": "LayerNormalization",
+          "cosine_min": -0.044069846019347145,
+          "rel_max_abs": 1.4654501668673292,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 41,
+          "tensor": "val_513",
+          "op": "Softmax",
+          "cosine_min": 0.22149228274604732,
+          "rel_max_abs": 0.9979345004422784,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 42,
+          "tensor": "layer_norm_22",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 43,
+          "tensor": "conv2d_14",
+          "op": "Conv",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 0.5
+        },
+        {
+          "index": 44,
+          "tensor": "layer_norm_23",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 45,
+          "tensor": "conv2d_15",
+          "op": "Conv",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 0.5
+        },
+        {
+          "index": 46,
+          "tensor": "layer_norm_24",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 47,
+          "tensor": "layer_norm_25",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 48,
+          "tensor": "val_598",
+          "op": "Softmax",
+          "cosine_min": 0.2363072550904912,
+          "rel_max_abs": 0.9979331850080728,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 49,
+          "tensor": "layer_norm_26",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 50,
+          "tensor": "conv2d_16",
+          "op": "Conv",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 0.265625
+        },
+        {
+          "index": 51,
+          "tensor": "layer_norm_27",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 52,
+          "tensor": "val_668",
+          "op": "Softmax",
+          "cosine_min": 0.11963628976108732,
+          "rel_max_abs": 0.9980046127497622,
+          "nonfinite_max": 0.0
+        },
+        {
+          "index": 53,
+          "tensor": "layer_norm_28",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 54,
+          "tensor": "conv2d_17",
+          "op": "Conv",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 0.265625
+        },
+        {
+          "index": 55,
+          "tensor": "layer_norm_29",
+          "op": "LayerNormalization",
+          "cosine_min": 1.0,
+          "rel_max_abs": 0.0,
+          "nonfinite_max": 1.0
+        },
+        {
+          "index": 56,
+          "tensor": "getitem",
+          "op": "Conv",
+          "cosine_min": -0.05746335014481413,
+          "rel_max_abs": 2.4129439338049727,
+          "nonfinite_max": 0.0
+        }
+      ]
+    }
+  },
+  "passed": false,
+  "findings": [
+    {
+      "severity": "error",
+      "code": "PARITY_MIOU_DELTA",
+      "message": "mIoU on 32 golden images changed by -71.438 points (71.45 -> 0.01); limit \u00b11",
+      "where": "miou"
+    },
+    {
+      "severity": "error",
+      "code": "PARITY_LAYER_NONFINITE",
+      "message": "26 intermediate tensors contain NaN/Inf; first in graph order: #15 Conv output 'conv2d_5' (50.0% of its values on the worst image)",
+      "where": "conv2d_5"
+    },
+    {
+      "severity": "error",
+      "code": "PARITY_LAYER_DRIFT",
+      "message": "first tensor over tolerance (#15 of 57 in graph order): Conv output 'conv2d_5', cosine 1.000000, rel max abs 0; 26 tensors over tolerance in total",
+      "where": "conv2d_5"
+    }
+  ]
+}
