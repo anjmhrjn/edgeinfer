@@ -1,7 +1,7 @@
 # Progress
 
-**Current checkpoint:** C5 — TensorRT INT8 and mixed precision (GPU)
-**Next step:** C5 write-up on the Mac: the INT8 speedup explained from the per-layer profiles, the placement comparison (DeepLab on TensorRT and ORT, SegFormer on ORT, D-036), C5 in `docs/results.md`, then the teach-back and Anuj's sign-off. GPU work for C5 is done (2 sessions, 5.19 GPU-hours). The instance is stopped; terminate it if C6's GPU work is more than ~2 weeks away (D-023).
+**Current checkpoint:** C6 — Gated deployment pipeline (CPU + GPU)
+**Next step:** plan C6 in plan mode from its section in `docs/roadmap.md`. C5 is complete and signed off. The GPU instance is stopped; terminate it if C6's GPU work is more than ~2 weeks away (D-023).
 
 ## C5 — TensorRT INT8 and mixed precision
 Plan agreed 2026-10-16:
@@ -80,7 +80,70 @@ Finalists and FP16. Change is in mIoU points against the FP32 engine on the same
   - **DeepLab: INT8+FP16 with the stem in FP16.** `infer` p99 is 23% below FP16, and compute 38% below. The cost is 0.33 points on full val and 0.43 on the held-out images, within the 1.0 budget.
 - **SegFormer's INT8 engines are within 0.16 points of FP32 on full val.** That fits session 1: full INT8 was already within the subset target.
 - **SegFormer FP16's `infer` p99 is 9.548 ms here against 11.82 ms in C4**, while p50 (9.42 vs 9.40 ms) and compute p50 (6.00 vs 6.07 ms) barely move. The p99 difference is host jitter in the Python `infer` span (D-028), which is why the tie band exists.
-- Why INT8 gains so little for SegFormer: the per-layer profiles are in; the write-up is next (`docs/results.md`).
+
+**Why INT8 is far below 2× FP16** (C5 task 5).
+- Sources:
+  - trtexec per-layer profiles at 990 MHz: `trtexec__<model>__<label>__c5profile__990MHz__ab77361.json`.
+  - Layer counts: `build__<model>__<label>__*.json`.
+  - SegFormer INT8 nsys trace: `nsys__segformer_b0__int8_fp16__1bd25bf.json`, against C4's FP16 trace.
+- How to read the times: they are sums of per-layer medians. SegFormer's engines run layers on 2–3 auxiliary streams in parallel, so its sums exceed the wall-clock compute time.
+- "Matrix layers" are TensorRT's `gemm`, `CaskConvolution`, `CaskGemmConvolution` and `fusion` layer types: the convolutions and matrix multiplies, which are the only ops our placement quantizes.
+
+| Per-layer time (ms) | SegFormer FP16 | SegFormer best INT8 | DeepLab FP16 | DeepLab final INT8 |
+|---|---|---|---|---|
+| Matrix layers | 3.077 (41%) | 2.504 (36%) | 4.776 (93%) | 2.802 (87%) |
+| `kgen` (TensorRT-generated kernels) | 3.254 (43%) | 3.267 (47%) | — | — |
+| Reformat | 0.984 (13%) | 0.874 (13%) | 0.239 (5%) | 0.321 (10%) |
+| Resize, pooling | 0.254 | 0.254 | 0.107 | 0.101 |
+| Sum of layers | 7.569 | 6.898 (1.10×) | 5.123 | 3.224 (1.59×) |
+| trtexec compute p50 | 5.988 | 5.679 (1.05×) | 4.967 | 3.067 (1.62×) |
+
+- **SegFormer: most of the time is in layers INT8 doesn't touch.**
+  - The matrix layers are 41% of FP16 time and get 1.23× faster.
+  - TensorRT's generated `kgen` kernels are 43% and don't change (3.254 → 3.267 ms). The INT8+FP16 build with the D-034 exclusions has 86 of them (`build__segformer_b0__int8fp16_unfused__943d788.json`). Which ONNX nodes they cover isn't broken down here; the engine layer files stayed on the instance. By elimination, they are the non-matrix ops: LayerNorm, softmax, activations, adds.
+  - Reformats stay at 13%.
+  - Amdahl's law sets the ceiling. Even if the matrix layers ran at 2× and nothing else changed, the layer sum would only drop to 6.03 ms (1.26×).
+  - The trace agrees with the profile. GPU kernel time per frame is 5.73 ms against 6.09 ms for FP16 in C4 (−6%).
+    - The largest single kernel in the INT8 engine is FP16: the 3×3 depthwise conv kernel `sm50_xmma_fprop_conv2d_c1_k1_f16…`, 8 calls per frame, 0.455 ms (7.9%). These are the depthwise convs D-034 keeps in FP16.
+    - Third is a cuTENSOR permutation that reads FP16 and writes INT8: a layout change plus quantization, 3 per frame, 0.343 ms (6.0%).
+  - So for SegFormer-B0, INT8 doesn't pay. Its float ops cost as much time as its matrix work, its matrices are small (channel widths 32–256), and the layers it can't fuse stay in FP16.
+- **DeepLab: almost everything is convolution, and INT8 still gets 1.62×, not 2×.**
+  - The convolutions are 93% of FP16 time and get 1.70× faster.
+  - Reformat time rises 34% (0.239 → 0.321 ms) with the precision boundaries: 7 reformat layers, 3 of them FP16→INT8 at the boundaries where FP16 layers feed INT8 ones.
+  - The layers left in FP16 (stem, resize, pooling) take 0.338 ms, against 2.565 ms in INT8 layers.
+  - Why the convolutions themselves stop at 1.70× isn't measured per layer here. MobileNetV2 is mostly depthwise and 1×1 convolutions, which move a lot of data for little arithmetic, so memory bandwidth rather than INT8 math likely limits them. Per-layer times would show it; they need the layer files from the instance.
+
+**Placement comparison: ours vs ModelOpt's** (D-015, D-036). Both are min/max-calibrated INT8+FP16 with no exclusions. Change on `sens_val100` against FP32 (66.796 / 69.155).
+
+| | DeepLab, TensorRT | DeepLab, ORT CPU | SegFormer, ORT CPU |
+|---|---|---|---|
+| Our placement (Conv/MatMul only) | −4.483 | −4.433 | −0.334 |
+| ModelOpt placement (also Add, Resize, ReduceMean; on SegFormer also LayerNorm, Transpose, Reshape) | −4.239 | −4.029 | −0.890 |
+
+- Reports:
+  - TensorRT: `eval__deeplabv3plus_mbv2__trt__int8fp16_minmax_{ort,modelopt}__sens_val100__512x1024__de889fd.json` and the matching `trtexec__…__c5__990MHz__de889fd.json`.
+  - ORT: `eval__<model>__ort_cpu__int8_fp16__minmax_{ort,modelopt}__sens_val100__512x1024__3f96e51.json`.
+- **DeepLab: ModelOpt's placement is slightly better on both axes.**
+  - It is 0.24 points more accurate on TensorRT (0.40 on ORT).
+  - Its trtexec compute p50 is 3.8% lower: 2.819 vs 2.930 ms. That is at the edge of build-to-build variation (3.4%, D-029).
+  - Its engine has no FP16 layers and 4 reformats; ours has 2 FP16 layers and 6 reformats. Quantizing the residual Adds keeps the data in INT8 between convolutions.
+- **SegFormer: ModelOpt's placement costs 0.56 points more** on ORT. Quantizing LayerNorm and the other non-matrix ops hurts the transformer, which is the contrast between the two architectures this project is built to show.
+- On TensorRT, both SegFormer engines are broken by D-034 (mIoU 0.10 and 28.40), which says nothing about placement.
+- **Calibration matters far more than placement.** For DeepLab on TensorRT, our placement loses 1.306 points with percentile calibration and 4.483 with min/max: a 3.2-point gap, against 0.24 points between placements.
+
+**C5 exit criteria:**
+- A final engine per model that meets the budgets. SegFormer: FP16, because INT8 ties. DeepLab: INT8+FP16, stem in FP16.
+- Pareto plots generated from the reports by `scripts/pareto.py`.
+- TensorRT vs ORT ranking compared (session 1 results).
+- INT8 < 2× explained with profile numbers (above).
+- The implicit-INT8 removal recorded (D-031).
+- CI green on `f1e6212` (run 39052865459).
+
+The results tables for the README and `docs/results.md` come from `scripts/make_results.py` in C7.
+
+**Teach-back:** model answers in `private/teach-back-C5.md`.
+
+**Sign-off:** Anuj, 2026-10-17
 
 ### C5 session 1 results — TensorRT 11.3 on the T4, sens_val100 (100 val images), 512×1024
 Change is in mIoU points against the FP32 engine on the same images. The FP32 engines match ORT FP32 (SegFormer 69.155, DeepLab 66.796).
