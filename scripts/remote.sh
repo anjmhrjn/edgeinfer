@@ -41,7 +41,9 @@ sync_code() {
 }
 
 pull_reports() {
-    "${RSYNC[@]}" "$remote/artifacts/reports/" "$REPO_ROOT/artifacts/reports/"
+    # --update: a report the Mac rewrote after the last sync (a deploy run's deploy.json)
+    # is newer than the instance's copy and must not be replaced by it.
+    "${RSYNC[@]}" --update "$remote/artifacts/reports/" "$REPO_ROOT/artifacts/reports/"
 }
 
 case "$action" in
