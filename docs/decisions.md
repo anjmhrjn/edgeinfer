@@ -583,3 +583,50 @@ Parity inputs: golden input tensors (model only) / raw images preprocessed by th
 - **Failures are never reused,** so a transient failure gets a fresh measurement.
 **Evidence:** `tests/test_reuse.py`; `tests/test_deploy.py` (rerun reused; changed code reruns; failed never reused); cold vs warm runs in the C6 results.
 **Consequences / revisit if:** The key's file list is maintained by hand. If a tool starts reading a new file, the code change reruns its gates once, but later edits to that file go unnoticed until the file is added to the key. Review the key whenever a tool gets a new input.
+
+## D-041: Results from a manifest of reports, generated and checked in CI  (C7, 2026-10-17)
+**Context:** C7 publishes the project's numbers in `docs/results.md` and the README. Every number must trace to a clean report. Several cells have more than one candidate report: FP32 latency exists from C4, FP16 latency from both C4 and C5, and DeepLab's final engine from C5 and again from C6's perf gate.
+**Options:**
+1. An explicit manifest, `configs/results.yaml`, naming the report behind every row, rendered by a script. Reviewable and deterministic / one more file to maintain.
+2. Automatic discovery: the newest report matching each model and precision. Less to maintain / which report wins depends on file names and dates, the failure C5 hit when a glob picked up a debug build.
+3. Hand-written tables with links. No code / numbers can drift from their reports unnoticed.
+**Decision:** Option 1 (Anuj, 2026-10-17). `scripts/make_results.py`:
+- writes `docs/results.md` and the README's table (between `<!-- results:start -->` and `<!-- results:end -->`) from the manifest and its reports only;
+- refuses a missing report, a report written from a dirty tree, an eval not on full val at 512×1024, a perf report not at the 990 MHz lock, and a row whose reports measured different artifacts, by id or by sha256. A row can override the last check only with a reason (`different_artifacts:`), which is printed with the table; no row uses it;
+- `--check` fails when either output differs from a regeneration. It runs in CI as `tests/test_make_results.py::test_committed_results_are_current`;
+- `--plots` redraws the Pareto figures from their `pareto` reports (`scripts/pareto.py:plot_report`).
+**Rationale:** The manifest makes "which report backs this number" a reviewed decision instead of a side effect of naming, which is the one way C5's lookups went wrong. Generating the text and checking it in CI means a hand edit to a published number, or a changed report, fails the build rather than drifting. The plan said a free-text `note` would allow a row whose reports measured different artifacts. A dedicated `different_artifacts` key is used instead, so an ordinary note can't switch the check off.
+**Evidence:** `tests/test_make_results.py` (missing, dirty, different id, same id with different bytes, wrong image set, drift); the redrawn Pareto figures are byte-identical to the committed ones.
+**Consequences / revisit if:**
+- The hand-written key findings in the README repeat a few numbers. Each links its report, but `--check` doesn't cover them. Generate them too if they start changing.
+- The CI check compares markdown only, not PNG bytes, because matplotlib output can change between versions.
+
+## D-042: License — MIT for this repository's code  (C7, 2026-10-17)
+**Context:** The repository is public and had no license, so by default nobody could reuse its code. Two third-party licenses already apply to parts of what it uses: the vendored DeepLabV3+ code (MIT) and the SegFormer weights (NVIDIA Source Code License for SegFormer, non-commercial), and Cityscapes forbids redistribution.
+**Options:**
+1. MIT. Short and permissive, the same as the vendored DeepLab code.
+2. Apache-2.0. Permissive, with an explicit patent grant; common in ML infrastructure (TensorRT OSS, ONNX Runtime, Airflow).
+3. No license: all rights reserved.
+**Decision:** Option 1 (Anuj, 2026-10-17). Root `LICENSE`; the README's Licenses section lists the vendored code, the weights and the dataset separately.
+**Rationale:** A portfolio project should be readable and reusable without friction, and MIT is the shortest license that allows it. The patent grant that would favor Apache-2.0 matters for contributors to a shared codebase, which this isn't. The repository code's license doesn't change the weights' or dataset's terms, so the README states those separately rather than implying MIT covers them.
+**Consequences / revisit if:** Revisit if the project takes outside contributions, where Apache-2.0's patent grant matters.
+
+## D-043: Reproducibility check — a clean clone on the Mac, without the GPU  (C7, 2026-10-17)
+**Context:** C7's exit criterion is that the README and results are "reproducible from a clean clone plus data access". The TensorRT numbers need a T4 and the pinned container; the instance costs money, and engine builds aren't bit-reproducible (D-029).
+**Options:**
+1. A Mac clean clone: fresh clone and empty weights cache; the CI tests; `make_results.py --check`; DeepLab's ORT CPU recipe deployed from nothing (download, export, calibration, quantization, FP16 conversion, gates), expected to give the committed artifact ids and accuracy. No GPU cost.
+2. The above plus both final recipes on the T4 from a clean clone, with new engines and every gate re-run. About 1–1.5 GPU-hours.
+3. Only regenerate the results from the committed reports.
+**Decision:** Option 1 (Anuj, 2026-10-17).
+**Rationale:** The parts of the toolchain that are deterministic should reproduce exactly. Artifact ids hash every input, so matching ids show the clone built the same models. The accuracy gate shows they evaluate the same. That is a strong check for no GPU time. On the T4 a rebuild gets new bytes by design, so a repeat could only show the numbers land close. C6 already shows that for the same engines: `infer` p99 within 1.5% of C5 (`docs/results.md` §6).
+**Evidence:** the clean-clone run in `docs/progress.md` (C7).
+**Consequences / revisit if:** TensorRT reproducibility from a clean clone rests on the deploy recipes and C6's re-measurement, not on a fresh run. Revisit if the toolchain or container changes.
+
+## D-044: Terminate the GPU instance after C7  (C7, 2026-10-17)
+**Context:** The instance has been stopped between sessions since C4 (D-023). Stopped, its 100 GB disk still costs about $8 a month. The engines it holds are what the registry's TensorRT versions point at (`instance:` locations, D-037).
+**Options:**
+1. Terminate it after C7 with `scripts/gpu-destroy.sh`. No further cost; the registry's TensorRT versions then fail rollback with `REGISTRY_ARTIFACT_MISSING` until rebuilt and re-gated.
+2. Keep it stopped for the next project (the C++ runtime would load these engines). About $8 a month.
+**Decision:** Option 1 (Anuj, 2026-10-17).
+**Rationale:** Nothing in C7 needs the GPU, and every result is in committed reports. The engines can be rebuilt with one `deploy run` per recipe, at the cost of re-running the gates (D-040). Keeping the disk costs money for engines that a later TensorRT, or an Orin, would need rebuilt anyway. The registry already handles a missing engine safely: rollback refuses it instead of pointing `production` at something that was never gated.
+**Consequences / revisit if:** Each GPU session after this starts with `gpu-create.sh` (a new instance), and the first deploy of each recipe rebuilds and re-gates its engines.

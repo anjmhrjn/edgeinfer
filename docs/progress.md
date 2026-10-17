@@ -20,8 +20,25 @@ Mac:
   - Three times quoted in C6 were wall-clock times, not report values: the ORT warm rerun ("1.1 s"), "20 s wall" and the DAG's "15 s". They're replaced by the deploy reports' sums of stage times (0.6 s for the ORT rerun).
   - SegFormer's ORT "percentile + sensitivity exclusions" model is the plain percentile model (`8b88379284a9`): sensitivity excluded no group. The row says so.
   - SegFormer's FP16 engine file is the size of its FP32 one (open since C4), now a note on the row.
-- [ ] Orin-class limitations, verified against NVIDIA docs
-- [ ] README, `LICENSE`, decision records D-041–D-044
+- [x] Orin-class limitations, checked against NVIDIA's docs (2026-10-17):
+  - **Hardware** ([Jetson AGX Orin technical brief v1.2](https://www.nvidia.com/content/dam/en-zz/Solutions/gtcf21/jetson-orin/nvidia-jetson-agx-orin-technical-brief.pdf), Table 1 and the GPU, DLA and Power Profiles sections).
+    - 64 GB module: an Ampere GPU with 2048 CUDA cores and 64 Tensor Cores, max GPU frequency 1.3 GHz (930 MHz on the 32 GB module).
+    - 2× NVDLA v2.0.
+    - 256-bit LPDDR5 at 204.8 GB/s.
+    - Power budgets of 15, 30 and 50 W, plus MAXN up to 60 W. "Each power mode caps various component frequencies, and the number of online CPU, GPU TPC, DLA, and PVA cores"; modes are set with `nvpmodel`.
+    - Compute capability 8.7, against the T4's 7.5 ([CUDA GPUs](https://developer.nvidia.com/cuda-gpus)).
+  - **Memory** ([CUDA for Tegra](https://docs.nvidia.com/cuda/cuda-for-tegra-appnote/index.html), Memory Management): "both the CPU (Host) and the iGPU share SoC DRAM memory", so "duplicate memory allocations and data transfers can be avoided". Pinned (zero-copy) memory is uncached on the iGPU.
+  - **TensorRT.**
+    - JetPack 6.2.1, the latest JetPack 6, ships TensorRT 10.3.0 and CUDA 12.6.10 ([release notes](https://docs.nvidia.com/jetson/jetpack/release-notes/index.html)).
+    - TensorRT 11.4 says "NVIDIA JetPack is not supported" and "Jetson deployments must remain on a TensorRT 10.x release supported by their JetPack version". DLA "was unavailable in TensorRT 11.0 through 11.3" ([11.4.0 release notes](https://docs.nvidia.com/deeplearning/tensorrt/11.4.0/getting-started/release-notes-11/11.4.0.html)).
+    - So this project's TensorRT 11.3 toolchain doesn't run on an Orin as is.
+  - **DLA** ([Working with DLA, TensorRT 10.x](https://docs.nvidia.com/deeplearning/tensorrt/10.x.x/inference-library/work-with-dla.html)).
+    - "limited to networks running in FP16 and INT8 mode".
+    - With GPU fallback, TensorRT "can split a network into multiple DLA loadable if any intermediate layers cannot run on DLA".
+    - The layer table has no matrix multiply and no LayerNorm; Softmax is Orin only.
+- [x] README (task, budgets, tools, Mermaid architecture diagram, generated results table, Pareto plots, key findings with report links, limitations including the Orin section, reproduction, licenses), `LICENSE` (MIT), decision records D-041–D-044. Checking the README against its sources:
+  - D-029's 3.4% is compute time between two identical builds, not `infer` p99.
+  - TensorRT engines don't run on an older runtime, and hardware compatibility isn't supported on JetPack ([engine compatibility](https://docs.nvidia.com/deeplearning/tensorrt/latest/inference-library/engine-compatibility.html)).
 - [ ] Clean-clone check (D-043)
 - [ ] Definition of done, each item with output
 - [ ] GPU instance terminated (D-044)
