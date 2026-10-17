@@ -231,6 +231,7 @@ def test_cli_run_dry_run_rollback_and_status(cli, capsys):
     assert main(["deploy", "status", "--model", "tiny_fixture", *reg]) == 0
     status = capsys.readouterr().out
     assert "v1  fp32" in status and "<- dev" in status and "rolled back from dev" in status
+    assert "publish  - -> v1" in status and "vNone" not in status
 
 
 def test_cli_stage_needs_a_run_id(cli):

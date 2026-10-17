@@ -1,0 +1,306 @@
+{
+  "schema_version": "1",
+  "tool": "deploy",
+  "created_at": "2026-10-17T20:49:40+00:00",
+  "git_sha": "9b09bebbc840ce9573e972235a95a0b388c6b780",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "pipeline",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "trt",
+  "precision": "int8",
+  "artifact_id": "8e392cece826194b1c438c7bd0742b3076fac3396189ec3fcd2be23976c8a4a3",
+  "inputs": {
+    "recipe": "deeplabv3plus_mbv2__int8",
+    "recipe_hash": "41e99b41dbf9c8507212638bad9e166ee45e980332773772439fa57c91b82dd3",
+    "settings": {
+      "name": "deeplabv3plus_mbv2__int8",
+      "model": "deeplabv3plus_mbv2",
+      "precision": "int8",
+      "quant": {
+        "config": "int8_percentile",
+        "exclusions": "deeplabv3plus_mbv2__sens",
+        "groups": null
+      },
+      "fp16": null,
+      "build": "build",
+      "target": "trt",
+      "gates": "gates"
+    },
+    "gates": {
+      "parity": {
+        "manifest": "golden_val32",
+        "inputs": "images"
+      },
+      "accuracy": {
+        "manifest": "eval_val",
+        "precisions": [
+          "int8",
+          "int8_fp16"
+        ]
+      },
+      "perf": {
+        "perf_config": "perf"
+      }
+    }
+  },
+  "thresholds": {},
+  "metrics": {
+    "run_id": "20261017T201932Z",
+    "stages": {
+      "export": {
+        "status": "skipped",
+        "passed": true,
+        "reports": [
+          "artifacts/reports/deploy/deeplabv3plus_mbv2__int8/20261017T201932Z/export/export__deeplabv3plus_mbv2__9b09beb.json"
+        ],
+        "seconds": 0.4,
+        "where": "local"
+      },
+      "convert": {
+        "status": "skipped",
+        "passed": true,
+        "reports": [
+          "convert.json"
+        ],
+        "seconds": 0.1,
+        "where": "local"
+      },
+      "validate": {
+        "checks": [
+          {
+            "name": "validate",
+            "key": {
+              "check": "validate",
+              "artifact": {
+                "id": "d3dcca5f82e9806513f8dd89027767b8b934c0cc10023ce37543fcc7460ac2c2",
+                "sha256": "3c2ecb7e8a98a2d0b46e6f416d5c9cefb756afab27f294385a6930dce27d925a"
+              },
+              "settings": {},
+              "files": {
+                "configs/models/deeplabv3plus_mbv2.yaml": "3c72b48c162e7cbdc069482ee43a11a5793d91a2657eceef44cfd4ce1c9772c1",
+                "configs/supported_ops.yaml": "c594186bdfaa3a5e7ddea5e72fa29a93604c6610540a5647da07932868af79d4"
+              }
+            },
+            "reason": "same key as run 20261017T185244Z",
+            "report": "deploy/deeplabv3plus_mbv2__int8/20261017T185244Z/validate.json",
+            "status": "reused",
+            "passed": true,
+            "reused_from": "20261017T185244Z",
+            "findings": []
+          }
+        ],
+        "passed": true,
+        "status": "reused",
+        "seconds": 0.0,
+        "where": "local"
+      },
+      "push": {
+        "status": "ran",
+        "passed": true,
+        "seconds": 4.6,
+        "where": "instance"
+      },
+      "build": {
+        "status": "skipped",
+        "passed": true,
+        "reports": [
+          "build.json",
+          "build_fp32.json"
+        ],
+        "seconds": 13.3,
+        "where": "instance"
+      },
+      "parity": {
+        "checks": [
+          {
+            "name": "parity",
+            "key": {
+              "check": "parity",
+              "artifact": {
+                "id": "8e392cece826194b1c438c7bd0742b3076fac3396189ec3fcd2be23976c8a4a3",
+                "sha256": "4bb781f35ddf6fcadd3d4a572b29f07855d7b22046acff0f61d39e7de66168b3"
+              },
+              "settings": {
+                "parity": {
+                  "manifest": "golden_val32",
+                  "inputs": "images"
+                }
+              },
+              "files": {
+                "configs/models/deeplabv3plus_mbv2.yaml": "3c72b48c162e7cbdc069482ee43a11a5793d91a2657eceef44cfd4ce1c9772c1",
+                "configs/tolerances.yaml": "f1fa9082b1dc87727a756432ab5aa58bfc7c8d629f8eaecf3b961aa79f5e99d1",
+                "data/golden_hashes/deeplabv3plus_mbv2.sha256": "d5e0f47dfe87e72d3345324a86eda256f77e0ade2b7caa57219e653b6491e63e",
+                "data/manifests/golden_val32.txt": "a8ab869436c93133cfbec048a931acb9ef532e73794826b6624487380c0f930c"
+              }
+            },
+            "reason": "no earlier check with this key",
+            "report": "deploy/deeplabv3plus_mbv2__int8/20261017T201932Z/parity.json",
+            "status": "ran",
+            "passed": true,
+            "reused_from": null,
+            "findings": []
+          }
+        ],
+        "passed": true,
+        "status": "ran",
+        "seconds": 56.8,
+        "where": "instance"
+      },
+      "accuracy": {
+        "checks": [
+          {
+            "name": "eval_fp32",
+            "key": {
+              "check": "eval",
+              "artifact": {
+                "id": "9f849b8cbe004b16f48d5fb5522d0f9fe3ff18a076eb545e0fd8846817a25bb8",
+                "sha256": "f10c17df4b0d31288e38cf36cf3f3a31b157295f185dbd4b7134d8650a1e60c4"
+              },
+              "settings": {
+                "manifest": "eval_val"
+              },
+              "files": {
+                "configs/models/deeplabv3plus_mbv2.yaml": "3c72b48c162e7cbdc069482ee43a11a5793d91a2657eceef44cfd4ce1c9772c1",
+                "data/manifests/eval_val.txt": "b8f913040ace5cf3f83973e84c206bfc8a3ec6c735cf708c5380d2eb614f80bd"
+              }
+            },
+            "reason": "no earlier check with this key",
+            "report": "deploy/deeplabv3plus_mbv2__int8/20261017T201932Z/eval_fp32.json",
+            "status": "ran",
+            "passed": true,
+            "reused_from": null,
+            "findings": []
+          },
+          {
+            "name": "eval",
+            "key": {
+              "check": "eval",
+              "artifact": {
+                "id": "8e392cece826194b1c438c7bd0742b3076fac3396189ec3fcd2be23976c8a4a3",
+                "sha256": "4bb781f35ddf6fcadd3d4a572b29f07855d7b22046acff0f61d39e7de66168b3"
+              },
+              "settings": {
+                "manifest": "eval_val"
+              },
+              "files": {
+                "configs/models/deeplabv3plus_mbv2.yaml": "3c72b48c162e7cbdc069482ee43a11a5793d91a2657eceef44cfd4ce1c9772c1",
+                "data/manifests/eval_val.txt": "b8f913040ace5cf3f83973e84c206bfc8a3ec6c735cf708c5380d2eb614f80bd"
+              }
+            },
+            "reason": "no earlier check with this key",
+            "report": "deploy/deeplabv3plus_mbv2__int8/20261017T201932Z/eval.json",
+            "status": "ran",
+            "passed": true,
+            "reused_from": null,
+            "findings": []
+          }
+        ],
+        "passed": true,
+        "verdict": {
+          "miou_fp32": 0.6708631970132496,
+          "miou": 0.6687549624544484,
+          "drop_points": 0.21082345588011586,
+          "budget_points": 1.0,
+          "n_images": 500
+        },
+        "message": "mIoU drop 0.211 points (budget 1.0)",
+        "status": "ran",
+        "seconds": 849.9,
+        "where": "instance"
+      },
+      "perf": {
+        "checks": [
+          {
+            "name": "perf",
+            "key": {
+              "check": "perf",
+              "artifact": {
+                "id": "8e392cece826194b1c438c7bd0742b3076fac3396189ec3fcd2be23976c8a4a3",
+                "sha256": "4bb781f35ddf6fcadd3d4a572b29f07855d7b22046acff0f61d39e7de66168b3"
+              },
+              "settings": {
+                "perf": {
+                  "perf_config": "perf"
+                }
+              },
+              "files": {
+                "configs/budgets.yaml": "5dcb1f9c758d0ceea82766e0bc45d7e574b4cc5a7ea49f8a1737f93e029f4e5d",
+                "configs/models/deeplabv3plus_mbv2.yaml": "3c72b48c162e7cbdc069482ee43a11a5793d91a2657eceef44cfd4ce1c9772c1",
+                "configs/perf.yaml": "3537edce3cbdf50e2c2a263ee90a800320533de1fc83aeb083ba7965d0a796c0",
+                "data/manifests/golden_val32.txt": "a8ab869436c93133cfbec048a931acb9ef532e73794826b6624487380c0f930c"
+              }
+            },
+            "reason": "no earlier check with this key",
+            "report": "deploy/deeplabv3plus_mbv2__int8/20261017T201932Z/perf.json",
+            "status": "ran",
+            "passed": true,
+            "reused_from": null,
+            "findings": []
+          }
+        ],
+        "enforced": true,
+        "passed": true,
+        "status": "ran",
+        "seconds": 882.7,
+        "where": "instance"
+      },
+      "publish": {
+        "status": "ran",
+        "passed": true,
+        "version": 3,
+        "alias": "production",
+        "seconds": 0.0,
+        "where": "local"
+      }
+    },
+    "artifacts": {
+      "fp32": {
+        "path": "artifacts/onnx/deeplabv3plus_mbv2/deeplabv3plus_mbv2__fp32__98b5428431cd.onnx",
+        "id": "98b5428431cd9bbe3b80354b251010db60b811b0a081b59afad424b477bfaa4b",
+        "sha256": "eb8c0889f9402faee783b2f31538f2d018ce6bc8b95d753cd5c9b19e5f76746c",
+        "precision": "fp32"
+      },
+      "onnx": {
+        "path": "artifacts/onnx/deeplabv3plus_mbv2/deeplabv3plus_mbv2__int8__d3dcca5f82e9.onnx",
+        "id": "d3dcca5f82e9806513f8dd89027767b8b934c0cc10023ce37543fcc7460ac2c2",
+        "sha256": "3c2ecb7e8a98a2d0b46e6f416d5c9cefb756afab27f294385a6930dce27d925a",
+        "precision": "int8"
+      },
+      "engine": {
+        "path": "artifacts/engines/deeplabv3plus_mbv2/deeplabv3plus_mbv2__int8__8e392cece826.engine",
+        "id": "8e392cece826194b1c438c7bd0742b3076fac3396189ec3fcd2be23976c8a4a3",
+        "sha256": "4bb781f35ddf6fcadd3d4a572b29f07855d7b22046acff0f61d39e7de66168b3",
+        "precision": "int8"
+      },
+      "fp32_engine": {
+        "path": "artifacts/engines/deeplabv3plus_mbv2/deeplabv3plus_mbv2__fp32__9f849b8cbe00.engine",
+        "id": "9f849b8cbe004b16f48d5fb5522d0f9fe3ff18a076eb545e0fd8846817a25bb8",
+        "sha256": "f10c17df4b0d31288e38cf36cf3f3a31b157295f185dbd4b7134d8650a1e60c4",
+        "precision": "fp32"
+      }
+    },
+    "published": {
+      "version": 3,
+      "alias": "production",
+      "new_version": true
+    }
+  },
+  "passed": true,
+  "findings": [
+    {
+      "severity": "info",
+      "code": "REGISTRY_PUBLISHED",
+      "message": "deeplabv3plus_mbv2 v3 -> production"
+    }
+  ]
+}

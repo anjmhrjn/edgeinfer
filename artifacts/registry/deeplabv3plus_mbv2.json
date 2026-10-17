@@ -31,10 +31,75 @@
       },
       "published_at": "2026-10-17T18:51:47+00:00",
       "rolled_back_from": []
+    },
+    {
+      "version": 2,
+      "model": "deeplabv3plus_mbv2",
+      "artifact_id": "8ff4db1b28722b234bd6becb50008ded9f9aef06f7e71fd1757d5fcb305954be",
+      "sha256": "c43ca142094c9341b3ab386df708fbcac4b4356f277a192061240e2dbe6032d2",
+      "precision": "int8_fp16",
+      "target": "trt",
+      "location": "instance:artifacts/engines/deeplabv3plus_mbv2/deeplabv3plus_mbv2__int8_fp16__8ff4db1b2872.engine",
+      "recipe": "deeplabv3plus_mbv2",
+      "recipe_hash": "b9c6d209320e8f03c527362c394f6935760d967865a647c8fabb6a4738d2e834",
+      "run_id": "20261017T205607Z",
+      "deploy_report": "deploy/deeplabv3plus_mbv2/20261017T205607Z/deploy.json",
+      "git_sha": "2602921c801175a20791dd10fc7846fcacaa11c6",
+      "gate_reports": {
+        "validate": [
+          "deploy/deeplabv3plus_mbv2__ort_cpu/20261017T182358Z/validate.json"
+        ],
+        "parity": [
+          "deploy/deeplabv3plus_mbv2/20261017T205607Z/parity.json"
+        ],
+        "accuracy": [
+          "deploy/deeplabv3plus_mbv2__int8/20261017T201932Z/eval_fp32.json",
+          "deploy/deeplabv3plus_mbv2/20261017T205607Z/eval.json"
+        ],
+        "perf": [
+          "deploy/deeplabv3plus_mbv2/20261017T205607Z/perf.json"
+        ]
+      },
+      "published_at": "2026-10-17T21:36:06+00:00",
+      "rolled_back_from": []
+    },
+    {
+      "version": 3,
+      "model": "deeplabv3plus_mbv2",
+      "artifact_id": "8e392cece826194b1c438c7bd0742b3076fac3396189ec3fcd2be23976c8a4a3",
+      "sha256": "4bb781f35ddf6fcadd3d4a572b29f07855d7b22046acff0f61d39e7de66168b3",
+      "precision": "int8",
+      "target": "trt",
+      "location": "instance:artifacts/engines/deeplabv3plus_mbv2/deeplabv3plus_mbv2__int8__8e392cece826.engine",
+      "recipe": "deeplabv3plus_mbv2__int8",
+      "recipe_hash": "41e99b41dbf9c8507212638bad9e166ee45e980332773772439fa57c91b82dd3",
+      "run_id": "20261017T213412Z",
+      "deploy_report": "deploy/deeplabv3plus_mbv2__int8/20261017T213412Z/deploy.json",
+      "git_sha": "2602921c801175a20791dd10fc7846fcacaa11c6",
+      "gate_reports": {
+        "validate": [
+          "deploy/deeplabv3plus_mbv2__int8/20261017T185244Z/validate.json"
+        ],
+        "parity": [
+          "deploy/deeplabv3plus_mbv2__int8/20261017T201932Z/parity.json"
+        ],
+        "accuracy": [
+          "deploy/deeplabv3plus_mbv2__int8/20261017T201932Z/eval_fp32.json",
+          "deploy/deeplabv3plus_mbv2__int8/20261017T201932Z/eval.json"
+        ],
+        "perf": [
+          "deploy/deeplabv3plus_mbv2__int8/20261017T201932Z/perf.json"
+        ]
+      },
+      "published_at": "2026-10-17T21:36:38+00:00",
+      "rolled_back_from": [
+        "production"
+      ]
     }
   ],
   "aliases": {
-    "dev": 1
+    "dev": 1,
+    "production": 2
   },
   "history": [
     {
@@ -44,6 +109,30 @@
       "from": null,
       "to": 1,
       "reason": "deploy run 20261017T182358Z"
+    },
+    {
+      "at": "2026-10-17T21:36:06+00:00",
+      "alias": "production",
+      "action": "publish",
+      "from": null,
+      "to": 2,
+      "reason": "deploy run 20261017T205607Z"
+    },
+    {
+      "at": "2026-10-17T21:36:38+00:00",
+      "alias": "production",
+      "action": "publish",
+      "from": 2,
+      "to": 3,
+      "reason": "deploy run 20261017T213412Z"
+    },
+    {
+      "at": "2026-10-17T21:36:44+00:00",
+      "alias": "production",
+      "action": "rollback",
+      "from": 3,
+      "to": 2,
+      "reason": "C6 demo: return production to the D-035 final (INT8+FP16) from the runner-up"
     }
   ]
 }

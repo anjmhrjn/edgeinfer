@@ -1096,7 +1096,8 @@ def _deploy_status(args: argparse.Namespace) -> int:
         print(f"  v{v['version']}  {v['precision']:9s} {v['target']:7s} "
               f"{v['artifact_id'][:12]}  {v['recipe']}  run {v['run_id']}{mark}")  # fmt: skip
     for h in index["history"]:
-        print(f"  {h['at']}  {h['alias']:10s} {h['action']:8s} v{h['from']} -> v{h['to']}  "
+        moved_from = "-" if h["from"] is None else f"v{h['from']}"  # an alias's first move
+        print(f"  {h['at']}  {h['alias']:10s} {h['action']:8s} {moved_from} -> v{h['to']}  "
               f"{h['reason']}")  # fmt: skip
     return 0
 

@@ -1,0 +1,216 @@
+{
+  "schema_version": "1",
+  "tool": "deploy",
+  "created_at": "2026-10-17T21:35:49+00:00",
+  "git_sha": "2602921c801175a20791dd10fc7846fcacaa11c6",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "pipeline",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "trt",
+  "precision": "int8_fp16",
+  "artifact_id": "01d8bc836de35b96493556702f72af6740a6e841acdcb9f0e35ee4311a41e6d6",
+  "inputs": {
+    "recipe": "segformer_b0__int8fp16_no_unfused",
+    "recipe_hash": "79d0632feba7e8b488547d36cd2658fb2a8b0c397fe9a0b255bff2b65142bbc9",
+    "settings": {
+      "name": "segformer_b0__int8fp16_no_unfused",
+      "model": "segformer_b0",
+      "precision": "int8_fp16",
+      "quant": {
+        "config": "int8_percentile",
+        "exclusions": null,
+        "groups": null
+      },
+      "fp16": null,
+      "build": "build",
+      "target": "trt",
+      "gates": "gates"
+    },
+    "gates": {
+      "parity": {
+        "manifest": "golden_val32",
+        "inputs": "images"
+      },
+      "accuracy": {
+        "manifest": "eval_val",
+        "precisions": [
+          "int8",
+          "int8_fp16"
+        ]
+      },
+      "perf": {
+        "perf_config": "perf"
+      }
+    }
+  },
+  "thresholds": {},
+  "metrics": {
+    "run_id": "20261017T213435Z",
+    "stages": {
+      "export": {
+        "status": "skipped",
+        "passed": true,
+        "reports": [
+          "artifacts/reports/deploy/segformer_b0__int8fp16_no_unfused/20261017T213435Z/export/export__segformer_b0__2602921.json"
+        ],
+        "seconds": 0.4,
+        "where": "local"
+      },
+      "convert": {
+        "status": "skipped",
+        "passed": true,
+        "reports": [
+          "convert.json"
+        ],
+        "seconds": 0.1,
+        "where": "local"
+      },
+      "validate": {
+        "checks": [
+          {
+            "name": "validate",
+            "key": {
+              "check": "validate",
+              "artifact": {
+                "id": "4031ccefacfbc25b049248b9f19e9a5a8a05c9c03e80c6f1e8ef6c10c2a1bf39",
+                "sha256": "945325ce9be0f3be6187756ecf3805cf7c792ce89d20e5c52957edddd4b51e39"
+              },
+              "settings": {},
+              "files": {
+                "configs/models/segformer_b0.yaml": "23b305d0fb0c789297945f2b53ef515df9a68d8c910509e9718b1bad6c33a868",
+                "configs/supported_ops.yaml": "c594186bdfaa3a5e7ddea5e72fa29a93604c6610540a5647da07932868af79d4"
+              }
+            },
+            "reason": "same key as run 20261017T201815Z",
+            "report": "deploy/segformer_b0__int8fp16_no_unfused/20261017T185246Z/validate.json",
+            "status": "reused",
+            "passed": true,
+            "reused_from": "20261017T201815Z",
+            "findings": []
+          }
+        ],
+        "passed": true,
+        "status": "reused",
+        "seconds": 0.0,
+        "where": "local"
+      },
+      "push": {
+        "status": "ran",
+        "passed": true,
+        "seconds": 5.0,
+        "where": "instance"
+      },
+      "build": {
+        "status": "skipped",
+        "passed": true,
+        "reports": [
+          "build.json",
+          "build_fp32.json"
+        ],
+        "seconds": 13.6,
+        "where": "instance"
+      },
+      "parity": {
+        "checks": [
+          {
+            "name": "parity",
+            "key": {
+              "check": "parity",
+              "artifact": {
+                "id": "01d8bc836de35b96493556702f72af6740a6e841acdcb9f0e35ee4311a41e6d6",
+                "sha256": "70db992a27593385e75903c46f51d74b43a4e0a870b112053c01a15b02b06333"
+              },
+              "settings": {
+                "parity": {
+                  "manifest": "golden_val32",
+                  "inputs": "images"
+                }
+              },
+              "files": {
+                "configs/models/segformer_b0.yaml": "23b305d0fb0c789297945f2b53ef515df9a68d8c910509e9718b1bad6c33a868",
+                "configs/tolerances.yaml": "f1fa9082b1dc87727a756432ab5aa58bfc7c8d629f8eaecf3b961aa79f5e99d1",
+                "data/golden_hashes/segformer_b0.sha256": "1e247a16892a06d899ed4acad54c7dc600ac0ee301924e1f0e8812b049289038",
+                "data/manifests/golden_val32.txt": "a8ab869436c93133cfbec048a931acb9ef532e73794826b6624487380c0f930c"
+              }
+            },
+            "reason": "no earlier check with this key",
+            "report": "deploy/segformer_b0__int8fp16_no_unfused/20261017T213435Z/parity.json",
+            "status": "ran",
+            "passed": false,
+            "reused_from": null,
+            "findings": [
+              {
+                "severity": "error",
+                "code": "PARITY_MIOU_DELTA",
+                "message": "mIoU on 32 golden images changed by -71.387 points (71.45 -> 0.06); limit \u00b11",
+                "where": "miou"
+              }
+            ]
+          }
+        ],
+        "passed": false,
+        "status": "failed",
+        "seconds": 55.2,
+        "where": "instance"
+      },
+      "accuracy": {
+        "status": "not_run",
+        "passed": null
+      },
+      "perf": {
+        "status": "not_run",
+        "passed": null
+      },
+      "publish": {
+        "status": "not_run",
+        "passed": null
+      }
+    },
+    "artifacts": {
+      "fp32": {
+        "path": "artifacts/onnx/segformer_b0/segformer_b0__fp32__0ef7fcdb0cdc.onnx",
+        "id": "0ef7fcdb0cdc344827ec5243eb2f914c1f53a3385ad4d21cdca71488cff55288",
+        "sha256": "04cbd382cfc8ed129500f20b2ce653a29e90f0899505e5c8b9133eb815b7316a",
+        "precision": "fp32"
+      },
+      "onnx": {
+        "path": "artifacts/onnx/segformer_b0/segformer_b0__int8_fp16__4031ccefacfb.onnx",
+        "id": "4031ccefacfbc25b049248b9f19e9a5a8a05c9c03e80c6f1e8ef6c10c2a1bf39",
+        "sha256": "945325ce9be0f3be6187756ecf3805cf7c792ce89d20e5c52957edddd4b51e39",
+        "precision": "int8_fp16"
+      },
+      "engine": {
+        "path": "artifacts/engines/segformer_b0/segformer_b0__int8_fp16__01d8bc836de3.engine",
+        "id": "01d8bc836de35b96493556702f72af6740a6e841acdcb9f0e35ee4311a41e6d6",
+        "sha256": "70db992a27593385e75903c46f51d74b43a4e0a870b112053c01a15b02b06333",
+        "precision": "int8_fp16"
+      },
+      "fp32_engine": {
+        "path": "artifacts/engines/segformer_b0/segformer_b0__fp32__5abf2679af10.engine",
+        "id": "5abf2679af10b28c37b123589f62aeb4971f57e5d6cab8f9967eb2e5a9151879",
+        "sha256": "832437ad167eda18e71e8c64f27f509ed199d77b296fec566d44185c2230923d",
+        "precision": "fp32"
+      }
+    },
+    "published": null
+  },
+  "passed": false,
+  "findings": [
+    {
+      "severity": "error",
+      "code": "DEPLOY_GATE_FAILED",
+      "where": "parity",
+      "message": "parity: PARITY_MIOU_DELTA"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C6 — Gated deployment pipeline (CPU + GPU)
-**Next step:** C6 GPU session (needs Anuj's go-ahead to start the instance): both final recipes to `production`, rerun, SegFormer fault, v2 + rollback, one DAG run on `trt`. The GPU instance is stopped, not terminated; C6's GPU session is within days (D-023).
+**Next step:** C6 write-up: teach-back (`private/teach-back-C6.md`), then Anuj signs off C6 below. C7 is next. The GPU instance is stopped, not terminated; its engines back the registry's `production` versions (D-037).
 
 ## C6 — Gated deployment pipeline
 Plan agreed 2026-10-17:
@@ -47,8 +47,49 @@ Mac:
   - a rerun only re-invokes the builds, which reuse their engines.
 - [x] Decision records D-037–D-040; `docs/ideas.md`: persistent engine store, MLflow mirror, Temporal
 
-GPU session:
-- [ ] Both final recipes → `production` (cold), rerun (reused), SegFormer fault blocked, v2 + rollback, one DAG run on `trt`
+GPU session (2026-10-17, 19:16–21:44 UTC, 2.47 GPU-hours; plan ~2):
+- [x] Smoke 60/60.
+- [x] **Found on the T4: `remote.sh` overwrote the runs' state.**
+  - What happened: `sync_code` pulls the instance's reports before every remote call. The instance's copy of a run's `deploy.json` was the one synced at the run's first GPU stage, and `rsync -rlptz` replaces a file whose size or mtime differs, so each pull replaced the Mac's newer copy. The runner rewrote the file from memory after every stage, which hid this until the next run's first remote call reset it for good.
+  - Effect on the first pass of five runs: every gate and publish worked, but four `deploy.json` files kept only the stages through `push`. So the warm rerun found no reuse keys and re-ran parity and accuracy, about 14 GPU-minutes. Its perf stage then hit an SSH timeout and stopped with exit 2 (`DEPLOY_STAGE_ERROR`), publishing nothing.
+  - Fix (`2602921`): the pull uses `--update`, so a file newer on the Mac is never replaced. Reproduced and checked locally with the same flags first. On the instance, each `--stage` call reloads `deploy.json` from disk, and the state survived every remote call.
+  - Why CI missed it: the stub GPU executor replaces `remote.sh`.
+  - Recovery (Anuj's choice): the registry was reset to its committed state, and the gated runs were repeated and published in the original order (about 45 extra GPU-minutes). The four incomplete runs (`deeplabv3plus_mbv2/20261017T191813Z`, `…/20261017T200309Z`, `segformer_b0/20261017T194737Z`, `segformer_b0__int8fp16_no_unfused/20261017T201815Z`) are not committed. Their records up to `push` were intact, so the repeated runs' validate checks name them in `reused_from`; the validate reports those checks use are committed (`deploy/<recipe>/20261017T1852*Z/validate.json`, `…__ort_cpu/20261017T182358Z/validate.json`). Only the last run of the first pass, the INT8 runner-up's, was intact (`deploy/deeplabv3plus_mbv2__int8/20261017T201932Z/deploy.json`), and it is kept.
+- [x] **DeepLab final** (INT8+FP16, stem in FP16) → **v2 `production`** (`deploy/deeplabv3plus_mbv2/20261017T205607Z/deploy.json`).
+  - Run stage by stage (`--stage`), with publish held until the registry was reset.
+  - Export, convert and build were skipped: the C5 artifacts (`0fc604c5e1e0` ONNX, `8ff4db1b2872` engine).
+  - Gates, 1351.7 s in all:
+    - golden parity 55.9 s, −0.360 points;
+    - accuracy 413.2 s: full val 66.758, a drop of 0.328 against the 1.0 budget, the same as C5. The FP32 reference eval (67.086) was reused from the INT8 run, since it uses the same FP32 engine and the same key;
+    - perf 861.3 s: `infer` p99 6.486 ms (≤ 33.3), 179 MiB.
+- [x] **Warm rerun, one command** (`…/20261017T213611Z/deploy.json`): 19.6 s across stages (20 s wall), against 1351.7 s cold.
+  - Every stage was skipped or reused, and publish found v2 already registered.
+  - 14.0 s of it is the build stage: two remote calls that confirm the engines exist. One `remote.sh run` costs about 7 s of sync and pull-back (SegFormer's single build call took 7.1 s; push took 3.7–6.3 s) (D-038).
+- [x] **SegFormer final** (FP16) → **v1 `production`** (`deploy/segformer_b0/20261017T211841Z/deploy.json`).
+  - Gates, 929.3 s: golden parity +0.0002 points; accuracy skipped (FP16, D-039); perf `infer` p99 9.466 ms, 299 MiB.
+- [x] **SegFormer fault** (INT8+FP16 without D-034's exclusions) **blocked**, exit 1 (`deploy/segformer_b0__int8fp16_no_unfused/20261017T213435Z/deploy.json`).
+  - `DEPLOY_GATE_FAILED` where = `parity`, from `PARITY_MIOU_DELTA`: mIoU on the golden images 71.45 → 0.06.
+  - Accuracy, perf and publish `not_run`, registry unchanged. 74.3 s in all.
+- [x] **INT8 runner-up** (C3's INT8+FP32, stem in FP32) → **v3 `production`**.
+  - One cold command, 1807.8 s (`deploy/deeplabv3plus_mbv2__int8/20261017T201932Z/deploy.json`): golden parity −0.306; full val FP32 67.086, INT8 66.875, a drop of 0.211 (as in C5); `infer` p99 6.950 ms, 203 MiB.
+  - Republished after the reset by a rerun that reused every gate, 20.0 s (`…/20261017T213412Z/deploy.json`).
+- [x] **Rollback** `production` v3 → v2 (`registry/rollback__deeplabv3plus_mbv2__production__20261017T213644Z.json`). It checked v2's engine sha256 on the instance first (`remote.sh sha256`), and `deploy status` shows v3 "rolled back from production".
+- [x] **Airflow DAG on the TensorRT target** (`airflow dags test deploy_model -c '{"recipe": "segformer_b0"}'`, Mac → instance). All nine tasks succeeded in 15 s (`deploy/segformer_b0/20261017T213659Z/deploy.json`, 11.0 s across stages, every stage skipped or reused).
+- [x] `deploy status` printed `vNone` for an alias's first move; it now prints `-`.
+
+### C6 exit criteria
+- **One command deploys end to end with gates.**
+  - `deploy run --recipe configs/deploy/deeplabv3plus_mbv2__int8.yaml` ran every gate cold and exited 0 with the version in `production` (`…__int8/20261017T201932Z`). So did the ORT CPU run, to `dev` (`…__ort_cpu/20261017T182358Z`).
+  - The two finals ran the same stages one at a time (`20261017T205607Z`, `20261017T211841Z`), which is also what the Airflow tasks do.
+- **Fast and idempotent.** DeepLab final rerun 19.6 s vs 1351.7 s, every stage skipped or reused (`20261017T213611Z`). ORT CPU 1.1 s vs 27 min 49 s.
+- **A broken model is blocked.** SegFormer fault on the T4 and the BGR fault on ORT CPU: both exit 1 with `DEPLOY_GATE_FAILED` where = `parity`, nothing published. In CI: `test_preprocessing_fault_is_blocked_at_parity`.
+- **Rollback works.** v3 → v2 after the sha check; `deploy status` above.
+- **The Airflow DAG runs.** Locally on ORT CPU (pass, and the BGR fault blocked) and on the TensorRT target (pass). The import test passes in CI (`airflow-dag` job).
+- **CI green.** GitHub Actions run 39061685590 (`9b09beb`): `lint-and-test` on 3.11 and 3.12 and `airflow-dag`.
+
+**Teach-back:** model answers in `private/teach-back-C6.md`.
+
+**Sign-off:** pending (Anuj)
 
 ## C5 — TensorRT INT8 and mixed precision
 Plan agreed 2026-10-16:

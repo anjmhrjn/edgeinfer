@@ -1,0 +1,46 @@
+{
+  "model": "segformer_b0",
+  "versions": [
+    {
+      "version": 1,
+      "model": "segformer_b0",
+      "artifact_id": "baba668a26e9b7b389807717f263fbd7f2da3c1704419e6418b984f64c54efd6",
+      "sha256": "7fee0ed7744be6e30cccca57b59b92d529e71966d12813ab4b214837965bbc9e",
+      "precision": "fp16",
+      "target": "trt",
+      "location": "instance:artifacts/engines/segformer_b0/segformer_b0__fp16__baba668a26e9.engine",
+      "recipe": "segformer_b0",
+      "recipe_hash": "d5679da497440b9025fcfb28b947d0174fbf9285747872dca6c274255be67378",
+      "run_id": "20261017T211841Z",
+      "deploy_report": "deploy/segformer_b0/20261017T211841Z/deploy.json",
+      "git_sha": "2602921c801175a20791dd10fc7846fcacaa11c6",
+      "gate_reports": {
+        "validate": [
+          "deploy/segformer_b0/20261017T185242Z/validate.json"
+        ],
+        "parity": [
+          "deploy/segformer_b0/20261017T211841Z/parity.json"
+        ],
+        "accuracy": [],
+        "perf": [
+          "deploy/segformer_b0/20261017T211841Z/perf.json"
+        ]
+      },
+      "published_at": "2026-10-17T21:36:38+00:00",
+      "rolled_back_from": []
+    }
+  ],
+  "aliases": {
+    "production": 1
+  },
+  "history": [
+    {
+      "at": "2026-10-17T21:36:38+00:00",
+      "alias": "production",
+      "action": "publish",
+      "from": null,
+      "to": 1,
+      "reason": "deploy run 20261017T211841Z"
+    }
+  ]
+}

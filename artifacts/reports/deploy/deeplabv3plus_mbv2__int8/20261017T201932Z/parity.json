@@ -1,0 +1,382 @@
+{
+  "schema_version": "1",
+  "tool": "parity",
+  "created_at": "2026-10-17T20:20:46+00:00",
+  "git_sha": "9b09bebbc840ce9573e972235a95a0b388c6b780",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "cuda:0 (Tesla T4, sm_75)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99",
+      "cuda_driver": "13040",
+      "cuda_runtime": "13040"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "trt",
+  "precision": "int8",
+  "artifact_id": "8e392cece826194b1c438c7bd0742b3076fac3396189ec3fcd2be23976c8a4a3",
+  "inputs": {
+    "manifest": "golden_val32",
+    "limit": null,
+    "mode": "images",
+    "artifact": "deeplabv3plus_mbv2__int8__8e392cece826.engine",
+    "config": "deeplabv3plus_mbv2",
+    "golden_verified": true,
+    "tolerances": "int8",
+    "artifact_sha256": "4bb781f35ddf6fcadd3d4a572b29f07855d7b22046acff0f61d39e7de66168b3"
+  },
+  "thresholds": {
+    "input_max_abs": 1e-05,
+    "logits_max_abs": null,
+    "logits_cosine_min": null,
+    "argmax_agreement_min": null,
+    "miou_delta_max": 1.0,
+    "layer_cosine_min": null,
+    "layer_rel_max_abs": null
+  },
+  "metrics": {
+    "n_images": 32,
+    "mode": "images",
+    "logits_max_abs": 4.807389259338379,
+    "logits_mean_abs": 0.1916362171883217,
+    "logits_cosine_min": 0.994983413908473,
+    "argmax_agreement_min": 0.966583251953125,
+    "argmax_agreement_mean": 0.9893369674682617,
+    "input_max_abs": 0.0,
+    "argmax_agreement_label_res_min": 0.9672551155090332,
+    "miou_reference": 0.6753207793476206,
+    "miou_candidate": 0.6722644414913054,
+    "miou_delta_points": -0.30563378563152055,
+    "per_image": [
+      {
+        "image_id": "frankfurt_000000_000576",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.302582025527954,
+        "mean_abs": 0.21603069996022134,
+        "cosine": 0.9961052081593058,
+        "argmax_agreement": 0.99566650390625,
+        "argmax_agreement_label_res": 0.9951696395874023
+      },
+      {
+        "image_id": "frankfurt_000000_007365",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 2.1043936014175415,
+        "mean_abs": 0.16328380477852195,
+        "cosine": 0.9977711668601208,
+        "argmax_agreement": 0.9930419921875,
+        "argmax_agreement_label_res": 0.9925413131713867
+      },
+      {
+        "image_id": "frankfurt_000000_013382",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 3.328773021697998,
+        "mean_abs": 0.1993202548367721,
+        "cosine": 0.9966649657405018,
+        "argmax_agreement": 0.992950439453125,
+        "argmax_agreement_label_res": 0.9931793212890625
+      },
+      {
+        "image_id": "frankfurt_000000_022254",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 3.508395195007324,
+        "mean_abs": 0.20637493105889176,
+        "cosine": 0.9967276987667878,
+        "argmax_agreement": 0.990081787109375,
+        "argmax_agreement_label_res": 0.9898152351379395
+      },
+      {
+        "image_id": "frankfurt_000001_005184",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 3.337712287902832,
+        "mean_abs": 0.17967465756312076,
+        "cosine": 0.996977620904976,
+        "argmax_agreement": 0.987091064453125,
+        "argmax_agreement_label_res": 0.9875550270080566
+      },
+      {
+        "image_id": "frankfurt_000001_007973",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 3.877187728881836,
+        "mean_abs": 0.17570710393032138,
+        "cosine": 0.9975327715362535,
+        "argmax_agreement": 0.9842529296875,
+        "argmax_agreement_label_res": 0.9845972061157227
+      },
+      {
+        "image_id": "frankfurt_000001_020287",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.807389259338379,
+        "mean_abs": 0.16507872721535166,
+        "cosine": 0.9978535446458957,
+        "argmax_agreement": 0.991058349609375,
+        "argmax_agreement_label_res": 0.9905953407287598
+      },
+      {
+        "image_id": "frankfurt_000001_025921",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.099400520324707,
+        "mean_abs": 0.18133353400489652,
+        "cosine": 0.9966738181547065,
+        "argmax_agreement": 0.98626708984375,
+        "argmax_agreement_label_res": 0.9867777824401855
+      },
+      {
+        "image_id": "frankfurt_000001_031416",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 1.6576356887817383,
+        "mean_abs": 0.1813376446741898,
+        "cosine": 0.9973778680661282,
+        "argmax_agreement": 0.995513916015625,
+        "argmax_agreement_label_res": 0.9958286285400391
+      },
+      {
+        "image_id": "frankfurt_000001_034047",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 2.795413017272949,
+        "mean_abs": 0.1581693529208305,
+        "cosine": 0.9979690462902217,
+        "argmax_agreement": 0.9910888671875,
+        "argmax_agreement_label_res": 0.9913945198059082
+      },
+      {
+        "image_id": "frankfurt_000001_055603",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 2.0551609992980957,
+        "mean_abs": 0.21367204541341592,
+        "cosine": 0.9961411022020129,
+        "argmax_agreement": 0.9814453125,
+        "argmax_agreement_label_res": 0.9819812774658203
+      },
+      {
+        "image_id": "frankfurt_000001_057954",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 3.024280548095703,
+        "mean_abs": 0.17549938745214735,
+        "cosine": 0.9975411581862074,
+        "argmax_agreement": 0.98590087890625,
+        "argmax_agreement_label_res": 0.9864897727966309
+      },
+      {
+        "image_id": "frankfurt_000001_064305",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 1.7005594968795776,
+        "mean_abs": 0.1738080972165884,
+        "cosine": 0.9976394076360641,
+        "argmax_agreement": 0.992431640625,
+        "argmax_agreement_label_res": 0.9930510520935059
+      },
+      {
+        "image_id": "frankfurt_000001_066092",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.380774021148682,
+        "mean_abs": 0.18383013141466006,
+        "cosine": 0.9968165356073901,
+        "argmax_agreement": 0.97650146484375,
+        "argmax_agreement_label_res": 0.9776391983032227
+      },
+      {
+        "image_id": "frankfurt_000001_066574",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 3.8639230728149414,
+        "mean_abs": 0.23407535603901136,
+        "cosine": 0.9950606602792506,
+        "argmax_agreement": 0.966583251953125,
+        "argmax_agreement_label_res": 0.9672551155090332
+      },
+      {
+        "image_id": "frankfurt_000001_069633",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.2061767578125,
+        "mean_abs": 0.20466226408240726,
+        "cosine": 0.9961756500292653,
+        "argmax_agreement": 0.990631103515625,
+        "argmax_agreement_label_res": 0.99090576171875
+      },
+      {
+        "image_id": "frankfurt_000001_073464",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.437439918518066,
+        "mean_abs": 0.18308213021068193,
+        "cosine": 0.996919834884302,
+        "argmax_agreement": 0.992828369140625,
+        "argmax_agreement_label_res": 0.9930901527404785
+      },
+      {
+        "image_id": "frankfurt_000001_076502",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 4.590903282165527,
+        "mean_abs": 0.1860804576414897,
+        "cosine": 0.9972216238635514,
+        "argmax_agreement": 0.988555908203125,
+        "argmax_agreement_label_res": 0.9883265495300293
+      },
+      {
+        "image_id": "lindau_000024_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 2.0675315856933594,
+        "mean_abs": 0.18154405038243207,
+        "cosine": 0.9970679970440113,
+        "argmax_agreement": 0.98468017578125,
+        "argmax_agreement_label_res": 0.9848031997680664
+      },
+      {
+        "image_id": "lindau_000044_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 1.8388105034828186,
+        "mean_abs": 0.19076268409330047,
+        "cosine": 0.9970139386911326,
+        "argmax_agreement": 0.99615478515625,
+        "argmax_agreement_label_res": 0.9962306022644043
+      },
+      {
+        "image_id": "munster_000007_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 2.177617073059082,
+        "mean_abs": 0.20433195090599007,
+        "cosine": 0.9964198675308548,
+        "argmax_agreement": 0.99224853515625,
+        "argmax_agreement_label_res": 0.9929728507995605
+      },
+      {
+        "image_id": "munster_000030_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 2.935769557952881,
+        "mean_abs": 0.2099921684825826,
+        "cosine": 0.9964052560464082,
+        "argmax_agreement": 0.99212646484375,
+        "argmax_agreement_label_res": 0.9925565719604492
+      },
+      {
+        "image_id": "munster_000043_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 3.2535533905029297,
+        "mean_abs": 0.1779161057614714,
+        "cosine": 0.9973822551239946,
+        "argmax_agreement": 0.9952392578125,
+        "argmax_agreement_label_res": 0.9959168434143066
+      },
+      {
+        "image_id": "munster_000063_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 3.691067650914192,
+        "mean_abs": 0.23535936163112894,
+        "cosine": 0.994983413908473,
+        "argmax_agreement": 0.983184814453125,
+        "argmax_agreement_label_res": 0.9834728240966797
+      },
+      {
+        "image_id": "munster_000064_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 2.012984275817871,
+        "mean_abs": 0.17754159151531404,
+        "cosine": 0.9976348645542668,
+        "argmax_agreement": 0.992828369140625,
+        "argmax_agreement_label_res": 0.9926919937133789
+      },
+      {
+        "image_id": "munster_000065_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 2.2395858764648438,
+        "mean_abs": 0.19138778282861338,
+        "cosine": 0.9968937081260969,
+        "argmax_agreement": 0.993743896484375,
+        "argmax_agreement_label_res": 0.9940776824951172
+      },
+      {
+        "image_id": "munster_000066_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 2.7267374992370605,
+        "mean_abs": 0.2016881014366327,
+        "cosine": 0.9964728862417125,
+        "argmax_agreement": 0.993896484375,
+        "argmax_agreement_label_res": 0.9935412406921387
+      },
+      {
+        "image_id": "munster_000077_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 1.934544563293457,
+        "mean_abs": 0.1864366543286735,
+        "cosine": 0.997388582285571,
+        "argmax_agreement": 0.991424560546875,
+        "argmax_agreement_label_res": 0.9924149513244629
+      },
+      {
+        "image_id": "munster_000084_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 2.928483009338379,
+        "mean_abs": 0.21624751305335058,
+        "cosine": 0.9957359686657403,
+        "argmax_agreement": 0.98431396484375,
+        "argmax_agreement_label_res": 0.984473705291748
+      },
+      {
+        "image_id": "munster_000101_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 2.4074578285217285,
+        "mean_abs": 0.17456560328024015,
+        "cosine": 0.9976230172662137,
+        "argmax_agreement": 0.9923095703125,
+        "argmax_agreement_label_res": 0.9923672676086426
+      },
+      {
+        "image_id": "munster_000107_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 3.0334044694900513,
+        "mean_abs": 0.20885051906631252,
+        "cosine": 0.9962404499273723,
+        "argmax_agreement": 0.995025634765625,
+        "argmax_agreement_label_res": 0.9955630302429199
+      },
+      {
+        "image_id": "munster_000131_000019",
+        "input_max_abs": 0.0,
+        "nonfinite": 0,
+        "max_abs": 3.538656234741211,
+        "mean_abs": 0.19471428284673228,
+        "cosine": 0.9968071565267546,
+        "argmax_agreement": 0.989715576171875,
+        "argmax_agreement_label_res": 0.9893999099731445
+      }
+    ]
+  },
+  "passed": true,
+  "findings": []
+}

@@ -1,0 +1,153 @@
+{
+  "schema_version": "1",
+  "tool": "build",
+  "created_at": "2026-10-17T21:34:46+00:00",
+  "git_sha": "2602921c801175a20791dd10fc7846fcacaa11c6",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "cuda:0 (Tesla T4, sm_75)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "trt",
+  "precision": "int8_fp16",
+  "artifact_id": "01d8bc836de35b96493556702f72af6740a6e841acdcb9f0e35ee4311a41e6d6",
+  "inputs": {
+    "artifact": "segformer_b0__int8_fp16__4031ccefacfb.onnx",
+    "onnx_artifact_id": "4031ccefacfbc25b049248b9f19e9a5a8a05c9c03e80c6f1e8ef6c10c2a1bf39",
+    "build_config": {
+      "name": "build_default",
+      "workspace_mib": 2048,
+      "builder_optimization_level": 3,
+      "timing_cache": true,
+      "profiling_verbosity": "detailed"
+    },
+    "debug_outputs": []
+  },
+  "thresholds": {},
+  "metrics": {
+    "file": "segformer_b0__int8_fp16__01d8bc836de3.engine",
+    "sha256": "70db992a27593385e75903c46f51d74b43a4e0a870b112053c01a15b02b06333",
+    "size_bytes": 23790404,
+    "parent_artifact_id": "4031ccefacfbc25b049248b9f19e9a5a8a05c9c03e80c6f1e8ef6c10c2a1bf39",
+    "runtime": {
+      "tensorrt": "11.3.0.99",
+      "gpu_name": "Tesla T4",
+      "compute_capability": "7.5",
+      "cuda_driver": 13040,
+      "cuda_runtime": 13040
+    },
+    "io": [
+      {
+        "name": "input",
+        "mode": "input",
+        "shape": [
+          1,
+          3,
+          512,
+          1024
+        ],
+        "dtype": "float32"
+      },
+      {
+        "name": "logits",
+        "mode": "output",
+        "shape": [
+          1,
+          19,
+          128,
+          256
+        ],
+        "dtype": "float32"
+      }
+    ],
+    "num_layers": 245,
+    "layers_file": "segformer_b0__int8_fp16__01d8bc836de3.layers.json",
+    "device_memory_bytes": 106692608,
+    "timing_cache": {
+      "used": true,
+      "file": "timing_cache__trt11.3.0.99__sm7.5.cache",
+      "sha256_before_build": "ee8f3735128e87715669d35dec5a1e9aa00a7a579bcba1b338ae9e6d3f9e2cb3"
+    },
+    "build_seconds": 124.73,
+    "reused": true,
+    "layer_output_datatypes": {
+      "Float": 17,
+      "Half": 132,
+      "Int8": 96
+    },
+    "layers": {
+      "n_layers": 245,
+      "by_type": {
+        "kgen": 95,
+        "Reformat": 44,
+        "fusion": 28,
+        "CaskConvolution": 20,
+        "gemm": 14,
+        "Constant": 11,
+        "Scale": 11,
+        "signal": 9,
+        "wait": 9,
+        "Resize": 3,
+        "NoOp": 1
+      },
+      "by_precision": {
+        "int8": 79,
+        "Half": 54,
+        "Int8": 45,
+        "?": 18,
+        "Float": 5
+      },
+      "reformat_layers": 44,
+      "reformats": {
+        "Half->Int8": 18,
+        "Half->Half": 16,
+        "Int8->Half": 8,
+        "Float->Int8": 1,
+        "Half->Float": 1
+      },
+      "layers_without_detail": 0,
+      "quantized_onnx_nodes": {
+        "expected": 88,
+        "int8": 71,
+        "not_int8": [
+          "node_MatMul_6",
+          "node_conv2d_2",
+          "node_MatMul_86",
+          "node_conv2d_4",
+          "node_conv2d_5",
+          "node_MatMul_174",
+          "node_conv2d_7",
+          "node_MatMul_251",
+          "node_conv2d_9",
+          "node_conv2d_10",
+          "node_MatMul_339",
+          "node_conv2d_12",
+          "node_MatMul_416",
+          "node_conv2d_14",
+          "node_conv2d_15",
+          "node_conv2d_16",
+          "node_conv2d_17"
+        ],
+        "unmapped": []
+      }
+    }
+  },
+  "passed": true,
+  "findings": [
+    {
+      "severity": "warn",
+      "code": "BUILD_QDQ_UNFUSED",
+      "message": "17/88 quantized ONNX nodes run in an engine layer without INT8 inputs (Q/DQ not fused)",
+      "where": "node_MatMul_6"
+    }
+  ]
+}

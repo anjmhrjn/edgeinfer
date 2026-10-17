@@ -1,0 +1,240 @@
+{
+  "schema_version": "1",
+  "tool": "deploy",
+  "created_at": "2026-10-17T21:36:38+00:00",
+  "git_sha": "2602921c801175a20791dd10fc7846fcacaa11c6",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "pipeline",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "trt",
+  "precision": "fp16",
+  "artifact_id": "baba668a26e9b7b389807717f263fbd7f2da3c1704419e6418b984f64c54efd6",
+  "inputs": {
+    "recipe": "segformer_b0",
+    "recipe_hash": "d5679da497440b9025fcfb28b947d0174fbf9285747872dca6c274255be67378",
+    "settings": {
+      "name": "segformer_b0",
+      "model": "segformer_b0",
+      "precision": "fp16",
+      "quant": null,
+      "fp16": "fp16_autocast",
+      "build": "build",
+      "target": "trt",
+      "gates": "gates"
+    },
+    "gates": {
+      "parity": {
+        "manifest": "golden_val32",
+        "inputs": "images"
+      },
+      "accuracy": {
+        "manifest": "eval_val",
+        "precisions": [
+          "int8",
+          "int8_fp16"
+        ]
+      },
+      "perf": {
+        "perf_config": "perf"
+      }
+    }
+  },
+  "thresholds": {},
+  "metrics": {
+    "run_id": "20261017T211841Z",
+    "stages": {
+      "export": {
+        "status": "skipped",
+        "passed": true,
+        "reports": [
+          "artifacts/reports/deploy/segformer_b0/20261017T211841Z/export/export__segformer_b0__2602921.json"
+        ],
+        "seconds": 0.4,
+        "where": "local"
+      },
+      "convert": {
+        "status": "skipped",
+        "passed": true,
+        "reports": [
+          "convert.json"
+        ],
+        "seconds": 0.1,
+        "where": "local"
+      },
+      "validate": {
+        "checks": [
+          {
+            "name": "validate",
+            "key": {
+              "check": "validate",
+              "artifact": {
+                "id": "e15dc3063aacc44bbcc0b53bc318da3faa23449e6e41b248e1c333f8a4f8d452",
+                "sha256": "6582c3afaef8bf0282c75950fc731df58cd6b64be5746d6a07ca340945a58c23"
+              },
+              "settings": {},
+              "files": {
+                "configs/models/segformer_b0.yaml": "23b305d0fb0c789297945f2b53ef515df9a68d8c910509e9718b1bad6c33a868",
+                "configs/supported_ops.yaml": "c594186bdfaa3a5e7ddea5e72fa29a93604c6610540a5647da07932868af79d4"
+              }
+            },
+            "reason": "same key as run 20261017T194737Z",
+            "report": "deploy/segformer_b0/20261017T185242Z/validate.json",
+            "status": "reused",
+            "passed": true,
+            "reused_from": "20261017T194737Z",
+            "findings": []
+          }
+        ],
+        "passed": true,
+        "status": "reused",
+        "seconds": 0.0,
+        "where": "local"
+      },
+      "push": {
+        "status": "ran",
+        "passed": true,
+        "seconds": 3.7,
+        "where": "instance"
+      },
+      "build": {
+        "status": "skipped",
+        "passed": true,
+        "reports": [
+          "build.json"
+        ],
+        "seconds": 7.1,
+        "where": "instance"
+      },
+      "parity": {
+        "checks": [
+          {
+            "name": "parity",
+            "key": {
+              "check": "parity",
+              "artifact": {
+                "id": "baba668a26e9b7b389807717f263fbd7f2da3c1704419e6418b984f64c54efd6",
+                "sha256": "7fee0ed7744be6e30cccca57b59b92d529e71966d12813ab4b214837965bbc9e"
+              },
+              "settings": {
+                "parity": {
+                  "manifest": "golden_val32",
+                  "inputs": "images"
+                }
+              },
+              "files": {
+                "configs/models/segformer_b0.yaml": "23b305d0fb0c789297945f2b53ef515df9a68d8c910509e9718b1bad6c33a868",
+                "configs/tolerances.yaml": "f1fa9082b1dc87727a756432ab5aa58bfc7c8d629f8eaecf3b961aa79f5e99d1",
+                "data/golden_hashes/segformer_b0.sha256": "1e247a16892a06d899ed4acad54c7dc600ac0ee301924e1f0e8812b049289038",
+                "data/manifests/golden_val32.txt": "a8ab869436c93133cfbec048a931acb9ef532e73794826b6624487380c0f930c"
+              }
+            },
+            "reason": "no earlier check with this key",
+            "report": "deploy/segformer_b0/20261017T211841Z/parity.json",
+            "status": "ran",
+            "passed": true,
+            "reused_from": null,
+            "findings": []
+          }
+        ],
+        "passed": true,
+        "status": "ran",
+        "seconds": 56.3,
+        "where": "instance"
+      },
+      "accuracy": {
+        "status": "skipped",
+        "passed": true,
+        "reason": "precision fp16 is gated by golden parity",
+        "seconds": 0.0,
+        "where": "instance"
+      },
+      "perf": {
+        "checks": [
+          {
+            "name": "perf",
+            "key": {
+              "check": "perf",
+              "artifact": {
+                "id": "baba668a26e9b7b389807717f263fbd7f2da3c1704419e6418b984f64c54efd6",
+                "sha256": "7fee0ed7744be6e30cccca57b59b92d529e71966d12813ab4b214837965bbc9e"
+              },
+              "settings": {
+                "perf": {
+                  "perf_config": "perf"
+                }
+              },
+              "files": {
+                "configs/budgets.yaml": "5dcb1f9c758d0ceea82766e0bc45d7e574b4cc5a7ea49f8a1737f93e029f4e5d",
+                "configs/models/segformer_b0.yaml": "23b305d0fb0c789297945f2b53ef515df9a68d8c910509e9718b1bad6c33a868",
+                "configs/perf.yaml": "3537edce3cbdf50e2c2a263ee90a800320533de1fc83aeb083ba7965d0a796c0",
+                "data/manifests/golden_val32.txt": "a8ab869436c93133cfbec048a931acb9ef532e73794826b6624487380c0f930c"
+              }
+            },
+            "reason": "no earlier check with this key",
+            "report": "deploy/segformer_b0/20261017T211841Z/perf.json",
+            "status": "ran",
+            "passed": true,
+            "reused_from": null,
+            "findings": []
+          }
+        ],
+        "enforced": true,
+        "passed": true,
+        "status": "ran",
+        "seconds": 861.7,
+        "where": "instance"
+      },
+      "publish": {
+        "status": "ran",
+        "passed": true,
+        "version": 1,
+        "alias": "production",
+        "seconds": 0.0,
+        "where": "local"
+      }
+    },
+    "artifacts": {
+      "fp32": {
+        "path": "artifacts/onnx/segformer_b0/segformer_b0__fp32__0ef7fcdb0cdc.onnx",
+        "id": "0ef7fcdb0cdc344827ec5243eb2f914c1f53a3385ad4d21cdca71488cff55288",
+        "sha256": "04cbd382cfc8ed129500f20b2ce653a29e90f0899505e5c8b9133eb815b7316a",
+        "precision": "fp32"
+      },
+      "onnx": {
+        "path": "artifacts/onnx/segformer_b0/segformer_b0__fp16__e15dc3063aac.onnx",
+        "id": "e15dc3063aacc44bbcc0b53bc318da3faa23449e6e41b248e1c333f8a4f8d452",
+        "sha256": "6582c3afaef8bf0282c75950fc731df58cd6b64be5746d6a07ca340945a58c23",
+        "precision": "fp16"
+      },
+      "engine": {
+        "path": "artifacts/engines/segformer_b0/segformer_b0__fp16__baba668a26e9.engine",
+        "id": "baba668a26e9b7b389807717f263fbd7f2da3c1704419e6418b984f64c54efd6",
+        "sha256": "7fee0ed7744be6e30cccca57b59b92d529e71966d12813ab4b214837965bbc9e",
+        "precision": "fp16"
+      }
+    },
+    "published": {
+      "version": 1,
+      "alias": "production",
+      "new_version": true
+    }
+  },
+  "passed": true,
+  "findings": [
+    {
+      "severity": "info",
+      "code": "REGISTRY_PUBLISHED",
+      "message": "segformer_b0 v1 -> production"
+    }
+  ]
+}
