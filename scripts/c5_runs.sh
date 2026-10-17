@@ -9,6 +9,9 @@
 #                                 calib_train200 and FP16 elsewhere (D-015), then validated.
 #                                 Skips a model/tool whose report exists (ModelOpt's per-node
 #                                 calibration takes over an hour per model)
+#   scripts/c5_runs.sh placement-eval  the placement pair on ORT CPU, sens_val100: the SegFormer
+#                                 comparison is reported on ORT only, because neither SegFormer
+#                                 min/max model keeps the D-034 nodes in FP16 (D-036)
 #   scripts/c5_runs.sh candidates every subset of the top-5 ORT sensitivity groups as INT8 and
 #                                 INT8+FP16 models, validated, listed in a report (D-032);
 #                                 SegFormer keeps the 17 nodes TensorRT doesn't fuse in FP16 (D-034)
@@ -97,6 +100,19 @@ placement() {
   done
 }
 
+placement_eval() {
+  for m in "${MODELS[@]}"; do
+    for tool in ort modelopt; do
+      local rep a
+      rep=$(ls artifacts/reports/quantize__"${m}"__int8_minmax_fp16__"${tool}"__*.json)
+      a="artifacts/onnx/$m/$(uv run python -c \
+        'import json, sys; print(json.load(open(sys.argv[1]))["metrics"]["file"])' "$rep")"
+      uv run edgeinfer eval --model "$m" --backend ort_cpu --artifact "$a" --manifest sens_val100 \
+        --out "artifacts/reports/eval__${m}__ort_cpu__int8_fp16__minmax_${tool}__sens_val100__512x1024__$(sha).json"
+    done
+  done
+}
+
 # The C3 ORT sensitivity reports whose rankings C5 re-tests on TensorRT.
 ort_ranking() {
   case $1 in
@@ -161,10 +177,11 @@ PY
   scripts/remote.sh push-artifacts artifacts/onnx/tiny_fixture "${files[@]}"
 }
 
-phase=${1:?usage: scripts/c5_runs.sh precheck|placement|candidates|dwfp16|push|clean|smoke|gpu PHASE}
+phase=${1:?usage: scripts/c5_runs.sh precheck|placement|placement-eval|candidates|dwfp16|push|clean|smoke|gpu PHASE}
 case "$phase" in
   precheck) precheck ;;
   placement) placement ;;
+  placement-eval) placement_eval ;;
   candidates) candidates ;;
   dwfp16) dwfp16 ;;
   push) push ;;
