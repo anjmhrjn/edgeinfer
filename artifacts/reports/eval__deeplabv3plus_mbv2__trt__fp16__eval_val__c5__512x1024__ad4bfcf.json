@@ -1,0 +1,127 @@
+{
+  "schema_version": "1",
+  "tool": "eval",
+  "created_at": "2026-10-17T16:55:47+00:00",
+  "git_sha": "ad4bfcf7606eb84d8c2469c3add3f424298030e8",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "cuda:0 (Tesla T4, sm_75)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99",
+      "cuda_driver": "13040",
+      "cuda_runtime": "13040"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "trt",
+  "precision": "fp16",
+  "artifact_id": "65c595342fa9b348ff6874b86b76cf478cb940a4ead549d0589e4b90c05aa9a6",
+  "inputs": {
+    "manifest": "eval_val",
+    "artifact": "deeplabv3plus_mbv2__fp16__65c595342fa9.engine",
+    "limit": null,
+    "subsets": [
+      "sens_val100",
+      "val_minus_sens100"
+    ],
+    "input_hw": [
+      512,
+      1024
+    ],
+    "eval_resolution": "label (full)",
+    "artifact_sha256": "091c179fb55b0323c16794a686994d45f07f2927e202a9cd948e61c413f7aa39"
+  },
+  "thresholds": {},
+  "metrics": {
+    "miou": 0.6709955472575222,
+    "pixel_accuracy": 0.9398162679793035,
+    "per_class_iou": {
+      "road": 0.9700359662538955,
+      "sidewalk": 0.7774016684057842,
+      "building": 0.8885948763591659,
+      "wall": 0.5243968604098458,
+      "fence": 0.4801245910442137,
+      "pole": 0.49381236399018147,
+      "traffic light": 0.49779620417584264,
+      "traffic sign": 0.6377951983657153,
+      "vegetation": 0.8887311740223857,
+      "terrain": 0.5714637293030367,
+      "sky": 0.9281434568507083,
+      "person": 0.6869646450559702,
+      "rider": 0.45994115031453725,
+      "car": 0.9128329185513785,
+      "truck": 0.6205578956760521,
+      "bus": 0.7063268851535356,
+      "train": 0.6480968473853149,
+      "motorcycle": 0.4202120820825857,
+      "bicycle": 0.6356868844927742
+    },
+    "n_images": 500,
+    "dev_timing_s": {
+      "infer_mean": 0.00865903920799974,
+      "wall_total": 435.12202297800104
+    },
+    "subsets": {
+      "val_minus_sens100": {
+        "miou": 0.6652201201767795,
+        "pixel_accuracy": 0.9402310164953886,
+        "per_class_iou": {
+          "road": 0.9697104893184613,
+          "sidewalk": 0.7756764674587189,
+          "building": 0.8902862842028538,
+          "wall": 0.5506227511680987,
+          "fence": 0.5240518854568266,
+          "pole": 0.49034046054972913,
+          "traffic light": 0.4903298009609864,
+          "traffic sign": 0.6351287069541303,
+          "vegetation": 0.8901760568988074,
+          "terrain": 0.5743147412847283,
+          "sky": 0.9276613944565784,
+          "person": 0.6815323992754795,
+          "rider": 0.4532351401829897,
+          "car": 0.9098450727123873,
+          "truck": 0.48533148711609775,
+          "bus": 0.7225239916217234,
+          "train": 0.6216564070490712,
+          "motorcycle": 0.3943943976166372,
+          "bicycle": 0.6523643490745056
+        },
+        "n_images": 400
+      },
+      "sens_val100": {
+        "miou": 0.6680670619675663,
+        "pixel_accuracy": 0.9381783588525049,
+        "per_class_iou": {
+          "road": 0.9713562107608699,
+          "sidewalk": 0.7840269526140307,
+          "building": 0.8818087825336864,
+          "wall": 0.3872171323564204,
+          "fence": 0.2786072524649713,
+          "pole": 0.508305133329495,
+          "traffic light": 0.5263710723706256,
+          "traffic sign": 0.6483508074320942,
+          "vegetation": 0.8829685566272207,
+          "terrain": 0.5624805983096036,
+          "sky": 0.9297943436019767,
+          "person": 0.7086359182456835,
+          "rider": 0.48566412026662503,
+          "car": 0.9233222295432275,
+          "truck": 0.7928222971192892,
+          "bus": 0.6628038717073752,
+          "train": 0.7351319325839721,
+          "motorcycle": 0.4789352682330373,
+          "bicycle": 0.5446716972835572
+        },
+        "n_images": 100
+      }
+    }
+  },
+  "passed": true,
+  "findings": []
+}

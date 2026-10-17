@@ -1,0 +1,127 @@
+{
+  "schema_version": "1",
+  "tool": "eval",
+  "created_at": "2026-10-17T16:48:31+00:00",
+  "git_sha": "ad4bfcf7606eb84d8c2469c3add3f424298030e8",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "cuda:0 (Tesla T4, sm_75)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99",
+      "cuda_driver": "13040",
+      "cuda_runtime": "13040"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "trt",
+  "precision": "int8",
+  "artifact_id": "8e392cece826194b1c438c7bd0742b3076fac3396189ec3fcd2be23976c8a4a3",
+  "inputs": {
+    "manifest": "eval_val",
+    "artifact": "deeplabv3plus_mbv2__int8__8e392cece826.engine",
+    "limit": null,
+    "subsets": [
+      "sens_val100",
+      "val_minus_sens100"
+    ],
+    "input_hw": [
+      512,
+      1024
+    ],
+    "eval_resolution": "label (full)",
+    "artifact_sha256": "4bb781f35ddf6fcadd3d4a572b29f07855d7b22046acff0f61d39e7de66168b3"
+  },
+  "thresholds": {},
+  "metrics": {
+    "miou": 0.6687549624544484,
+    "pixel_accuracy": 0.9394966702792401,
+    "per_class_iou": {
+      "road": 0.9699404920037644,
+      "sidewalk": 0.7773717890931039,
+      "building": 0.8883731824846461,
+      "wall": 0.5309142257885985,
+      "fence": 0.4761881596328808,
+      "pole": 0.4914865909241247,
+      "traffic light": 0.46413321906348937,
+      "traffic sign": 0.6332253920572616,
+      "vegetation": 0.8875840016836689,
+      "terrain": 0.570730094904456,
+      "sky": 0.9283993782488597,
+      "person": 0.686715180260456,
+      "rider": 0.454495744997192,
+      "car": 0.9113014648823465,
+      "truck": 0.611084167511615,
+      "bus": 0.7132869982472518,
+      "train": 0.660867546647242,
+      "motorcycle": 0.416982354917972,
+      "bicycle": 0.6332643032855908
+    },
+    "n_images": 500,
+    "dev_timing_s": {
+      "infer_mean": 0.007207349682026689,
+      "wall_total": 437.50582694900004
+    },
+    "subsets": {
+      "val_minus_sens100": {
+        "miou": 0.6619150515479696,
+        "pixel_accuracy": 0.9399135076801769,
+        "per_class_iou": {
+          "road": 0.9696437327481489,
+          "sidewalk": 0.7755615879664451,
+          "building": 0.8899288189996508,
+          "wall": 0.5597686506424252,
+          "fence": 0.5211069307367434,
+          "pole": 0.48818514368785676,
+          "traffic light": 0.45602344193232985,
+          "traffic sign": 0.6316908512454411,
+          "vegetation": 0.8891673546762735,
+          "terrain": 0.5726268228113325,
+          "sky": 0.927869028817407,
+          "person": 0.6806748019197394,
+          "rider": 0.4459607947430826,
+          "car": 0.908612082759229,
+          "truck": 0.46476152682121025,
+          "bus": 0.728234931432354,
+          "train": 0.6328827536714123,
+          "motorcycle": 0.38461922261946896,
+          "bicycle": 0.6490675011808709
+        },
+        "n_images": 400
+      },
+      "sens_val100": {
+        "miou": 0.6676436472532583,
+        "pixel_accuracy": 0.9378505118075237,
+        "per_class_iou": {
+          "road": 0.9711441454007183,
+          "sidewalk": 0.7843242789864004,
+          "building": 0.8821256634948494,
+          "wall": 0.38211864897746367,
+          "fence": 0.2711966765089105,
+          "pole": 0.5053150042052814,
+          "traffic light": 0.4945953053516452,
+          "traffic sign": 0.6392527219850485,
+          "vegetation": 0.8812735139014218,
+          "terrain": 0.5647447198313111,
+          "sky": 0.930215803176194,
+          "person": 0.7108098078398236,
+          "rider": 0.4875676492663565,
+          "car": 0.9207464957777873,
+          "truck": 0.7953162248067616,
+          "bus": 0.6728752846698414,
+          "train": 0.7531962048186551,
+          "motorcycle": 0.4924170564441392,
+          "bicycle": 0.5459940923692976
+        },
+        "n_images": 100
+      }
+    }
+  },
+  "passed": true,
+  "findings": []
+}
