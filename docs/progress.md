@@ -43,6 +43,7 @@ GPU session 1 (2026-10-17, 00:30–02:05 UTC, 1.57 GPU-hours):
 - [x] `sens_val100` on TensorRT for FP32, FP16, C3 INT8 and INT8+FP16 (`eval__<model>__trt__<label>__sens_val100__*.json`)
 - [x] TensorRT sensitivity, both models (`sensitivity__<model>__trt__int8_fp16__sens_val100__{204bef4,8baee58}.json`)
 - [ ] Placement pair (ours vs ModelOpt): moved to session 2, because ModelOpt's calibration is still running on the Mac
+- [ ] Session 2 start: delete `parity__segformer_b0__trt__int8fp16_none__debug__…__layers__204bef4.json` on the instance (written before the NaN fix; the corrected rerun is `…__9cb5e07.json`), or the next sync brings it back
 
 ### C5 session 1 results — TensorRT 11.3 on the T4, sens_val100 (100 val images), 512×1024
 Change is in mIoU points against the FP32 engine on the same images. The FP32 engines match ORT FP32 (SegFormer 69.155, DeepLab 66.796).
