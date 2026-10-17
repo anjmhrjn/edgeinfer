@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C5 — TensorRT INT8 and mixed precision (GPU)
-**Next step:** finish the ModelOpt placement run on the Mac, push to GitHub (CI), then GPU session 1 (checklist under C5). The instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
+**Next step:** finish the ModelOpt placement run on the Mac, write the session-2 phases (trtexec for every engine, probe for finalists, full val and held-out evals, per-layer profile, nsys), then GPU session 2. The instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
 
 ## C5 — TensorRT INT8 and mixed precision
 Plan agreed 2026-10-16:
@@ -34,13 +34,31 @@ Mac:
 - [ ] ModelOpt placement for both models, DeepLab min/max with ours (`scripts/c5_runs.sh placement`): ModelOpt's per-node calibration on 200 images ran > 60 min for SegFormer on the Mac without finishing, so it runs as the last Mac job
 - [ ] CI green on GitHub for the C5 Mac commits
 
-GPU session 1 (accuracy, ~2.5 h), in order:
-1. `scripts/gpu-up.sh`; `scripts/c5_runs.sh push`; `push-data` isn't needed (val and golden are on the instance from C4)
-2. `scripts/c5_runs.sh smoke`: the image rebuilds once (new `uv.lock`). Then: GPU tests including `test_implicit_int8_is_gone` (D-031 on 11.3) and `test_int8_engine_fuses_qdq`, whose printed layer summary is the first real check of the inspector format; `trtexec --help` for the profile flags
-3. `scripts/c5_runs.sh gpu build`: check every INT8 build report for `BUILD_QDQ_UNFUSED` before going on
-4. `scripts/c5_runs.sh gpu parity`, then `gpu sub` (sens_val100 for FP32, FP16, C3 INT8, INT8+FP16, placement pair)
-5. `scripts/c5_runs.sh gpu sens` (both models)
-6. Pull reports, log the session in `private/gpu-log.md`, `scripts/gpu-down.sh`
+GPU session 1 (2026-10-17, 00:30–02:05 UTC, 1.57 GPU-hours):
+- [x] Smoke: 59/60 GPU tests at first. The INT8 fixture test assumed full fusion, but the fixture has one Conv whose shared DQ doesn't fuse; the test was corrected. `test_implicit_int8_is_gone` confirms calibrator INT8 is removed in 11.3 (D-031). trtexec 11.3: `--separateProfileRun` is a no-op, so it's dropped from the profile flags.
+- [x] INT8 engines (`build__<model>__<label>__5efd53c.json`): DeepLab fuses every quantized node. SegFormer leaves 9 of 88 unfused in INT8+FP32 and 17 of 88 in INT8+FP16.
+- [x] Golden parity on TensorRT (`parity__<model>__trt__<label>__golden_val32__golden__*.json`): both C3 INT8+FP32 models pass (SegFormer −0.38, DeepLab −0.69 full / −0.31 with the stem in float). DeepLab INT8+FP16 passes (−0.60 / −0.36). **SegFormer INT8+FP16 fails completely (mIoU 71.45 → 0.06).**
+- [x] Diagnosis and fix (D-034): in the FP16 network, the INT8 Convs TensorRT doesn't fuse compute wrong values. Keeping the 17 unfused nodes in FP16 passes (−0.27, `parity__segformer_b0__trt__int8fp16_unfused__…__943d788.json`). A first fix with only the 8 depthwise convs wasn't enough.
+- [x] Found and fixed on the way: per-layer parity read NaN/Inf tensors as perfect matches (`PARITY_LAYER_NONFINITE`). The one report written before the fix was replaced by a corrected rerun.
+- [x] `sens_val100` on TensorRT for FP32, FP16, C3 INT8 and INT8+FP16 (`eval__<model>__trt__<label>__sens_val100__*.json`)
+- [x] TensorRT sensitivity, both models (`sensitivity__<model>__trt__int8_fp16__sens_val100__{204bef4,8baee58}.json`)
+- [ ] Placement pair (ours vs ModelOpt): moved to session 2, because ModelOpt's calibration is still running on the Mac
+
+### C5 session 1 results — TensorRT 11.3 on the T4, sens_val100 (100 val images), 512×1024
+Change is in mIoU points against the FP32 engine on the same images. The FP32 engines match ORT FP32 (SegFormer 69.155, DeepLab 66.796).
+
+| Engine | SegFormer-B0 | DeepLabV3+ MBv2 |
+|---|---|---|
+| FP16 | +0.006 | +0.011 |
+| INT8+FP32, C3 model as is, full INT8 | −0.304 | −1.123 |
+| INT8+FP32, C3 deployed exclusions | (= full) | −0.032 (`bb.stem_16` in float) |
+| INT8+FP16, full INT8 | −0.291 (17 unfused nodes in FP16, D-034) | −1.306 |
+| INT8+FP16, `bb.stem_16` in FP16 | — | −0.174 |
+
+**TensorRT vs ORT sensitivity** (top 5 ORT groups, leave-one-out; target ≤ 0.3 on this subset):
+- DeepLab: full INT8 −1.306 (ORT −1.157). `bb.stem_16` recovers 1.132 (ORT 1.027) and the first greedy step meets the target (−0.174), the same suggestion as ORT. Next, `bb.s24` recovers 0.308 (ORT 0.174); `head`, `bb.s64` and `bb.s32` are 0.09–0.16. Noise floor from a cold rebuild (different plan hash): 0.000.
+- SegFormer: full INT8 −0.291 (ORT −0.282), within the target: `SENS_FULL_INT8_WITHIN_BUDGET`, as on ORT. `s2.mlp` ranks first on both runtimes (0.128 vs 0.151). The other four are 0.02–0.08. Noise floor 0.005.
+- The rankings agree where effects are above the noise: one group for DeepLab, none for SegFormer. Below ~0.15 points the order isn't meaningful (D-017). SegFormer's TensorRT configurations differ from ORT's in the 17 nodes kept in FP16 (D-034).
 
 ## C4 — GPU environment, TensorRT FP32/FP16, performance probe
 The GPU quota request (2026-10-14) is still pending, so C4 is split. **C4a** prepares everything that can be written and tested on the Mac; **C4b** runs it on the T4. The roadmap's C4 exit criteria are met in C4b. Plan agreed 2026-10-16: NGC TensorRT container, `cuda-python` for device buffers and timing, an optional `TimedBackend` protocol for per-stage times, SSH limited to the current IP.

@@ -444,3 +444,30 @@ Plotting: matplotlib / hand-written SVG / Vega-Lite JSON.
 **Rationale:** Writing the rule down first makes the final choice an output of the measurements, not an argument about them. The tie margin is the measured build-to-build variation: a gap smaller than that between two engines can come from rebuilding one of them. Preferring fewer quantized nodes in a tie takes less accuracy risk for the same measured speed. trtexec agrees with the probe's compute span within 0.7–2.3% at the lock (C4), and the copies don't change with precision, so it ranks configurations correctly at a fifteenth of the cost. The probe still gates the finalists. matplotlib is the standard tool and is used only to draw a PNG from reports; SVG by hand would be more code for the same picture.
 **Evidence:** `tests/test_pareto.py`; C4 probe/trtexec agreement in `trtexec__*__990MHz__3a086ea.json`.
 **Consequences / revisit if:** Pareto accuracy is on 100 images, so differences below ~0.15 points aren't meaningful (D-017). Finalists are confirmed on full val and held out before the rule applies. The rule ignores memory, because every engine is far below the 953 MiB budget (C4). Revisit that if an INT8 engine comes close to it.
+
+## D-034: SegFormer keeps the 17 nodes TensorRT doesn't fuse in FP16 (TensorRT 11.3, T4)  (C5, 2026-10-17)
+**Context:** On the T4, SegFormer's INT8+FP16 engine (D-031) fails golden parity completely: mIoU 71.45 → 0.06 on the golden images, argmax agreement 0.2%. The same ONNX model passes on ORT CPU. DeepLab's INT8+FP16 engine and both models' INT8+FP32 engines pass.
+- **Build reports.** 17 of SegFormer's 88 quantized nodes don't fuse with their Q/DQ in the FP16 network: the 8 depthwise convs, the 3 stride-2 patch-embedding convs and 6 MatMuls. In the FP32 network, 9 don't fuse: the same set minus the depthwise convs.
+- **What "unfused" means.** An unfused node runs as a float layer on already-dequantized inputs, with its weights dequantized at run time by a separate `Scale` layer. In the FP16 network the depthwise convs run as `sm50_xmma_fprop_conv2d_c1_k1_f16f16_f16_f16…`. In the FP32 network they fuse into an INT8 depthwise kernel (`…depthwise_i8_conv_int8ncxhw4_fp32nchw…`).
+**How it was localized** (per-layer parity on debug engines, against ORT FP32):
+1. **First pass, 57 marked tensors** (LayerNorm, Softmax and Conv outputs). Everything is within normal INT8 drift (cosine ≥ 0.987) until the first depthwise conv's output, which is finite but wrong (cosine 0.03).
+2. **First fix attempt: depthwise convs only, and it was not enough.** Keeping only the 8 depthwise convs in FP16 still failed (golden mIoU 0.38). The first pass hadn't marked the inputs of that conv, so it showed where the error first became visible, not its only source.
+3. **Second debug engine**, marking the outputs of the 9 nodes that still didn't fuse. The two unfused MatMuls before stage 1 are correct (cosine ≥ 0.996). The first wrong tensor is the stage-1 stride-2 patch-embedding conv (cosine 0.08).
+4. **Conclusion.** On this TensorRT and GPU, an INT8-quantized Conv that isn't fused, running in an FP16 network with run-time-dequantized weights, computes wrong values. That covers both depthwise and stride-2 convs. Unfused MatMuls are not shown to be wrong, but the later ones are downstream of wrong values and can't be cleared.
+5. **Fix test.** Keeping all 17 nodes in FP16 passes golden parity: −0.27 points, cosine ≥ 0.999.
+**Options:**
+1. Keep all 17 nodes that don't fuse in FP16, as a node-level exclusion in every SegFormer configuration. Tested, and none of these nodes ran in INT8 anyway.
+2. Keep only the 11 unfused Convs in FP16. The narrowest change matching the evidence / 4 MatMuls unverified; another build and parity run needed.
+3. Use INT8+FP32 or FP16 for SegFormer and skip its TensorRT sensitivity run.
+**Decision:** Option 1 (Anuj, 2026-10-17, after a first choice of the 8 depthwise convs only, which was based on the incomplete diagnosis in step 1). `configs/quant/exclusions/segformer_b0__unfused_fp16.yaml` lists the nodes, taken from the build report's `not_int8`. `edgeinfer candidates --base-exclusions` applies it to all 32 SegFormer configurations.
+**Rationale:** The change affects only layers that got no INT8 kernel in this engine, so it costs no INT8 speed, and the result is tested. Narrowing it to the Convs would rest on clearing MatMuls that the evidence can't clear. Not using INT8+FP16 for SegFormer would drop the transformer side of the CNN-vs-transformer comparison the project exists to make.
+**Evidence:**
+- Failure and unfused lists: `parity__segformer_b0__trt__int8fp16_none__golden_val32__golden__5efd53c.json`, `build__segformer_b0__{int8fp16_none,int8_c3_none}__5efd53c.json`.
+- Localization: `parity__segformer_b0__trt__int8fp16_none__debug__…__layers__9cb5e07.json` (step 1) and `parity__segformer_b0__trt__int8fp16_dwfp16__debug__…__layers__943d788.json` (step 3).
+- Depthwise-only attempt: `parity__segformer_b0__trt__int8fp16_dwfp16__golden_val32__golden__9cb5e07.json`.
+- Fix: `parity__segformer_b0__trt__int8fp16_unfused__golden_val32__golden__943d788.json`.
+**Consequences / revisit if:**
+- SegFormer's INT8 configurations on TensorRT differ from C3's ORT ones in these 17 nodes, so the ORT vs TensorRT ranking comparison carries that difference.
+- Whether this is a TensorRT defect or something in our graph isn't established; a minimal repro is in `docs/ideas.md`. Revisit with a newer TensorRT.
+- The validator can't predict which nodes a runtime fuses; the build report's `BUILD_QDQ_UNFUSED` is where it shows up. That warning isn't a gate on its own (unfused is correct in FP32), so golden parity on the engine stays the gate.
+- The bug also exposed a parity defect: NaN intermediate tensors read as perfect matches. It is fixed (`PARITY_LAYER_NONFINITE`); the one report written before the fix was replaced by a corrected rerun, and other per-layer reports were checked: their exact rows are genuinely exact.
