@@ -1,0 +1,138 @@
+{
+  "schema_version": "1",
+  "tool": "trtexec",
+  "created_at": "2026-10-17T17:04:47+00:00",
+  "git_sha": "ab773614ec08b38907d58185e8ee9eca2064e004",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "Tesla T4 (sm_7.5)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99",
+      "cuda_driver": "13040",
+      "cuda_runtime": "13040"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "trtexec",
+  "precision": "int8_fp16",
+  "artifact_id": "e026cc67fb96bda26ad9a93452848fbed9fd97024c8bb6a3211e31ae8e964305",
+  "inputs": {
+    "artifact": "segformer_b0__int8_fp16__e026cc67fb96.engine",
+    "trtexec_flags": [
+      "--warmUp=2000",
+      "--iterations=1000",
+      "--duration=0"
+    ],
+    "gpu_clock_mhz": 990,
+    "profile_flags": [
+      "--warmUp=2000",
+      "--iterations=200",
+      "--duration=0",
+      "--dumpProfile"
+    ],
+    "perf_report": null,
+    "artifact_sha256": "313c366d3132be14e0a6c06041deee3442844f93e94c14ca240ee42b565da5cc"
+  },
+  "thresholds": {},
+  "metrics": {
+    "spans_ms": {
+      "compute": {
+        "n": 1001,
+        "mean": 5.678924795204796,
+        "std": 0.0056967607447581114,
+        "min": 5.6582,
+        "p50": 5.67896,
+        "p90": 5.68701,
+        "p99": 5.69214,
+        "max": 5.6936
+      },
+      "latency": {
+        "n": 1001,
+        "mean": 5.678924795204796,
+        "std": 0.0056967607447581114,
+        "min": 5.6582,
+        "p50": 5.67896,
+        "p90": 5.68701,
+        "p99": 5.69214,
+        "max": 5.6936
+      }
+    },
+    "telemetry_during": {
+      "samples": 65,
+      "interval_ms": 100,
+      "clocks.sm_min": 990.0,
+      "clocks.sm_max": 990.0,
+      "power.draw_max": 63.75,
+      "temperature.gpu_max": 37.0,
+      "clocks_event_reasons": "0x0",
+      "throttle_reasons": []
+    },
+    "profile": {
+      "total_median_ms": 6.8976,
+      "by_kind": {
+        "int8": {
+          "ms": 2.6771,
+          "share": 0.3881
+        },
+        "fp16": {
+          "ms": 2.5166,
+          "share": 0.3649
+        },
+        "reformat": {
+          "ms": 0.8737,
+          "share": 0.1267
+        },
+        "other": {
+          "ms": 0.7496,
+          "share": 0.1087
+        },
+        "fp32": {
+          "ms": 0.0806,
+          "share": 0.0117
+        }
+      },
+      "by_type": {
+        "kgen": {
+          "ms": 3.2666,
+          "share": 0.4736
+        },
+        "CaskConvolution": {
+          "ms": 1.2371,
+          "share": 0.1793
+        },
+        "fusion": {
+          "ms": 1.0071,
+          "share": 0.146
+        },
+        "Reformat": {
+          "ms": 0.8737,
+          "share": 0.1267
+        },
+        "gemm": {
+          "ms": 0.2598,
+          "share": 0.0377
+        },
+        "Resize": {
+          "ms": 0.2535,
+          "share": 0.0367
+        },
+        "signal": {
+          "ms": 0.0,
+          "share": 0.0
+        },
+        "wait": {
+          "ms": 0.0,
+          "share": 0.0
+        }
+      }
+    }
+  },
+  "passed": true,
+  "findings": []
+}

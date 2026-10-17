@@ -1,0 +1,142 @@
+{
+  "schema_version": "1",
+  "tool": "trtexec",
+  "created_at": "2026-10-17T17:04:30+00:00",
+  "git_sha": "ab773614ec08b38907d58185e8ee9eca2064e004",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "Tesla T4 (sm_7.5)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99",
+      "cuda_driver": "13040",
+      "cuda_runtime": "13040"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "trtexec",
+  "precision": "fp16",
+  "artifact_id": "baba668a26e9b7b389807717f263fbd7f2da3c1704419e6418b984f64c54efd6",
+  "inputs": {
+    "artifact": "segformer_b0__fp16__baba668a26e9.engine",
+    "trtexec_flags": [
+      "--warmUp=2000",
+      "--iterations=1000",
+      "--duration=0"
+    ],
+    "gpu_clock_mhz": 990,
+    "profile_flags": [
+      "--warmUp=2000",
+      "--iterations=200",
+      "--duration=0",
+      "--dumpProfile"
+    ],
+    "perf_report": null,
+    "artifact_sha256": "7fee0ed7744be6e30cccca57b59b92d529e71966d12813ab4b214837965bbc9e"
+  },
+  "thresholds": {},
+  "metrics": {
+    "spans_ms": {
+      "compute": {
+        "n": 1001,
+        "mean": 5.992419560439561,
+        "std": 0.02270566710331569,
+        "min": 5.94434,
+        "p50": 5.98779,
+        "p90": 6.01514,
+        "p99": 6.0874,
+        "max": 6.10693
+      },
+      "latency": {
+        "n": 1001,
+        "mean": 5.992419560439561,
+        "std": 0.02270566710331569,
+        "min": 5.94434,
+        "p50": 5.98779,
+        "p90": 6.01514,
+        "p99": 6.0874,
+        "max": 6.10693
+      }
+    },
+    "telemetry_during": {
+      "samples": 66,
+      "interval_ms": 100,
+      "clocks.sm_min": 990.0,
+      "clocks.sm_max": 990.0,
+      "power.draw_max": 67.08,
+      "temperature.gpu_max": 35.0,
+      "clocks_event_reasons": "0x1",
+      "throttle_reasons": []
+    },
+    "profile": {
+      "total_median_ms": 7.5691,
+      "by_kind": {
+        "fp16": {
+          "ms": 6.484,
+          "share": 0.8566
+        },
+        "reformat": {
+          "ms": 0.9844,
+          "share": 0.1301
+        },
+        "fp32": {
+          "ms": 0.1007,
+          "share": 0.0133
+        },
+        "other": {
+          "ms": 0.0,
+          "share": 0.0
+        }
+      },
+      "by_type": {
+        "kgen": {
+          "ms": 3.2535,
+          "share": 0.4298
+        },
+        "gemm": {
+          "ms": 1.1378,
+          "share": 0.1503
+        },
+        "CaskConvolution": {
+          "ms": 0.9884,
+          "share": 0.1306
+        },
+        "Reformat": {
+          "ms": 0.9844,
+          "share": 0.1301
+        },
+        "CaskGemmConvolution": {
+          "ms": 0.5651,
+          "share": 0.0747
+        },
+        "fusion": {
+          "ms": 0.3856,
+          "share": 0.0509
+        },
+        "Resize": {
+          "ms": 0.2543,
+          "share": 0.0336
+        },
+        "signal": {
+          "ms": 0.0,
+          "share": 0.0
+        },
+        "wait": {
+          "ms": 0.0,
+          "share": 0.0
+        },
+        "NoOp": {
+          "ms": 0.0,
+          "share": 0.0
+        }
+      }
+    }
+  },
+  "passed": true,
+  "findings": []
+}
