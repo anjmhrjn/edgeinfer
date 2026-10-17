@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -50,6 +51,24 @@ class Paths:
     root: str | None = None  # Cityscapes root for local stages (default: $CITYSCAPES_ROOT)
 
 
+@dataclass
+class CheckSpec:
+    """One gate check before it runs: the command, what it measures, and what it reads.
+    `name` names the report in the run; `check` (default: `name`) goes in the key."""
+
+    name: str
+    executor: Any
+    argv: list[str]
+    artifact: dict[str, Any]
+    settings: dict[str, Any]
+    files: list[Path]
+    check: str | None = None
+    before: Callable[[], None] | None = None
+
+    def key(self) -> dict[str, Any]:
+        return check_key(self.check or self.name, self.artifact, self.settings, self.files)
+
+
 class StageStop(Exception):
     """A stage ended the run: a failed check (exit 1) or an error (exit 2)."""
 
@@ -60,6 +79,12 @@ class StageStop(Exception):
 
 def new_run_id() -> str:
     return datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+
+
+def last_run(recipe: str, reports_dir: Path = REPORTS_DIR) -> dict[str, Any] | None:
+    """The newest deploy report of `recipe`, or None."""
+    runs = sorted((reports_dir / "deploy" / recipe).glob("*/deploy.json"))
+    return json.loads(runs[-1].read_text()) if runs else None
 
 
 def _config_file(name_or_path: str, subdir: Path) -> Path:
@@ -165,45 +190,29 @@ class Run:
             "precision": meta["precision"],
         }
 
-    def _check(
-        self,
-        name: str,
-        executor: Any,
-        argv: list[str],
-        artifact: dict[str, Any],
-        settings: dict[str, Any],
-        files: list[Path],
-        before: Any = None,
-        check: str | None = None,
-    ) -> dict:
-        """A gate check: reuse an earlier passing report with the same key, or run it.
-        `name` names the report in this run; `check` (default: `name`) goes in the key."""
-        key = check_key(check or name, artifact, settings, files)
+    def _check(self, spec: CheckSpec) -> dict:
+        """A gate check: reuse an earlier passing report with the same key, or run it."""
+        key = spec.key()
         reuse = find_reusable(key, self.paths.reports_dir)
+        record = {"name": spec.name, "key": key, "reason": reuse.reason}
         if reuse.report:
             report = json.loads((self.paths.reports_dir / reuse.report).read_text())
-            return {
-                "name": name,
-                "key": key,
+            return record | {
                 "report": reuse.report,
                 "status": "reused",
                 "passed": True,
                 "reused_from": reuse.run_id,
-                "reason": reuse.reason,
                 "findings": report["findings"],
             }
-        if before:
-            before()
-        code, report = self._command(executor, argv, name)
-        out = self._report_path(name).relative_to(self.paths.reports_dir)
-        return {
-            "name": name,
-            "key": key,
+        if spec.before:
+            spec.before()
+        code, report = self._command(spec.executor, spec.argv, spec.name)
+        out = self._report_path(spec.name).relative_to(self.paths.reports_dir)
+        return record | {
             "report": str(out),
             "status": "ran",
             "passed": code == 0 and report["passed"],
             "reused_from": None,
-            "reason": reuse.reason,
             "findings": report["findings"],
         }
 
@@ -284,18 +293,14 @@ class Run:
             "reports": ["convert.json"],
         }
 
-    def stage_validate(self) -> dict[str, Any]:
+    def _validate_specs(self) -> list[CheckSpec]:
         onnx = self.artifacts["onnx"]
         argv = ["validate", "--model", self.recipe.model, "--artifact", onnx["path"]]
-        check = self._check(
-            "validate",
-            self.local,
-            argv,
-            onnx,
-            {},
-            [*self._model_files(), CONFIG_DIR / "supported_ops.yaml"],
-        )
-        return {"checks": [check]}
+        files = [*self._model_files(), CONFIG_DIR / "supported_ops.yaml"]
+        return [CheckSpec("validate", self.local, argv, onnx, {}, files)]
+
+    def stage_validate(self) -> dict[str, Any]:
+        return {"checks": [self._check(spec) for spec in self._validate_specs()]}
 
     def _pushed(self) -> list[str]:
         names = ["onnx", "fp32"] if self._accuracy_applies() else ["onnx"]
@@ -346,7 +351,7 @@ class Run:
             reused, reports = reused and ref_reused, [*reports, "build_fp32.json"]
         return {"status": "skipped" if reused else "ran", "passed": True, "reports": reports}
 
-    def stage_parity(self) -> dict[str, Any]:
+    def _parity_specs(self) -> list[CheckSpec]:
         g, art = self.gates.parity, self._deployed()
         argv = [
             "parity",
@@ -367,10 +372,12 @@ class Run:
         files = [*self._model_files(), CONFIG_DIR / "tolerances.yaml", _manifest_file(g.manifest)]
         hashes = HASH_DIR / f"{self.cfg.name}.sha256"
         files += [hashes] if hashes.is_file() else []
-        check = self._check("parity", self.gpu, argv, art, {"parity": asdict(g)}, files)
-        return {"checks": [check]}
+        return [CheckSpec("parity", self.gpu, argv, art, {"parity": asdict(g)}, files)]
 
-    def _eval(self, name: str, art: dict[str, Any]) -> dict[str, Any]:
+    def stage_parity(self) -> dict[str, Any]:
+        return {"checks": [self._check(spec) for spec in self._parity_specs()]}
+
+    def _eval_spec(self, name: str, art: dict[str, Any]) -> CheckSpec:
         g = self.gates.accuracy
         argv = [
             "eval",
@@ -386,15 +393,14 @@ class Run:
         ]
         # Keyed as "eval" whatever the report is called: the FP32 reference eval of one
         # artifact is the same measurement in every recipe that uses it.
-        return self._check(
-            name,
-            self.gpu,
-            argv,
-            art,
-            {"manifest": g.manifest},
-            [*self._model_files(), _manifest_file(g.manifest)],
-            check="eval",
-        )
+        files = [*self._model_files(), _manifest_file(g.manifest)]
+        return CheckSpec(name, self.gpu, argv, art, {"manifest": g.manifest}, files, check="eval")
+
+    def _accuracy_specs(self) -> list[CheckSpec]:
+        if not self._accuracy_applies():
+            return []
+        ref = self.artifacts["fp32_engine" if self.recipe.target == "trt" else "fp32"]
+        return [self._eval_spec("eval_fp32", ref), self._eval_spec("eval", self._deployed())]
 
     def stage_accuracy(self) -> dict[str, Any]:
         if not self._accuracy_applies():
@@ -403,8 +409,7 @@ class Run:
                 "passed": True,
                 "reason": f"precision {self.recipe.precision} is gated by golden parity",
             }
-        ref = self.artifacts["fp32_engine" if self.recipe.target == "trt" else "fp32"]
-        checks = [self._eval("eval_fp32", ref), self._eval("eval", self._deployed())]
+        checks = [self._check(spec) for spec in self._accuracy_specs()]
         if not all(c["passed"] for c in checks):
             return {"checks": checks}
         ref_r, cand_r = (
@@ -430,7 +435,7 @@ class Run:
             "message": f"mIoU drop {drop:.3f} points (budget {budget})",
         }
 
-    def stage_perf(self) -> dict[str, Any]:
+    def _perf_specs(self) -> list[CheckSpec]:
         from edgeinfer.perf.probe import load_perf_config
 
         g, art = self.gates.perf, self._deployed()
@@ -461,9 +466,12 @@ class Run:
                 if self.gpu.host(f"sudo nvidia-smi --lock-gpu-clocks={mhz},{mhz}") != 0:
                     raise StageStop("DEPLOY_STAGE_ERROR", "couldn't lock the GPU clock", EXIT_ERROR)
 
-        check = self._check(
-            "perf", self.gpu, argv, art, {"perf": asdict(g)}, files, before=lock_clocks
-        )
+        return [
+            CheckSpec("perf", self.gpu, argv, art, {"perf": asdict(g)}, files, before=lock_clocks)
+        ]
+
+    def stage_perf(self) -> dict[str, Any]:
+        (check,) = [self._check(spec) for spec in self._perf_specs()]
         enforced = not any(f["code"] == "PERF_DEV_HOST" for f in check["findings"])
         return {"checks": [check], "enforced": enforced}
 
@@ -508,6 +516,55 @@ class Run:
             }
         )
         return {"status": "ran", "passed": True, "version": version, "alias": alias}
+
+    # --- dry run ---------------------------------------------------------------------------
+
+    def _needs(self, gate: str) -> list[str]:
+        """Artifacts a gate's checks measure."""
+        deployed = "engine" if self.recipe.target == "trt" else "onnx"
+        ref = "fp32_engine" if self.recipe.target == "trt" else "fp32"
+        return {
+            "validate": ["onnx"],
+            "parity": [deployed],
+            "perf": [deployed],
+            "accuracy": [ref, deployed],
+        }[gate]
+
+    def plan(self, previous: dict[str, Any] | None) -> list[tuple[str, str, str]]:
+        """What a run would do, without running anything: (stage, action, why).
+
+        Gate checks are judged with the artifacts of `previous` (the recipe's last run), so
+        the answer assumes the producing stages make the same artifacts again; they decide
+        that themselves when they run."""
+        if previous:
+            self.metrics["artifacts"] = dict(previous["metrics"]["artifacts"])
+        trt = self.recipe.target == "trt"
+        rows: list[tuple[str, str, str]] = []
+        for name in STAGES:
+            if name in ("push", "build") and not trt:
+                rows.append((name, "skip", "local target"))
+            elif name == "convert" and self.recipe.precision == "fp32":
+                rows.append((name, "skip", "precision fp32"))
+            elif name == "accuracy" and not self._accuracy_applies():
+                rows.append((name, "skip", f"precision {self.recipe.precision}"))
+            elif name in ("export", "convert", "build"):
+                rows.append((name, "run", "skipped by the command if its output id exists"))
+            elif name == "push":
+                rows.append((name, "run", "rsync copies only files that changed"))
+            elif name == "publish":
+                rows.append(
+                    (name, "run", f"to {'production' if trt else 'dev'} if every gate passes")
+                )
+            else:
+                missing = [a for a in self._needs(name) if a not in self.artifacts]
+                if missing:
+                    rows.append((name, "run", f"{missing[0]} not known before this run makes it"))
+                    continue
+                for spec in getattr(self, f"_{name}_specs")():
+                    reuse = find_reusable(spec.key(), self.paths.reports_dir)
+                    action = "reuse" if reuse.report else "run"
+                    rows.append((f"{name}/{spec.name}", action, reuse.reason))
+        return rows
 
     # --- driving ---------------------------------------------------------------------------
 

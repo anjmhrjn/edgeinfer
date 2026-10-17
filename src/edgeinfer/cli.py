@@ -998,7 +998,112 @@ def cmd_perf(args: argparse.Namespace) -> int:
     return 0 if passed else 1
 
 
+def cmd_deploy(args: argparse.Namespace) -> int:
+    return {"run": _deploy_run, "rollback": _deploy_rollback, "status": _deploy_status}[
+        args.action
+    ](args)
+
+
+def _deploy_run(args: argparse.Namespace) -> int:
+    import re
+
+    from edgeinfer.config import ConfigError
+    from edgeinfer.pipeline.config import load_recipe
+    from edgeinfer.pipeline.runner import EXIT_ERROR, Paths, Run, last_run, new_run_id
+
+    if args.stage and not args.run_id:
+        print("error: --stage needs --run-id (the run whose earlier stages it continues)")
+        return EXIT_ERROR
+    if args.run_id and not re.fullmatch(r"[A-Za-z0-9_.-]+", args.run_id):
+        print(f"error: --run-id {args.run_id!r}: use letters, digits and _ . - only")
+        return EXIT_ERROR
+    try:
+        recipe = load_recipe(args.recipe)
+        run = Run(recipe, args.run_id or new_run_id(), Paths(root=args.root))
+    except (ConfigError, FileNotFoundError) as e:
+        print(f"error: {e}")
+        return EXIT_ERROR
+    if args.dry_run:
+        previous = last_run(recipe.name, run.paths.reports_dir)
+        basis = f"run {previous['metrics']['run_id']}" if previous else "no earlier run"
+        print(f"dry run of {recipe.name}: gate checks judged with the artifacts of {basis}")
+        for stage, action, why in run.plan(previous):
+            print(f"  {stage:20s} {action:6s} {why}")
+        return 0
+    print(f"deploy {recipe.name} ({recipe.precision} on {recipe.target}), run {run.run_id}")
+    code = run.run_stage(args.stage) if args.stage else run.run_all()
+    _print_findings(run.findings)
+    published = run.metrics["published"]
+    if published:
+        print(f"PUBLISHED {run.cfg.name} v{published['version']} -> {published['alias']}")
+    print(f"{'PASS' if code == 0 else 'FAIL'} -> {run.state_path}")
+    return code
+
+
+def _deploy_rollback(args: argparse.Namespace) -> int:
+    from datetime import UTC, datetime
+
+    from edgeinfer.pipeline import registry
+    from edgeinfer.pipeline.executor import RemoteExecutor
+    from edgeinfer.reports import REPORTS_DIR, make_report, write_report
+
+    def sha_of(location: str) -> str | None:
+        if location.startswith(registry.INSTANCE_PREFIX):
+            return RemoteExecutor().sha256(location.removeprefix(registry.INSTANCE_PREFIX))
+        return registry.local_sha(location)
+
+    root = Path(args.registry_dir) if args.registry_dir else registry.REGISTRY_DIR
+    findings, metrics, artifact_id, precision = [], {}, "none", "none"
+    try:
+        old, new = registry.rollback(args.model, args.alias, sha_of, args.reason, root)
+        version = {v["version"]: v for v in registry.load(args.model, root)["versions"]}[new]
+        artifact_id, precision = version["artifact_id"], version["precision"]
+        metrics = {"from_version": old, "to_version": new, "location": version["location"]}
+        findings.append({"severity": "info", "code": "REGISTRY_ROLLBACK",
+                         "message": f"{args.model} {args.alias}: v{old} -> v{new}"})  # fmt: skip
+    except registry.RegistryError as e:
+        findings.append({"severity": "error", "code": e.code, "message": str(e)})
+    passed = not any(f["severity"] == "error" for f in findings)
+    report = make_report(
+        tool="rollback", model=args.model,
+        backend_meta={"backend": "registry", "precision": precision, "device": "pipeline",
+                      "artifact_id": artifact_id},
+        inputs={"alias": args.alias, "reason": args.reason}, metrics=metrics,
+        findings=findings, passed=passed,
+    )  # fmt: skip
+    stamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
+    name = f"rollback__{args.model}__{args.alias}__{stamp}.json"
+    out = Path(args.out) if args.out else REPORTS_DIR / "registry" / name
+    write_report(report, out)
+    _print_findings(findings)
+    print(f"{'PASS' if passed else 'FAIL'} -> {out}")
+    return 0 if passed else 1
+
+
+def _deploy_status(args: argparse.Namespace) -> int:
+    from edgeinfer.pipeline import registry
+
+    root = Path(args.registry_dir) if args.registry_dir else registry.REGISTRY_DIR
+    index = registry.load(args.model, root)
+    if not index["versions"]:
+        print(f"{args.model}: nothing published")
+        return 0
+    for v in index["versions"]:
+        aliases = [a for a, n in index["aliases"].items() if n == v["version"]]
+        mark = f" <- {', '.join(aliases)}" if aliases else ""
+        if v["rolled_back_from"]:
+            mark += f" (rolled back from {', '.join(v['rolled_back_from'])})"
+        print(f"  v{v['version']}  {v['precision']:9s} {v['target']:7s} "
+              f"{v['artifact_id'][:12]}  {v['recipe']}  run {v['run_id']}{mark}")  # fmt: skip
+    for h in index["history"]:
+        print(f"  {h['at']}  {h['alias']:10s} {h['action']:8s} v{h['from']} -> v{h['to']}  "
+              f"{h['reason']}")  # fmt: skip
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
+    from edgeinfer.pipeline.runner import STAGES
+
     parser = argparse.ArgumentParser(prog="edgeinfer")
     sub = parser.add_subparsers(dest="command", required=True)
 
@@ -1193,6 +1298,31 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--out", help="report path (default: artifacts/reports/...)")
     p.set_defaults(func=cmd_perf)
+
+    p = sub.add_parser("deploy", help="gated deployment pipeline: run a recipe, roll back, "
+                                      "show the registry (D-037..D-040)")  # fmt: skip
+    dsub = p.add_subparsers(dest="action", required=True)
+    d = dsub.add_parser("run", help="export -> convert -> validate -> push -> build -> parity "
+                                    "-> accuracy -> perf -> publish")  # fmt: skip
+    d.add_argument("--recipe", required=True, help="configs/deploy/<name>.yaml, or a path")
+    d.add_argument("--stage", choices=STAGES, help="run only this stage of --run-id (Airflow)")
+    d.add_argument("--run-id", help="continue this run (default: a new run, named by UTC time)")
+    d.add_argument("--dry-run", action="store_true",
+                   help="print what each stage would do, judged with the last run's "
+                        "artifacts")  # fmt: skip
+    d.add_argument("--root", help="Cityscapes root for local stages (default: $CITYSCAPES_ROOT)")
+    d.set_defaults(func=cmd_deploy)
+    d = dsub.add_parser("rollback", help="move an alias back to the version it held before")
+    d.add_argument("--model", required=True, help="model name, e.g. deeplabv3plus_mbv2")
+    d.add_argument("--alias", default="production", choices=("production", "dev"))
+    d.add_argument("--reason", required=True, help="why (recorded in the registry history)")
+    d.add_argument("--registry-dir", help="default: artifacts/registry")
+    d.add_argument("--out", help="report path (default: artifacts/reports/registry/...)")
+    d.set_defaults(func=cmd_deploy)
+    d = dsub.add_parser("status", help="published versions, aliases and their history")
+    d.add_argument("--model", required=True)
+    d.add_argument("--registry-dir", help="default: artifacts/registry")
+    d.set_defaults(func=cmd_deploy)
 
     return parser
 

@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C6 — Gated deployment pipeline (CPU + GPU)
-**Next step:** C6 step 5, the `edgeinfer deploy` CLI (run, `--stage`, `--dry-run`, rollback, status) and the report codes. The GPU instance is stopped, not terminated; C6's GPU session is within days (D-023).
+**Next step:** C6 step 7, DeepLab's final recipe end to end on `ort_cpu` (to `dev`), then `--dry-run` of the `trt` recipes. The GPU instance is stopped, not terminated; C6's GPU session is within days (D-023).
 
 ## C6 — Gated deployment pipeline
 Plan agreed 2026-10-17:
@@ -29,8 +29,8 @@ Mac:
   - `remote.sh sha256 <path>` checks a file on the instance, for rollback.
   - Found while writing it: a committed registry would mark every later report `git_dirty`. After a publish it is a modified tracked file, and on the instance, where it isn't synced, git sees it as deleted. `reports.git_state` now leaves `artifacts/registry/` out of the dirty check: it records results and is never an input to a measurement (D-037).
 - [x] Registry: publish, aliases, rollback (`pipeline/registry.py`); tests `test_registry.py`, `test_reuse.py`, and `test_deploy.py` on the fixture
-- [ ] `edgeinfer deploy` CLI and report codes
-- [ ] Fixture end to end in CI: pass, rerun reused, BGR blocked, rollback
+- [x] `edgeinfer deploy run|rollback|status` (`run --stage --run-id` for Airflow, `--dry-run` judged with the recipe's last run) and the `DEPLOY_*`/`REGISTRY_*` codes in `docs/report-codes.md`
+- [x] Fixture end to end in CI (`tests/test_deploy.py`): pass → `dev`; rerun all skipped/reused; changed code reruns the gates; BGR blocked at parity (`PARITY_INPUT_MISMATCH`); failed checks never reused; one stage at a time; dirty tree blocks publish; CLI dry run, rollback, status
 - [ ] DeepLab final recipe on `ort_cpu` to `dev`; `--dry-run` of the `trt` recipes
 - [ ] Airflow DAG, import test and CI job, a local run
 

@@ -4,6 +4,8 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 
 **CLI exit codes:** `0` checks passed; `1` checks failed and the report was written; `2` usage, configuration or environment error, no report (a backend that can't load here prints `error: <CODE>: <message>` with a `TRT_*` code below); `3` the tool crashed (traceback on stderr, no report). A caller can read the report after exit 1 and should stop on anything else.
 
+**`deploy run`** exits `0` when the deployment is published (or the one `--stage` passed), `1` when a gate, a producing stage or publish blocks it, and `2` when a stage couldn't run. In all three cases the run's state is in `artifacts/reports/deploy/<recipe>/<run_id>/deploy.json`, next to the reports of the commands it ran.
+
 | Code | Tool | Severity | Meaning |
 |---|---|---|---|
 | `EVAL_CLASS_ABSENT` | eval | warn | A class has no pixels in the labels or the predictions, so it's excluded from mIoU. Expected only on small subsets. |
@@ -78,3 +80,13 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 | `BUILD_LAYER_INFO_UNMAPPED` | build | info | An INT8 engine: some quantized ONNX nodes aren't named in any engine layer's metadata, so their fusion can't be checked from the inspector output. |
 | `OPS_LISTED_BUT_REJECTED` | ops_check | error | `configs/supported_ops.yaml` lists an op as supported but the pinned TensorRT's ONNX parser rejects it. `where` is the op. |
 | `OPS_UNLISTED_BUT_ACCEPTED` | ops_check | warn | `configs/supported_ops.yaml` lists an op as unsupported but the parser accepts it. `where` is the op. |
+| `DEPLOY_GATE_FAILED` | deploy | error | A gate check failed, and the deployment stops there. `where` is the stage (`validate`, `parity`, `accuracy`, `perf`). The message lists the failing check's error codes, or the accuracy verdict; the check's own report is in the run directory. |
+| `DEPLOY_STAGE_FAILED` | deploy | error | A producing stage's command failed its own checks (e.g. `QUANT_UNKNOWN_EXCLUSION` from `convert`, `BUILD_PARSE_FAILED` from `build`), so there is no artifact to gate. `where` is the stage. |
+| `DEPLOY_STAGE_ERROR` | deploy | error | A stage couldn't run: its command exited 2 or 3 or wrote no report, the GPU instance couldn't be reached, or the GPU clock couldn't be locked. `deploy run` exits 2. `where` is the stage. |
+| `DEPLOY_GATE_NOT_ENFORCED` | deploy | warn | A gate passed without being enforced: perf on a development host (`PERF_DEV_HOST`). The deployment can only reach the `dev` alias, never `production`. |
+| `DEPLOY_DIRTY_TREE` | deploy | error | `publish` refused: tracked files have uncommitted changes, so the deployment wouldn't trace to a commit. `artifacts/registry/` doesn't count (D-037). |
+| `REGISTRY_PUBLISHED` | deploy | info | The deployed artifact was registered and the alias points at it. The message names the version and alias, and says when the artifact was already registered (same id, file and target), in which case it keeps its version. |
+| `REGISTRY_ROLLBACK` | rollback | info | The alias moved back to the version it held before the current one. Versions already rolled back from are skipped. |
+| `REGISTRY_NO_PREVIOUS` | rollback | error | The alias points at no version, or has no earlier version to go back to. Nothing moved. |
+| `REGISTRY_ARTIFACT_MISSING` | rollback | error | The version to roll back to has no file at its location, or the file's sha256 differs from the published one (an engine is lost when the instance is terminated, and a rebuild gets new bytes that must pass the gates again). Nothing moved. |
+| `REGISTRY_UNKNOWN_ALIAS` | deploy | error | An alias other than `production` or `dev`. |

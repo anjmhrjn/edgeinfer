@@ -27,6 +27,7 @@ def env(fake_cityscapes, tmp_path, monkeypatch):
     """Golden outputs, manifests, a quant config and a gates file for the fixture model.
     Reports are treated as coming from a clean tree at HEAD, so reuse and publish behave
     as they do in CI whatever the state of the working tree."""
+    monkeypatch.setattr(reports, "REPORTS_DIR", tmp_path / "reports")  # never artifacts/reports/
     monkeypatch.setattr(reports, "git_state", lambda: (HEAD, False))
     monkeypatch.setattr(runner, "git_state", lambda: (HEAD, False))
     monkeypatch.setattr(reuse, "code_unchanged_since", lambda sha: sha == HEAD)
@@ -177,3 +178,63 @@ def test_dirty_tree_blocks_publish(env, monkeypatch):
     assert run.run_all() == 1
     assert run.stages["publish"]["status"] == "failed"
     assert [f["code"] for f in run.findings if f["severity"] == "error"] == ["DEPLOY_DIRTY_TREE"]
+
+
+@pytest.fixture
+def cli(env, monkeypatch):
+    """`edgeinfer deploy ...` through the CLI, writing under the test's directories."""
+    paths, recipe = env
+    monkeypatch.setattr(runner, "Paths", lambda root=None: paths)
+    return paths, recipe
+
+
+def test_cli_run_dry_run_rollback_and_status(cli, capsys):
+    paths, recipe = cli
+    recipe("tiny_fp32", precision="fp32")  # writes the recipe files
+    recipe("tiny_int8")
+    recipes = paths.reports_dir.parent / "recipes"
+    reg = ["--registry-dir", str(paths.registry_dir)]
+
+    assert main(["deploy", "run", "--recipe", str(recipes / "tiny_fp32.yaml")]) == 0
+    assert main(["deploy", "run", "--recipe", str(recipes / "tiny_int8.yaml")]) == 0
+    assert registry.load("tiny_fixture", paths.registry_dir)["aliases"] == {"dev": 2}
+    capsys.readouterr()
+
+    # A dry run after a run: every gate check would be reused, and nothing runs.
+    n_runs = len(list((paths.reports_dir / "deploy").glob("*/*/deploy.json")))
+    assert main(["deploy", "run", "--recipe", str(recipes / "tiny_int8.yaml"), "--dry-run"]) == 0
+    out = capsys.readouterr().out
+    rows = [line.split() for line in out.splitlines()[1:]]
+    gates = {r[0]: r[1] for r in rows if "/" in r[0]}
+    assert gates == {"validate/validate": "reuse", "parity/parity": "reuse",
+                     "accuracy/eval_fp32": "reuse", "accuracy/eval": "reuse",
+                     "perf/perf": "reuse"}  # fmt: skip
+    assert len(list((paths.reports_dir / "deploy").glob("*/*/deploy.json"))) == n_runs
+
+    out_report = paths.reports_dir / "rollback.json"
+    assert main(["deploy", "rollback", "--model", "tiny_fixture", "--alias", "dev",
+                 "--reason", "int8 regression", "--out", str(out_report), *reg]) == 0  # fmt: skip
+    r = json.loads(out_report.read_text())
+    assert r["metrics"]["from_version"] == 2 and r["metrics"]["to_version"] == 1
+    assert (
+        r["artifact_id"]
+        == registry.load("tiny_fixture", paths.registry_dir)["versions"][0]["artifact_id"]
+    )
+    assert [f["code"] for f in r["findings"]] == ["REGISTRY_ROLLBACK"]
+    assert main(["deploy", "rollback", "--model", "tiny_fixture", "--alias", "dev",
+                 "--reason", "again", "--out", str(out_report), *reg]) == 1  # fmt: skip
+    assert [f["code"] for f in json.loads(out_report.read_text())["findings"]] == [
+        "REGISTRY_NO_PREVIOUS"
+    ]
+    capsys.readouterr()
+    assert main(["deploy", "status", "--model", "tiny_fixture", *reg]) == 0
+    status = capsys.readouterr().out
+    assert "v1  fp32" in status and "<- dev" in status and "rolled back from dev" in status
+
+
+def test_cli_stage_needs_a_run_id(cli):
+    paths, recipe = cli
+    recipe("tiny_fp32", precision="fp32")
+    path = paths.reports_dir.parent / "recipes" / "tiny_fp32.yaml"
+    assert main(["deploy", "run", "--recipe", str(path), "--stage", "parity"]) == 2
+    assert main(["deploy", "run", "--recipe", str(path), "--run-id", "../x"]) == 2
