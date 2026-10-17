@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C5 — TensorRT INT8 and mixed precision (GPU)
-**Next step:** finish the ModelOpt placement run on the Mac, then GPU session 2 (phases written: see the session-2 checklist below). The instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
+**Next step:** Anuj decides the open session-2 questions below (finalist rule, gate filter in `final`, SegFormer placement pair), then GPU session 2 (phases written: see the session-2 checklist). The instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
 
 ## C5 — TensorRT INT8 and mixed precision
 Plan agreed 2026-10-16:
@@ -31,8 +31,10 @@ Mac:
 - [x] Pareto front and the final-engine rule, fixed before any INT8 result (`analyze/pareto.py`, D-033); `scripts/pareto.py` (matplotlib, `plots` group)
 - [x] `scripts/c5_runs.sh` (Mac and GPU phases), `scripts/c5_gpu.py` (session-1 phases in the container)
 - [x] ModelOpt placement artifact (`edgeinfer quantize --tool modelopt`); SegFormer min/max with our placement done (`quantize__segformer_b0__int8_minmax_fp16__ort__3064e28.json`)
-- [ ] ModelOpt placement for both models, DeepLab min/max with ours (`scripts/c5_runs.sh placement`): ModelOpt's per-node calibration on 200 images ran > 60 min for SegFormer on the Mac without finishing, so it runs as the last Mac job
-- [ ] CI green on GitHub for the C5 Mac commits
+- [x] ModelOpt placement for both models, DeepLab min/max with ours (`quantize__<model>__int8_minmax_fp16__{ort,modelopt}__2507a9e.json`, validator clean). ModelOpt's per-node calibration on 200 images took 4.4 h (SegFormer) and 2.0 h (DeepLab) on the Mac. Quantized nodes, ours vs ModelOpt:
+  - DeepLab: Conv 60 vs Conv 60 + Add 10 + Resize 2 + ReduceMean 1
+  - SegFormer: Conv 20 + MatMul 68 vs those + LayerNormalization 26 + Add 16 + Transpose 6 + Resize 4 + Reshape 3
+- [x] CI green on GitHub for the C5 Mac commits (latest run 39001542370, `2507a9e`)
 
 GPU session 1 (2026-10-17, 00:30–02:05 UTC, 1.57 GPU-hours):
 - [x] Smoke: 59/60 GPU tests at first. The INT8 fixture test assumed full fusion, but the fixture has one Conv whose shared DQ doesn't fuse; the test was corrected. `test_implicit_int8_is_gone` confirms calibrator INT8 is removed in 11.3 (D-031). trtexec 11.3: `--separateProfileRun` is a no-op, so it's dropped from the profile flags.
@@ -54,6 +56,11 @@ GPU session 2 (latency and confirmation; `scripts/c5_runs.sh` and `scripts/c5_gp
 - [ ] Probe for finalists and FP16; golden parity and full val (with held-out) for finalists, FP16 and FP32
 - [ ] Final engine per model by the D-033 rule (`final__<model>__*.json`)
 - [ ] Per-layer profile of FP16 and the best INT8 engine; nsys trace of SegFormer's best INT8 engine
+
+Open before session 2 (Anuj):
+- **Finalist rule** (becomes D-035): within the subset target, on the Pareto front, the 3 fastest by trtexec, from our-placement INT8 engines that haven't failed golden parity. Alternative: 2 per model (saves ~30 min of probe time). Session estimate with 3: ~3.3 GPU-hours.
+- **`final` also requires the probe's gates and golden parity** before the D-033 rule (from the C5 exit criteria).
+- **SegFormer placement pair.** Neither SegFormer min/max model keeps the 17 nodes TensorRT doesn't fuse in FP16 (D-034); `--tool modelopt` takes no exclusions. Both will probably fail golden parity on TensorRT for that reason, not because of placement. Options: build them anyway and report the comparison on ORT only for SegFormer; or re-make our min/max model with the D-034 exclusions (ModelOpt's still can't have them).
 
 ### C5 session 1 results — TensorRT 11.3 on the T4, sens_val100 (100 val images), 512×1024
 Change is in mIoU points against the FP32 engine on the same images. The FP32 engines match ORT FP32 (SegFormer 69.155, DeepLab 66.796).

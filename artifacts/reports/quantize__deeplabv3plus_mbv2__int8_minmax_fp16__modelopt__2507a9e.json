@@ -1,0 +1,114 @@
+{
+  "schema_version": "1",
+  "tool": "quantize",
+  "created_at": "2026-10-17T06:35:14+00:00",
+  "git_sha": "2507a9e1bfbc0e63d6e2382c4d3aad08f7d8d608",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "modelopt_env.nvidia-modelopt": "0.47.0",
+      "modelopt_env.onnx": "1.21.0",
+      "modelopt_env.onnxruntime": "1.24.4",
+      "modelopt_env.numpy": "2.5.4",
+      "modelopt_env.lock_sha256": "bd54ba9656050c98a3a728fc7e140e9f7bfaa3ccb2b23e7e475f45c66a8f98f0"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "modelopt.onnx.quantization",
+  "precision": "int8_fp16",
+  "artifact_id": "5567556544599cd1851681e1c329c00e803d5f119b9cd02d57023cf281d48fb0",
+  "inputs": {
+    "artifact": "deeplabv3plus_mbv2__fp32__98b5428431cd.onnx",
+    "config": "deeplabv3plus_mbv2",
+    "quant_config": {
+      "name": "int8_minmax",
+      "activation_type": "int8",
+      "weight_type": "int8",
+      "activation_symmetric": true,
+      "weight_symmetric": true,
+      "per_channel": true,
+      "op_types": [
+        "Conv",
+        "MatMul",
+        "Gemm"
+      ],
+      "quantize_outputs": false,
+      "quantize_bias": false,
+      "calibration": {
+        "manifest": "calib_train200",
+        "limit": null,
+        "method": "minmax",
+        "num_bins": null,
+        "num_quantized_bins": null,
+        "percentile": null,
+        "chunk_images": 2
+      }
+    },
+    "exclusions": {
+      "name": "none",
+      "model": "deeplabv3plus_mbv2",
+      "groups": [],
+      "nodes": []
+    },
+    "groups": "deeplabv3plus_mbv2.yaml",
+    "float_dtype": "fp16",
+    "tool": "modelopt"
+  },
+  "thresholds": {},
+  "metrics": {
+    "file": "deeplabv3plus_mbv2__int8_fp16__556755654459.onnx",
+    "sha256": "6b5edb955e7642e0f6a420f396c79419996f613042460f7901ccc9ea0a30421c",
+    "size_bytes": 10695674,
+    "parent_artifact_id": "98b5428431cd9bbe3b80354b251010db60b811b0a081b59afad424b477bfaa4b",
+    "calibration": {
+      "manifest": "calib_train200",
+      "limit": null,
+      "n_images": 200,
+      "method": "minmax",
+      "quant_config": "int8_minmax"
+    },
+    "modelopt_settings": {
+      "quantize_mode": "int8",
+      "calibration_method": "max",
+      "calibrate_per_node": true,
+      "high_precision_dtype": "fp16",
+      "keep_io_types": true
+    },
+    "placement": {
+      "quantized_nodes": {
+        "Add": 10,
+        "Conv": 60,
+        "ReduceMean": 1,
+        "Resize": 2
+      },
+      "n_quantize_linear": 118,
+      "n_dequantize_linear": 118
+    },
+    "float_precision": {
+      "fp16_nodes": 235,
+      "fp16_by_op": {
+        "Add": 10,
+        "Clip": 34,
+        "Concat": 2,
+        "Conv": 60,
+        "DequantizeLinear": 118,
+        "ReduceMean": 1,
+        "Relu": 8,
+        "Resize": 2
+      },
+      "fp32_nodes": [],
+      "cast_nodes": 2
+    },
+    "quantize_seconds": 7065.35,
+    "modelopt_peak_rss_bytes": 7288078336
+  },
+  "passed": true,
+  "findings": []
+}
