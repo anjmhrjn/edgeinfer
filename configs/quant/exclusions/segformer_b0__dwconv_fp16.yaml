@@ -1,0 +1,17 @@
+# SegFormer's depthwise 3x3 convs (Mix-FFN, one per block: Conv with group > 1), kept out of
+# INT8 in every C5 INT8+FP16 configuration (D-034). In an FP16 network on TensorRT 11.3 / T4
+# their Q/DQ doesn't fuse, and the unfused FP16 path (weights dequantized at run time)
+# computes wrong values (parity__segformer_b0__trt__int8fp16_none__*). As FP16 convs with
+# constant weights they run correctly (C4 FP16 engine).
+name: segformer_b0__dwconv_fp16
+model: segformer_b0
+groups: []
+nodes:
+  - node_conv2d_2
+  - node_conv2d_4
+  - node_conv2d_7
+  - node_conv2d_9
+  - node_conv2d_12
+  - node_conv2d_14
+  - node_conv2d_16
+  - node_conv2d_17

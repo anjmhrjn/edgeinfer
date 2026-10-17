@@ -164,3 +164,21 @@ def test_candidates_cli_refuses_a_ranking_for_another_model(tmp_path):
                "--groups", str(TINY_GROUPS), "--out", str(out)])  # fmt: skip
     report = json.loads(out.read_text())
     assert rc == 1 and report["findings"][0]["code"] == "SENS_RANKING_MISMATCH"
+
+
+def test_base_exclusions_are_kept_in_every_configuration(setup):
+    cfg, q, cal, rules, tmp, fp32 = setup
+    import onnx
+
+    head_conv = next(n.name for n in onnx.load(str(fp32)).graph.node
+                     if n.op_type == "Conv" and "classifier" in str(n.input))  # fmt: skip
+    base = Exclusions("base", cfg.name, (), (head_conv,))
+    seen = []
+
+    def convert(int8_path, cfg_, out_root):
+        seen.append([e["node"] for e in load_sidecar(int8_path)["excluded_nodes"]])
+        raise CandidateError("STOP", "enough")  # only the quantize step matters here
+
+    with pytest.raises(CandidateError):
+        generate(fp32, cfg, q, cal, rules, ["attn"], tmp / "onnx", convert=convert, base=base)
+    assert seen == [[head_conv]]  # the empty subset still keeps the base node in float

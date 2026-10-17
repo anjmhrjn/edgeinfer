@@ -71,15 +71,18 @@ def generate(
     groups: list[str],
     out_root: Path = ONNX_DIR,
     convert: Convert = convert_int8_fp16,
+    base: Exclusions | None = None,
 ) -> list[dict[str, Any]]:
     """Quantize every subset of `groups` kept in float, convert each to INT8+FP16 and
-    validate it. Existing artifacts with the same ids are reused."""
+    validate it. `base` is kept in float in every configuration (e.g. layers a runtime
+    can't run correctly in INT8, D-034). Existing artifacts with the same ids are reused."""
     unknown = sorted(set(groups) - set(rules.names))
     if unknown:
         raise QuantError("QUANT_UNKNOWN_EXCLUSION", f"unknown groups {unknown}")
     configs = []
     for excluded in subsets(groups):
-        exc = Exclusions("sensitivity", cfg.name, excluded, ())
+        exc = Exclusions("sensitivity", cfg.name, (*excluded, *(base.groups if base else ())),
+                         base.nodes if base else ())  # fmt: skip
         int8_path, int8_meta = quantize(fp32_path, cfg, qcfg, calibration, rules, exc, out_root)
         path, meta = convert(int8_path, cfg, out_root)
         _, findings = validate_onnx(path, cfg)

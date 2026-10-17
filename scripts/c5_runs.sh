@@ -10,7 +10,9 @@
 #                                 Skips a model/tool whose report exists (ModelOpt's per-node
 #                                 calibration takes over an hour per model)
 #   scripts/c5_runs.sh candidates every subset of the top-5 ORT sensitivity groups as INT8 and
-#                                 INT8+FP16 models, validated, listed in a report (D-032)
+#                                 INT8+FP16 models, validated, listed in a report (D-032);
+#                                 SegFormer keeps its depthwise convs in FP16 (D-034)
+#   scripts/c5_runs.sh dwfp16     SegFormer full INT8+FP16 with the depthwise convs in FP16
 #
 # GPU sessions (start with gpu-up.sh, stop with gpu-down.sh; reports come back by themselves):
 #   scripts/c5_runs.sh push       the ONNX models every GPU phase needs, with sidecars
@@ -85,12 +87,31 @@ ort_ranking() {
   esac
 }
 
+# Layers kept in float in every C5 configuration of a model (D-034), if any.
+base_exclusions() {
+  case $1 in
+    segformer_b0) echo configs/quant/exclusions/segformer_b0__dwconv_fp16.yaml ;;
+  esac
+}
+
 candidates() {
   for m in "${MODELS[@]}"; do
+    local base args=() tag=""
+    base=$(base_exclusions "$m")
+    if [[ -n $base ]]; then args=(--base-exclusions "$base"); tag="__$(basename "${base%.yaml}")"; fi
     uv run edgeinfer candidates --model "$m" --artifact "$(fp32 "$m")" --quant-config "$QCFG" \
-      --ranking "$(ort_ranking "$m")" --top 5 \
-      --out "artifacts/reports/candidates__${m}__${QCFG}__top5__$(sha).json"
+      --ranking "$(ort_ranking "$m")" --top 5 "${args[@]+"${args[@]}"}" \
+      --out "artifacts/reports/candidates__${m}__${QCFG}__top5${tag}__$(sha).json"
   done
+}
+
+# SegFormer's full INT8+FP16 model with its depthwise convs in FP16 (D-034), for golden
+# parity and the sens_val100 eval on TensorRT.
+dwfp16() {
+  local m=segformer_b0
+  a=$(quant "$m" dwfp16 --exclusions "$(base_exclusions "$m")")
+  gated uv run edgeinfer validate --model "$m" --artifact "$a" \
+    --out "artifacts/reports/validate__${m}__int8_fp16__dwfp16__$(sha).json"
 }
 
 # Every ONNX file a GPU phase reads, from the reports that name it (with its sidecar).
@@ -122,11 +143,12 @@ PY
   scripts/remote.sh push-artifacts artifacts/onnx/tiny_fixture "${files[@]}"
 }
 
-phase=${1:?usage: scripts/c5_runs.sh precheck|placement|candidates|push|smoke|gpu PHASE}
+phase=${1:?usage: scripts/c5_runs.sh precheck|placement|candidates|dwfp16|push|smoke|gpu PHASE}
 case "$phase" in
   precheck) precheck ;;
   placement) placement ;;
   candidates) candidates ;;
+  dwfp16) dwfp16 ;;
   push) push ;;
   smoke)
     scripts/remote.sh run "python -c 'import tensorrt; print(\"tensorrt\", tensorrt.__version__)' \

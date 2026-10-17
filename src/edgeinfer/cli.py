@@ -753,7 +753,7 @@ def cmd_candidates(args: argparse.Namespace) -> int:
     from edgeinfer.data.cityscapes import cityscapes_root
     from edgeinfer.quant import QuantError
     from edgeinfer.quant.calib import CALIB_DIR, calibrate
-    from edgeinfer.quant.config import load_group_rules, load_quant_config
+    from edgeinfer.quant.config import load_exclusions, load_group_rules, load_quant_config
     from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
 
     cfg = load_model_config(args.model)
@@ -765,7 +765,8 @@ def cmd_candidates(args: argparse.Namespace) -> int:
     if dirty:
         print("warning: uncommitted changes; this report must not back any published number")
     inputs = {"artifact": fp32_path.name, "quant_config": qcfg.to_dict(),
-              "ranking_report": ranking_path.name, "top": args.top}  # fmt: skip
+              "ranking_report": ranking_path.name, "top": args.top,
+              "base_exclusions": args.base_exclusions}  # fmt: skip
     metrics: dict = {}
     findings = []
     try:
@@ -774,8 +775,10 @@ def cmd_candidates(args: argparse.Namespace) -> int:
                         Path(args.calib_dir) if args.calib_dir else CALIB_DIR)  # fmt: skip
         print(f"candidates {cfg.name}: {2 ** len(groups)} configurations of {groups}")
         roots = {"out_root": Path(args.out_root)} if args.out_root else {}
-        configs = generate(fp32_path, cfg, qcfg, cal, rules, groups, **roots)
+        base = load_exclusions(args.base_exclusions, cfg.name) if args.base_exclusions else None
+        configs = generate(fp32_path, cfg, qcfg, cal, rules, groups, **roots, base=base)
         metrics = {"groups": groups, "n_configs": len(configs),
+                   "base_exclusions": base.to_dict() if base else None,
                    "calibration_id": cal[1]["calibration_id"], "configs": configs}  # fmt: skip
     except (CandidateError, QuantError) as e:
         findings.append({"severity": "error", "code": e.code, "message": str(e)})
@@ -787,7 +790,8 @@ def cmd_candidates(args: argparse.Namespace) -> int:
                       "versions": {}},
         inputs=inputs, metrics=metrics, findings=findings, passed=passed,
     )  # fmt: skip
-    name = f"candidates__{cfg.name}__{qcfg.name}__top{args.top}__{sha[:7]}.json"
+    tag = f"__{Path(args.base_exclusions).stem}" if args.base_exclusions else ""
+    name = f"candidates__{cfg.name}__{qcfg.name}__top{args.top}{tag}__{sha[:7]}.json"
     out = Path(args.out) if args.out else REPORTS_DIR / name
     write_report(report, out)
     _print_findings(findings)
@@ -1107,6 +1111,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--quant-config", required=True, help="configs/quant/<name>.yaml, or a path")
     p.add_argument("--ranking", required=True, help="ORT sensitivity report to take the top from")
     p.add_argument("--top", type=int, default=5, help="number of groups (2^N configurations)")
+    p.add_argument("--base-exclusions", help="exclusion list kept in float in every "
+                                             "configuration (D-034)")  # fmt: skip
     p.add_argument("--groups", help="group rules (default: configs/quant/groups/<model>.yaml)")
     p.add_argument("--root", help="Cityscapes root (default: $CITYSCAPES_ROOT)")
     p.add_argument("--calib-dir", help="calibration cache root (default: artifacts/calib)")
