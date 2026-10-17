@@ -27,12 +27,12 @@ from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
 # Flags checked against `trtexec --help` of TensorRT 11.3.0.99 on 2026-10-16. warmUp is in
 # milliseconds; duration=0 makes the iteration count the only stopping rule.
 TRTEXEC_FLAGS = ["--warmUp=2000", "--iterations=1000", "--duration=0"]
-# --profile (C5 task 5): a second, separate run with per-layer timing. Per-layer profiling
-# synchronizes after every layer, so its total is above the plain run's; it is used for
-# shares of time by layer kind, never as the engine's latency. To check against
-# `trtexec --help` of TensorRT 11.3 in the first C5 session.
-PROFILE_FLAGS = ["--warmUp=2000", "--iterations=200", "--duration=0", "--dumpProfile",
-                 "--separateProfileRun"]  # fmt: skip
+# --profile (C5 task 5): a second run with per-layer timing. Per-layer profiling synchronizes
+# after every layer, so its total is above the plain run's; it is used for shares of time
+# by layer kind, never as the engine's latency. Flags checked against `trtexec --help` of
+# TensorRT 11.3 on 2026-10-17 (`--separateProfileRun` is a deprecated no-op there: the
+# profile run is always separate from the timing run).
+PROFILE_FLAGS = ["--warmUp=2000", "--iterations=200", "--duration=0", "--dumpProfile"]
 
 
 def main() -> int:
