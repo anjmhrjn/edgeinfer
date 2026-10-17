@@ -321,6 +321,10 @@ def cmd_parity(args: argparse.Namespace) -> int:
         if Path(args.artifact).suffix == ".onnx":
             produced = {o for n in onnx.load(str(args.artifact)).graph.node for o in n.output}
             names = [n for n in names if n in produced]
+        elif backend.metadata().get("debug_outputs"):
+            # A debug engine exposes the tensors it was built to mark (D-025), nothing else.
+            marked = set(backend.metadata()["debug_outputs"])
+            names = [n for n in names if n in marked]
         groups = layer_groups(ref_model, names, args.layer_group_mb << 20)
         print(f"  per-layer: {len(names)} tensors in {len(groups)} groups, "
               f"{min(args.layer_images, len(pairs))} images")  # fmt: skip
