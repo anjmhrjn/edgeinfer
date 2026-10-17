@@ -1,0 +1,8 @@
+# SegFormer-B0's final engine (D-035): FP16. The best INT8 engine ties with it on latency.
+model: segformer_b0
+precision: fp16
+quant: null
+fp16: fp16_autocast
+build: build
+target: trt
+gates: gates

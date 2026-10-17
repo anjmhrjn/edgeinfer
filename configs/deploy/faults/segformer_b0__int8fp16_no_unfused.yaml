@@ -1,0 +1,12 @@
+# Fault: SegFormer INT8+FP16 without D-034's exclusion of the 17 nodes TensorRT 11.3
+# doesn't fuse on the T4. Those nodes compute wrong values, and golden parity must block
+# the deployment (C5: mIoU 71.45 -> 0.06 on the golden images).
+model: segformer_b0
+precision: int8_fp16
+quant:
+  config: int8_percentile
+  exclusions: null
+fp16: null
+build: build
+target: trt
+gates: gates

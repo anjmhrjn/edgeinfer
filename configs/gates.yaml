@@ -1,0 +1,19 @@
+# Deployment gates (`edgeinfer deploy`, D-039). This file says which checks a deployment
+# must pass and on which images; the thresholds live in budgets.yaml and tolerances.yaml.
+# Every deployment is also validated (`edgeinfer validate`): any error finding blocks it.
+#
+# Golden parity, every precision. Tolerance set: the artifact's precision. `images`
+# preprocesses the raw images, so a preprocessing fault fails here (PARITY_INPUT_MISMATCH).
+parity:
+  manifest: golden_val32
+  inputs: images
+# mIoU drop against the FP32 artifact on the same backend, budgets.yaml
+# `accuracy.miou_drop_max_points`, on the images the budget is defined on. FP16 is held to
+# golden parity's FP16 tolerances instead (D-030).
+accuracy:
+  manifest: eval_val
+  precisions: [int8, int8_fp16]
+# The probe against budgets.yaml `latency` and `memory`. Not enforced on a development host
+# (PERF_DEV_HOST), so such a deployment can only reach the `dev` alias.
+perf:
+  perf_config: perf

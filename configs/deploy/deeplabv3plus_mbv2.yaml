@@ -1,0 +1,11 @@
+# DeepLabV3+ MobileNetV2's final engine (D-035): INT8+FP16 with the stem (`bb.stem_16`)
+# in FP16.
+model: deeplabv3plus_mbv2
+precision: int8_fp16
+quant:
+  config: int8_percentile
+  exclusions: deeplabv3plus_mbv2__sens
+fp16: null
+build: build
+target: trt
+gates: gates

@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C6 — Gated deployment pipeline (CPU + GPU)
-**Next step:** C6 step 2, recipe and gates configs with their loaders. The GPU instance is stopped, not terminated; C6's GPU session is within days (D-023).
+**Next step:** C6 step 3, the pipeline core (stages, executors, gate reuse, deploy report). The GPU instance is stopped, not terminated; C6's GPU session is within days (D-023).
 
 ## C6 — Gated deployment pipeline
 Plan agreed 2026-10-17:
@@ -23,7 +23,7 @@ Mac:
   - The official install uses a constraints file per Airflow and Python version ([installing from PyPI](https://airflow.apache.org/docs/apache-airflow/stable/installation/installing-from-pypi.html)). `uv add -c` applies it when resolving but records it neither in `pyproject.toml` nor in `uv.lock`. So the official pins for the 125 resolved non-Airflow packages are written into `[tool.uv] constraint-dependencies`, and a later relock keeps the tested set.
   - Airflow 3 import paths: `from airflow.sdk import DAG`; `from airflow.providers.standard.operators.bash import BashOperator`. The standard provider (1.19.0 in the constraints) ships with `apache-airflow-core`.
   - `airflow dags test` on macOS arm64 runs a DAG in-process without a scheduler, and `{{ params.* }}` templating works. A non-zero exit fails the task and the run. BashOperator's `skip_on_exit_code` defaults to 99, so our exit codes 0/1/2 keep their meaning.
-- [ ] Recipe and gates configs and loaders
+- [x] Recipe and gates configs and loaders (`pipeline/config.py`, `configs/gates.yaml`, `configs/deploy/`)
 - [ ] Pipeline core: stages, executors, gate reuse, deploy report
 - [ ] Registry: publish, aliases, rollback, status
 - [ ] `edgeinfer deploy` CLI and report codes
