@@ -1,7 +1,38 @@
 # Progress
 
 **Current checkpoint:** C6 — Gated deployment pipeline (CPU + GPU)
-**Next step:** plan C6 in plan mode from its section in `docs/roadmap.md`. C5 is complete and signed off. The GPU instance is stopped; terminate it if C6's GPU work is more than ~2 weeks away (D-023).
+**Next step:** C6 step 2, recipe and gates configs with their loaders. The GPU instance is stopped, not terminated; C6's GPU session is within days (D-023).
+
+## C6 — Gated deployment pipeline
+Plan agreed 2026-10-17:
+- **Registry (D-037).** Our own file registry, `artifacts/registry/<model>.json`, metadata only and committed. It holds versions and a `production` alias; rollback moves the alias to the previous passing version after re-checking its sha256.
+- **Orchestration (D-038).** `edgeinfer deploy` runs on the Mac: local stages in-process, GPU stages through `scripts/remote.sh run`, one call per stage. The Airflow DAG runs one BashOperator per stage (`edgeinfer deploy --stage <name>`). Airflow sits in an isolated `tools/airflow` environment, and the pipeline never imports it.
+- **Gates (D-039).**
+  - Every precision: validate and golden parity.
+  - `int8` / `int8_fp16`: also full-val accuracy, drop ≤ 1.0 against the FP32 artifact on the same backend.
+  - Perf: the probe against the budgets.
+  - `configs/gates.yaml` refers to budgets and tolerances and repeats no numbers.
+- **Gate reuse (D-040).** A passing gate report is reused when all of these are unchanged: artifact id (plus engine sha256), resolved thresholds, manifest hash, and code since the report's SHA (`src/edgeinfer` without `pipeline/`, plus `uv.lock`). The report must also come from a clean tree. Failed reports are never reused.
+- **Channels.** An `ort_cpu` deploy, where perf isn't enforced, publishes only to `dev`; `production` needs every gate enforced. Publish refuses a dirty tree. Exit codes: 0 published, 1 blocked, 2 config/environment.
+- **Blocked-rollout demos.** A SegFormer INT8+FP16 recipe without D-034's exclusion (GPU) and a BGR fixture recipe (CI).
+- **GPU time.** One session, ~2 GPU-hours (est.).
+
+Mac:
+- [x] Airflow spike (`tools/airflow`, 2026-10-17):
+  - Airflow 3.3.2 is the latest stable (PyPI, released 2026-09-17; 3.4.0 is in beta). It is tested on Python 3.10–3.14. Macs are supported for development only, and Linux is the only supported production environment ([prerequisites](https://airflow.apache.org/docs/apache-airflow/stable/installation/prerequisites.html)).
+  - The official install uses a constraints file per Airflow and Python version ([installing from PyPI](https://airflow.apache.org/docs/apache-airflow/stable/installation/installing-from-pypi.html)). `uv add -c` applies it when resolving but records it neither in `pyproject.toml` nor in `uv.lock`. So the official pins for the 125 resolved non-Airflow packages are written into `[tool.uv] constraint-dependencies`, and a later relock keeps the tested set.
+  - Airflow 3 import paths: `from airflow.sdk import DAG`; `from airflow.providers.standard.operators.bash import BashOperator`. The standard provider (1.19.0 in the constraints) ships with `apache-airflow-core`.
+  - `airflow dags test` on macOS arm64 runs a DAG in-process without a scheduler, and `{{ params.* }}` templating works. A non-zero exit fails the task and the run. BashOperator's `skip_on_exit_code` defaults to 99, so our exit codes 0/1/2 keep their meaning.
+- [ ] Recipe and gates configs and loaders
+- [ ] Pipeline core: stages, executors, gate reuse, deploy report
+- [ ] Registry: publish, aliases, rollback, status
+- [ ] `edgeinfer deploy` CLI and report codes
+- [ ] Fixture end to end in CI: pass, rerun reused, BGR blocked, rollback
+- [ ] DeepLab final recipe on `ort_cpu` to `dev`; `--dry-run` of the `trt` recipes
+- [ ] Airflow DAG, import test and CI job, a local run
+
+GPU session:
+- [ ] Both final recipes → `production` (cold), rerun (reused), SegFormer fault blocked, v2 + rollback, one DAG run on `trt`
 
 ## C5 — TensorRT INT8 and mixed precision
 Plan agreed 2026-10-16:
