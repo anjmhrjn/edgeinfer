@@ -6,7 +6,8 @@ Every point is one TensorRT engine:
   x  trtexec GPU compute p50 at the locked clock (D-027), matched by engine artifact id.
 Points come from the TensorRT sensitivity report (our placement, INT8+FP16) and from eval
 reports on the same images given with --point (FP32/FP16 baselines, C3 INT8+FP32, the
-ModelOpt placement). Points without a trtexec report are listed as unmeasured, not drawn.
+placement pair: ours and ModelOpt's, both min/max). Points without a trtexec report are
+listed as unmeasured, not drawn.
 
     uv run --group plots python scripts/pareto.py --model segformer_b0 \\
         --sensitivity artifacts/reports/sensitivity__segformer_b0__trt__int8_fp16__....json \\
@@ -29,13 +30,16 @@ from edgeinfer.reports import REPO_ROOT, REPORTS_DIR, git_state, make_report, wr
 
 FIGURES = REPO_ROOT / "docs" / "figures"
 # Reference palette (dataviz skill, light mode): three categorical slots at most for a
-# scatter, so every INT8 kind gets one; baselines are neutral ink with direct labels.
+# scatter, so every INT8 kind gets one; baselines are neutral ink with direct labels. Our
+# min/max placement shares our placement's hue, hollow, so the pair reads as one family.
 SURFACE, INK, INK_2, MUTED = "#fcfcfb", "#0b0b0b", "#52514e", "#a3a29c"
-KINDS = {  # kind -> (legend label, color)
-    "int8_fp16": ("INT8+FP16, our placement", "#2a78d6"),
-    "modelopt": ("INT8+FP16, ModelOpt placement", "#eb6834"),
-    "int8_fp32": ("INT8+FP32 (C3 model as is)", "#1baf7a"),
-    "baseline": ("FP32 / FP16", INK_2),
+BLUE = "#2a78d6"
+KINDS = {  # kind -> (legend label, color, filled)
+    "int8_fp16": ("INT8+FP16, our placement", BLUE, True),
+    "minmax_ours": ("INT8+FP16, our placement, min/max", BLUE, False),
+    "modelopt": ("INT8+FP16, ModelOpt placement, min/max", "#eb6834", True),
+    "int8_fp32": ("INT8+FP32 (C3 model as is)", "#1baf7a", True),
+    "baseline": ("FP32 / FP16", INK_2, True),
 }
 
 
@@ -103,16 +107,45 @@ def plot(model: str, points: list[dict], front: list[dict], target: float, budge
         ax.axhline(y, color=MUTED, linewidth=1, linestyle=(0, (4, 3)))
         ax.annotate(name, (1.0, y), xycoords=("axes fraction", "data"), xytext=(-2, 3),
                     textcoords="offset points", ha="right", fontsize=7, color=INK_2)  # fmt: skip
-    fx = [p["latency_ms"] for p in front]
-    fy = [p["delta_points"] for p in front]
+    # The view covers the region where the configurations differ. FP32 (far slower) and
+    # points far below the budget would squeeze it into a corner, so they are drawn as edge
+    # markers carrying their real values; the report keeps every point as measured.
+    lowest = min(p["delta_points"] for p in points)
+    floor = min(max(lowest - 0.15, -(budget + 0.6)), -budget - 0.15)  # budget line in view
+    others = [p["latency_ms"] for p in points if p["label"] != "FP32"]
+    xmax = max(others) * 1.08
+    xmin = min(others) * 0.95
+    view = [p for p in points if p["latency_ms"] <= xmax and p["delta_points"] >= floor]
+    ymax = max(0.0, *(p["delta_points"] for p in view)) + 0.08
+    ax.set_xlim(xmin, xmax)
+    ax.set_ylim(floor, ymax)
+    fx = [p["latency_ms"] for p in front if p in view]
+    fy = [p["delta_points"] for p in front if p in view]
     ax.plot(fx, fy, color=MUTED, linewidth=1.5, zorder=1, label="Pareto front")
-    for kind, (name, color) in KINDS.items():
+    stacked: dict[str, list[int]] = {}
+    for kind, (name, color, filled) in KINDS.items():
         pts = [p for p in points if p["kind"] == kind]
-        if pts:
-            ax.scatter([p["latency_ms"] for p in pts], [p["delta_points"] for p in pts],
-                       s=36, color=color, edgecolors=SURFACE, linewidths=1.5, zorder=3,
-                       label=name)  # fmt: skip
-    for p in points:  # label the front and the baselines only
+        if not pts:
+            continue
+        style = {"color": color if filled else SURFACE, "edgecolors": SURFACE if filled else color,
+                 "linewidths": 1.5, "zorder": 3}  # fmt: skip
+        inside = [p for p in pts if p in view]
+        ax.scatter([p["latency_ms"] for p in inside], [p["delta_points"] for p in inside],
+                   s=36, label=name, **style)  # fmt: skip
+        for p in pts:
+            if p in view:
+                continue
+            right = p["latency_ms"] > xmax
+            xy = (xmax if right else p["latency_ms"], max(p["delta_points"], floor))
+            ax.scatter(*xy, s=44, marker=">" if right else "v", clip_on=False, **style)
+            # Edge labels stack upwards, one line per off-scale point on the same edge.
+            n = stacked.setdefault("right" if right else "bottom", [0])
+            ax.annotate(f"{p['label']}: {p['latency_ms']:.2f} ms, {p['delta_points']:+.2f}",
+                        xy, xytext=(-6, -14 - 10 * n[0]) if right else (6, 4 + 10 * n[0]),
+                        textcoords="offset points", ha="right" if right else "left",
+                        fontsize=7, color=INK)  # fmt: skip
+            n[0] += 1
+    for p in view:  # label the front and the baselines only
         if p in front or p["kind"] == "baseline":
             ax.annotate(p["label"], (p["latency_ms"], p["delta_points"]), xytext=(5, 4),
                         textcoords="offset points", fontsize=7, color=INK)  # fmt: skip

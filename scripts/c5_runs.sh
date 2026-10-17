@@ -15,6 +15,8 @@
 #   scripts/c5_runs.sh candidates every subset of the top-5 ORT sensitivity groups as INT8 and
 #                                 INT8+FP16 models, validated, listed in a report (D-032);
 #                                 SegFormer keeps the 17 nodes TensorRT doesn't fuse in FP16 (D-034)
+#   scripts/c5_runs.sh pareto     latency vs accuracy plots from the session-2 reports (after
+#                                 session 2; SegFormer without the placement pair, D-036)
 #   scripts/c5_runs.sh dwfp16     SegFormer full INT8+FP16 with the depthwise convs in FP16
 #                                 (superseded: not enough, D-034; kept for its reports)
 #
@@ -148,6 +150,28 @@ dwfp16() {
     --out "artifacts/reports/validate__${m}__int8_fp16__dwfp16__$(sha).json"
 }
 
+# pareto: every engine scored on sens_val100 on TensorRT, one point each. The sensitivity
+# report brings our INT8+FP16 configurations; the rest come from their sub-phase evals.
+pareto() {
+  local m
+  for m in "${MODELS[@]}"; do
+    local ev args=() spec label kind
+    ev() { ls -t artifacts/reports/eval__"$m"__trt__"$1"__sens_val100__512x1024__*.json | head -1; }
+    for spec in FP32:baseline:fp32 FP16:baseline:fp16 "INT8+FP32 full":int8_fp32:int8_c3_none; do
+      IFS=: read -r label kind tag <<< "$spec"
+      args+=(--point "$label:$kind:$(ev "$tag")")
+    done
+    if [[ $m == deeplabv3plus_mbv2 ]]; then  # SegFormer's C3 sens model is its full model
+      args+=(--point "INT8+FP32 stem float:int8_fp32:$(ev int8_c3_sens)"
+             --point "ours min/max:minmax_ours:$(ev int8fp16_minmax_ort)"
+             --point "ModelOpt min/max:modelopt:$(ev int8fp16_minmax_modelopt)")
+    fi
+    uv run --group plots python scripts/pareto.py --model "$m" \
+      --sensitivity "$(ls -t artifacts/reports/sensitivity__"$m"__trt__int8_fp16__sens_val100__*.json | head -1)" \
+      "${args[@]}"
+  done
+}
+
 # Every ONNX file a GPU phase reads, from the reports that name it (with its sidecar).
 push() {
   uv run edgeinfer export --model tests/fixtures/tiny_fixture.yaml >/dev/null  # no torch there
@@ -177,12 +201,13 @@ PY
   scripts/remote.sh push-artifacts artifacts/onnx/tiny_fixture "${files[@]}"
 }
 
-phase=${1:?usage: scripts/c5_runs.sh precheck|placement|placement-eval|candidates|dwfp16|push|clean|smoke|gpu PHASE}
+phase=${1:?usage: scripts/c5_runs.sh precheck|placement|placement-eval|candidates|pareto|dwfp16|push|clean|smoke|gpu PHASE}
 case "$phase" in
   precheck) precheck ;;
   placement) placement ;;
   placement-eval) placement_eval ;;
   candidates) candidates ;;
+  pareto) pareto ;;
   dwfp16) dwfp16 ;;
   push) push ;;
   clean)
