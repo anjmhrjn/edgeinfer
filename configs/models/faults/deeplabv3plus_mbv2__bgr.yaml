@@ -1,0 +1,27 @@
+# Fault: DeepLabV3+'s config with the channel order swapped to BGR (a preprocessing change
+# made by mistake). Its export embeds the BGR contract, so the validator finds it
+# consistent; golden parity on raw images must block it (PARITY_INPUT_MISMATCH, D-039).
+name: deeplabv3plus_mbv2
+architecture: deeplabv3plus_mobilenet
+weights:
+  source: url
+  url: https://www.dropbox.com/s/753ojyvsh3vdjol/best_deeplabv3plus_mobilenet_cityscapes_os16.pth?dl=1
+  filename: best_deeplabv3plus_mobilenet_cityscapes_os16.pth
+  sha256: c878c2a817f83df8e027b3245c9f474a78af9f8dc76e90450768197252c5095d
+  license: MIT (VainF/DeepLabV3Plus-Pytorch)
+num_classes: 19
+output_stride: 4  # the V3+ decoder predicts at the stride-4 low-level feature resolution
+backbone_output_stride: 16
+input:
+  height: 512
+  width: 1024
+  layout: NCHW
+  dtype: float32
+  channel_order: BGR
+preprocess:
+  resize: bilinear
+  scale: 255.0
+  mean: [0.485, 0.456, 0.406]
+  std: [0.229, 0.224, 0.225]
+postprocess:
+  upsample: bilinear

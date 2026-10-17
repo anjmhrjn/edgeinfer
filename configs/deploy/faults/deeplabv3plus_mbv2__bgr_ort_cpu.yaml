@@ -1,0 +1,9 @@
+# Fault: DeepLab FP32 with BGR preprocessing, on ORT CPU. Golden parity must block it
+# before anything is published.
+model: configs/models/faults/deeplabv3plus_mbv2__bgr.yaml
+precision: fp32
+quant: null
+fp16: null
+build: null
+target: ort_cpu
+gates: gates
