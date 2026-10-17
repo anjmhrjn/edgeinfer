@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C7 — Results and write-up
-**Next step:** C7: push and record the CI run id, then the final mock interview, resume bullets (Anuj edits) and sign-off. The clean clone reproduced the committed ORT results byte for byte (D-043); the GPU instance is terminated (D-044).
+**Next step:** C7: push and record the CI run id, then Anuj's edits to the resume bullets and sign-off. The clean clone reproduced the committed ORT results byte for byte (D-043); the GPU instance is terminated (D-044).
 
 ## C7 — Results and write-up
 Plan agreed 2026-10-17:
@@ -57,7 +57,9 @@ Mac:
   - **GPU instance.** Terminated (D-044, below).
 - [ ] CI green after the C7 push (run id)
 - [x] GPU instance terminated (D-044, 2026-10-17): `gpu-destroy.sh` dry run, then `--yes`. `gpu-status.sh` finds no instance; no EBS volumes or snapshots remain in us-east-1. The project used 11.60 GPU-hours of the ~25 budgeted.
-- [ ] Resume bullets (`private/`), final mock interview, sign-off
+- [x] Resume bullets drafted (`private/resume-bullets.md`, numbers only from `docs/results.md`; Anuj edits)
+- [x] Final mock interview: model answers in `private/mock-interview-C7.md` (Anuj's request, instead of a live Q&A)
+- [ ] Sign-off (Anuj)
 
 ## C6 — Gated deployment pipeline
 Plan agreed 2026-10-17:
