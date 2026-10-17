@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C5 — TensorRT INT8 and mixed precision (GPU)
-**Next step:** Anuj decides the open session-2 questions below (finalist rule, gate filter in `final`, SegFormer placement pair), then GPU session 2 (phases written: see the session-2 checklist). The instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
+**Next step:** Anuj decides the SegFormer placement pair (below), then GPU session 2 (phases written: see the session-2 checklist). The instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
 
 ## C5 — TensorRT INT8 and mixed precision
 Plan agreed 2026-10-16:
@@ -52,14 +52,12 @@ GPU session 2 (latency and confirmation; `scripts/c5_runs.sh` and `scripts/c5_gp
 - [ ] `clean`, `push` (placement pair), `smoke`
 - [ ] Placement pair: build, `sens_val100`
 - [ ] trtexec at 990 MHz for every engine with a `sens_val100` score (Pareto x axis)
-- [ ] Finalists: within the subset target, on the Pareto front, the 3 fastest (`analyze/pareto.py:select_finalists`)
+- [ ] Finalists: within the subset target, on the Pareto front, the 3 fastest (D-035)
 - [ ] Probe for finalists and FP16; golden parity and full val (with held-out) for finalists, FP16 and FP32
-- [ ] Final engine per model by the D-033 rule (`final__<model>__*.json`)
+- [ ] Final engine per model: the gates and golden parity, then the D-033 rule (D-035, `final__<model>__*.json`)
 - [ ] Per-layer profile of FP16 and the best INT8 engine; nsys trace of SegFormer's best INT8 engine
 
 Open before session 2 (Anuj):
-- **Finalist rule** (becomes D-035): within the subset target, on the Pareto front, the 3 fastest by trtexec, from our-placement INT8 engines that haven't failed golden parity. Alternative: 2 per model (saves ~30 min of probe time). Session estimate with 3: ~3.3 GPU-hours.
-- **`final` also requires the probe's gates and golden parity** before the D-033 rule (from the C5 exit criteria).
 - **SegFormer placement pair.** Neither SegFormer min/max model keeps the 17 nodes TensorRT doesn't fuse in FP16 (D-034); `--tool modelopt` takes no exclusions. Both will probably fail golden parity on TensorRT for that reason, not because of placement. Options: build them anyway and report the comparison on ORT only for SegFormer; or re-make our min/max model with the D-034 exclusions (ModelOpt's still can't have them).
 
 ### C5 session 1 results — TensorRT 11.3 on the T4, sens_val100 (100 val images), 512×1024

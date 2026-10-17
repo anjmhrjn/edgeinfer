@@ -21,12 +21,12 @@ the SM clock locked on the host first (c5_runs.sh does it, D-027):
             Pareto x axis (D-033)
   finalists per model, the INT8 engines of our placement worth the expensive checks:
             within the subset target, on the Pareto front, the 3 fastest (pareto.py:
-            select_finalists); engines that failed golden parity are left out
+            select_finalists, D-035); engines that failed golden parity are left out
   perf      the probe (the latency and memory gates) for the finalists and FP16
   eval      full val for the finalists, FP16 and FP32, scoring val_minus_sens100 (held out)
             and sens_val100 in the same pass
   parity    (as above) also covers the finalists
-  final     the D-033 rule over the finalists and FP16, among engines that pass golden
+  final     the D-033 rule over the finalists and FP16, among engines that pass golden (D-035)
             parity and the probe's gates; also the best INT8 engine by the same rule
   profile   trtexec per-layer profile of FP16 and the best INT8 engine (why INT8 < 2x)
   nsys      Nsight Systems trace of SegFormer's best INT8 engine (C4 traced its FP16 one)

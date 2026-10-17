@@ -44,7 +44,7 @@ def pareto_front(points: list[Point]) -> list[Point]:
 def select_finalists(
     points: list[Point], target_points: float, n: int = N_FINALISTS
 ) -> tuple[list[Point], dict[str, Any]]:
-    """The INT8 engines worth the expensive checks (probe ~15 min, full val ~7 min each).
+    """The INT8 engines worth the expensive checks (D-035; probe ~15 min, full val ~7 min).
     Each point has `label`, `latency_ms` (trtexec compute p50 at the clock lock) and
     `delta_points` on the sensitivity images. Kept: within the subset target (the same
     margin greedy selection uses, D-017), on the Pareto front of those, the `n` fastest.
