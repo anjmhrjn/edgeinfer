@@ -86,7 +86,7 @@ GPU session (2026-10-17, 19:16–21:44 UTC, 2.47 GPU-hours; plan ~2):
 - **A broken model is blocked.** SegFormer fault on the T4 and the BGR fault on ORT CPU: both exit 1 with `DEPLOY_GATE_FAILED` where = `parity`, nothing published. In CI: `test_preprocessing_fault_is_blocked_at_parity`.
 - **Rollback works.** v3 → v2 after the sha check; `deploy status` above.
 - **The Airflow DAG runs.** Locally on ORT CPU (pass, and the BGR fault blocked) and on the TensorRT target (pass). The import test passes in CI (`airflow-dag` job).
-- **CI green.** GitHub Actions run 39061685590 (`9b09beb`): `lint-and-test` on 3.11 and 3.12 and `airflow-dag`.
+- **CI green.** GitHub Actions run 39073349849 (`8313ec6`, the C6 results; before it 39061685590 on `9b09beb`): `lint-and-test` on 3.11 and 3.12 and `airflow-dag`.
 
 **Teach-back:** model answers in `private/teach-back-C6.md`.
 
