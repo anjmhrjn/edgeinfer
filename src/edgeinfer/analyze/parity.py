@@ -300,18 +300,26 @@ def run_layer_parity(
     memory-bounded `groups`. Each pair is (reference input, candidate input)."""
     if not pairs:
         raise ValueError("no inputs for per-layer parity")
-    stats: dict[str, dict[str, float]] = {n: {"cosine_min": 1.0, "rel_max_abs": 0.0}
-                                          for n, _ in names}  # fmt: skip
+    stats: dict[str, dict[str, float]] = {
+        n: {"cosine_min": 1.0, "rel_max_abs": 0.0, "nonfinite_max": 0.0} for n, _ in names
+    }
     for rx, cx in pairs:
         for group in groups:
             r_out = ref.layer_outputs(rx, group)
             c_out = cand.layer_outputs(cx, group)
             for name in group:
                 r, c = r_out[name], c_out[name]
+                s = stats[name]
+                # NaN/Inf would make cosine and error NaN, and min()/max() against NaN keep
+                # the starting values, so a non-finite tensor would read as a perfect match
+                # (found on a TensorRT debug engine in C5). Count it and skip the metrics.
+                bad = float(np.mean(~np.isfinite(c))) + float(np.mean(~np.isfinite(r)))
+                if bad > 0:
+                    s["nonfinite_max"] = max(s["nonfinite_max"], bad)
+                    continue
                 scale = float(np.abs(r).max())
                 diff = float(np.abs(c.astype(np.float64) - r).max())
                 rel = diff / scale if scale > 0 else (0.0 if diff == 0 else math.inf)
-                s = stats[name]
                 s["cosine_min"] = min(s["cosine_min"], _cosine(r, c))
                 s["rel_max_abs"] = max(s["rel_max_abs"], rel)
             del r_out, c_out
@@ -322,6 +330,8 @@ def run_layer_parity(
             row["rel_max_abs"] = None  # JSON has no inf; means reference was all zeros
 
     def over(row: dict[str, Any]) -> bool:
+        if row["nonfinite_max"] > 0:
+            return True  # never acceptable, whatever the tolerance set
         if tol.layer_cosine_min is not None and row["cosine_min"] < tol.layer_cosine_min:
             return True
         if tol.layer_rel_max_abs is None:
@@ -339,6 +349,15 @@ def run_layer_parity(
         "tensors": rows,
     }
     findings: list[Finding] = []
+    nonfinite = [r for r in rows if r["nonfinite_max"] > 0]
+    if nonfinite:
+        first = nonfinite[0]
+        findings.append(_f(
+            "error", "PARITY_LAYER_NONFINITE",
+            f"{len(nonfinite)} intermediate tensors contain NaN/Inf; first in graph order: "
+            f"#{first['index']} {first['op']} output {first['tensor']!r} "
+            f"({first['nonfinite_max']:.1%} of its values on the worst image)", first["tensor"],
+        ))  # fmt: skip
     if failing:
         first = failing[0]
         rel = "n/a" if first["rel_max_abs"] is None else f"{first['rel_max_abs']:.4g}"

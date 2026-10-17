@@ -26,6 +26,7 @@ Stable enum of `findings[].code` values used in JSON reports. Codes are never re
 | `PARITY_MIOU_SKIPPED` | parity | info | No labels were available (dataset root not given), so the mIoU delta wasn't computed. |
 | `PARITY_GOLDEN_UNVERIFIED` | parity | info | Golden files weren't checked against committed hashes (no hash file, or golden files outside the repo, e.g. a test fixture). |
 | `PARITY_LAYER_DRIFT` | parity | error | Per-layer mode: at least one intermediate tensor exceeds the per-layer tolerance. `where` is the first such tensor in graph order. |
+| `PARITY_LAYER_NONFINITE` | parity | error | Per-layer mode: an intermediate tensor contains NaN or Inf. Always a failure, whatever the tolerance set; such tensors are excluded from cosine and error (which NaN would otherwise make read as a perfect match). `where` is the first such tensor in graph order. |
 | `VALIDATE_QDQ_DTYPE` | validate | error | A Quantize/DequantizeLinear uses a type other than signed INT8 (e.g. UINT8, or the ONNX default UINT8 when no zero point is given). TensorRT explicit quantization needs signed INT8 (D-016). `where` is the first such node. |
 | `VALIDATE_QDQ_BIAS` | validate | warn | A Conv/Gemm bias goes through an INT32 DequantizeLinear. Our TensorRT format keeps bias in float (D-016). |
 | `VALIDATE_QDQ_WEIGHT_PER_TENSOR` | validate | warn | A Conv/MatMul/Gemm weight is quantized with one scale for the whole tensor instead of per output channel. |

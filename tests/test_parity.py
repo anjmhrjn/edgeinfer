@@ -131,6 +131,35 @@ def test_per_layer_finds_the_perturbed_layer(tiny_onnx, tmp_path):
     assert f["code"] == "PARITY_LAYER_DRIFT" and f["where"] == target.output[0]
 
 
+class _NaNAfter:
+    """Wraps a backend; every intermediate tensor from index `k` on is NaN."""
+
+    def __init__(self, inner, names, k):
+        self.inner, self.bad = inner, set(names[k:])
+
+    def layer_outputs(self, x, names):
+        out = self.inner.layer_outputs(x, names)
+        return {n: np.full_like(v, np.nan) if n in self.bad else v for n, v in out.items()}
+
+
+def test_nonfinite_layers_fail_instead_of_reading_as_perfect(tiny_onnx):
+    model = onnx.load(str(tiny_onnx))
+    ops = {n.output[0]: n.op_type for n in model.graph.node}
+    names = layer_tensors(model)
+    x = np.random.default_rng(0).standard_normal((1, 3, 32, 64)).astype(np.float32)
+    k = 3
+    metrics, findings = run_layer_parity(
+        _ort(tiny_onnx), _NaNAfter(_ort(tiny_onnx), names, k), [(n, ops[n]) for n in names],
+        layer_groups(model, names, 1 << 30), [(x, x)], TOL,
+    )  # fmt: skip
+    rows = metrics["tensors"]
+    assert all(r["nonfinite_max"] == 0 for r in rows[:k])
+    assert all(r["nonfinite_max"] == 1.0 for r in rows[k:])
+    assert metrics["first_over_tolerance"]["index"] == k
+    codes = {f["code"]: f for f in findings}
+    assert codes["PARITY_LAYER_NONFINITE"]["where"] == names[k]
+
+
 def test_layer_parity_chunked_matches_unchunked(tiny_onnx):
     model = onnx.load(str(tiny_onnx))
     ops = {n.output[0]: n.op_type for n in model.graph.node}
