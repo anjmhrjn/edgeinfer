@@ -1,0 +1,204 @@
+{
+  "schema_version": "1",
+  "tool": "pareto",
+  "created_at": "2026-10-17T14:03:25+00:00",
+  "git_sha": "dd848334e346a8aabf451d88a35927a8b40df7cd",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "report data",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "trt",
+  "precision": "mixed",
+  "artifact_id": "none",
+  "inputs": {
+    "sensitivity": "sensitivity__deeplabv3plus_mbv2__trt__int8_fp16__sens_val100__204bef4.json",
+    "points": [
+      "FP32:baseline:artifacts/reports/eval__deeplabv3plus_mbv2__trt__fp32__sens_val100__512x1024__66c7af8.json",
+      "FP16:baseline:artifacts/reports/eval__deeplabv3plus_mbv2__trt__fp16__sens_val100__512x1024__66c7af8.json",
+      "INT8+FP32 full:int8_fp32:artifacts/reports/eval__deeplabv3plus_mbv2__trt__int8_c3_none__sens_val100__512x1024__204bef4.json",
+      "INT8+FP32 stem float:int8_fp32:artifacts/reports/eval__deeplabv3plus_mbv2__trt__int8_c3_sens__sens_val100__512x1024__204bef4.json",
+      "ours min/max:minmax_ours:artifacts/reports/eval__deeplabv3plus_mbv2__trt__int8fp16_minmax_ort__sens_val100__512x1024__de889fd.json",
+      "ModelOpt min/max:modelopt:artifacts/reports/eval__deeplabv3plus_mbv2__trt__int8fp16_minmax_modelopt__sens_val100__512x1024__de889fd.json"
+    ],
+    "clock_mhz": 990,
+    "fp32_miou": 0.6679610378708558,
+    "images": "sens_val100"
+  },
+  "thresholds": {
+    "miou_drop_budget_points": 1.0,
+    "target_drop_points": 0.30000000000000004
+  },
+  "metrics": {
+    "points": [
+      {
+        "label": "full INT8",
+        "kind": "int8_fp16",
+        "excluded": [],
+        "engine_id": "09ca521fd805b2c85f111ba850afcc66ecb430b8285667da114e9a2da93273e4",
+        "delta_points": -1.30600368703081,
+        "sources": [
+          "sensitivity__deeplabv3plus_mbv2__trt__int8_fp16__sens_val100__204bef4.json",
+          "trtexec__deeplabv3plus_mbv2__int8fp16_none__c5__990MHz__de889fd.json"
+        ],
+        "latency_ms": 2.93018
+      },
+      {
+        "label": "bb.stem_16 in FP16",
+        "kind": "int8_fp16",
+        "excluded": [
+          "bb.stem_16"
+        ],
+        "engine_id": "8ff4db1b28722b234bd6becb50008ded9f9aef06f7e71fd1757d5fcb305954be",
+        "delta_points": -0.17369387815926451,
+        "sources": [
+          "sensitivity__deeplabv3plus_mbv2__trt__int8_fp16__sens_val100__204bef4.json",
+          "trtexec__deeplabv3plus_mbv2__int8fp16_sens__c5__990MHz__de889fd.json"
+        ],
+        "latency_ms": 3.05957
+      },
+      {
+        "label": "bb.s24 in FP16",
+        "kind": "int8_fp16",
+        "excluded": [
+          "bb.s24"
+        ],
+        "engine_id": "a1d635d697ba3a8eebe393f0114e47d12609f191969eb4fe11f7ac836e8024f7",
+        "delta_points": -0.9976579065396285,
+        "sources": [
+          "sensitivity__deeplabv3plus_mbv2__trt__int8_fp16__sens_val100__204bef4.json",
+          "trtexec__deeplabv3plus_mbv2__sens_bb.s24__c5__990MHz__de889fd.json"
+        ],
+        "latency_ms": 3.31348
+      },
+      {
+        "label": "head in FP16",
+        "kind": "int8_fp16",
+        "excluded": [
+          "head"
+        ],
+        "engine_id": "9c0e71d9c17648ad2a632c4d929abd91bb14346dad3642e4fa1ab749c10fe7d5",
+        "delta_points": -1.1479936492636456,
+        "sources": [
+          "sensitivity__deeplabv3plus_mbv2__trt__int8_fp16__sens_val100__204bef4.json",
+          "trtexec__deeplabv3plus_mbv2__sens_head__c5__990MHz__de889fd.json"
+        ],
+        "latency_ms": 3.80322
+      },
+      {
+        "label": "bb.s64 in FP16",
+        "kind": "int8_fp16",
+        "excluded": [
+          "bb.s64"
+        ],
+        "engine_id": "936b5663e69a956e41cf3f515af5dd382694a41e0512262148ae4432938d8203",
+        "delta_points": -1.1427567572843578,
+        "sources": [
+          "sensitivity__deeplabv3plus_mbv2__trt__int8_fp16__sens_val100__204bef4.json",
+          "trtexec__deeplabv3plus_mbv2__sens_bb.s64__c5__990MHz__de889fd.json"
+        ],
+        "latency_ms": 3.01758
+      },
+      {
+        "label": "bb.s32 in FP16",
+        "kind": "int8_fp16",
+        "excluded": [
+          "bb.s32"
+        ],
+        "engine_id": "d652602f4e205f61869dc6f339296d5caa9bf29097a19bed8bae9e3ed9132edb",
+        "delta_points": -1.2133088649915358,
+        "sources": [
+          "sensitivity__deeplabv3plus_mbv2__trt__int8_fp16__sens_val100__204bef4.json",
+          "trtexec__deeplabv3plus_mbv2__sens_bb.s32__c5__990MHz__de889fd.json"
+        ],
+        "latency_ms": 3.14478
+      },
+      {
+        "label": "FP32",
+        "kind": "baseline",
+        "engine_id": "9f849b8cbe004b16f48d5fb5522d0f9fe3ff18a076eb545e0fd8846817a25bb8",
+        "delta_points": 0.0,
+        "sources": [
+          "eval__deeplabv3plus_mbv2__trt__fp32__sens_val100__512x1024__66c7af8.json",
+          "trtexec__deeplabv3plus_mbv2__fp32__c5__990MHz__de889fd.json"
+        ],
+        "latency_ms": 16.4126
+      },
+      {
+        "label": "FP16",
+        "kind": "baseline",
+        "engine_id": "65c595342fa9b348ff6874b86b76cf478cb940a4ead549d0589e4b90c05aa9a6",
+        "delta_points": 0.010602409671045532,
+        "sources": [
+          "eval__deeplabv3plus_mbv2__trt__fp16__sens_val100__512x1024__66c7af8.json",
+          "trtexec__deeplabv3plus_mbv2__fp16__c5__990MHz__de889fd.json"
+        ],
+        "latency_ms": 4.97461
+      },
+      {
+        "label": "INT8+FP32 full",
+        "kind": "int8_fp32",
+        "engine_id": "d66d7b02ba940b73441e02a8194422534812c2e8b3d2bb602a7c76dee49b4f53",
+        "delta_points": -1.1230020983400535,
+        "sources": [
+          "eval__deeplabv3plus_mbv2__trt__int8_c3_none__sens_val100__512x1024__204bef4.json",
+          "trtexec__deeplabv3plus_mbv2__int8_c3_none__c5__990MHz__de889fd.json"
+        ],
+        "latency_ms": 3.18408
+      },
+      {
+        "label": "INT8+FP32 stem float",
+        "kind": "int8_fp32",
+        "engine_id": "8e392cece826194b1c438c7bd0742b3076fac3396189ec3fcd2be23976c8a4a3",
+        "delta_points": -0.031739061759750165,
+        "sources": [
+          "eval__deeplabv3plus_mbv2__trt__int8_c3_sens__sens_val100__512x1024__204bef4.json",
+          "trtexec__deeplabv3plus_mbv2__int8_c3_sens__c5__990MHz__de889fd.json"
+        ],
+        "latency_ms": 3.56226
+      },
+      {
+        "label": "ours min/max",
+        "kind": "minmax_ours",
+        "engine_id": "400356bf45ca055760b522d509b4f27dae781110fbe70193ac3468dfc0b5637e",
+        "delta_points": -4.482685888329385,
+        "sources": [
+          "eval__deeplabv3plus_mbv2__trt__int8fp16_minmax_ort__sens_val100__512x1024__de889fd.json",
+          "trtexec__deeplabv3plus_mbv2__int8fp16_minmax_ort__c5__990MHz__de889fd.json"
+        ],
+        "latency_ms": 2.93042
+      },
+      {
+        "label": "ModelOpt min/max",
+        "kind": "modelopt",
+        "engine_id": "563024900f5258d85b428ef63af7ed70e3ee3943e61e74fcc2930a877340d5b6",
+        "delta_points": -4.23955464839657,
+        "sources": [
+          "eval__deeplabv3plus_mbv2__trt__int8fp16_minmax_modelopt__sens_val100__512x1024__de889fd.json",
+          "trtexec__deeplabv3plus_mbv2__int8fp16_minmax_modelopt__c5__990MHz__de889fd.json"
+        ],
+        "latency_ms": 2.81909
+      }
+    ],
+    "front": [
+      "ModelOpt min/max",
+      "full INT8",
+      "bb.s64 in FP16",
+      "bb.stem_16 in FP16",
+      "INT8+FP32 stem float",
+      "FP16"
+    ],
+    "unmeasured": [],
+    "figure": "pareto__deeplabv3plus_mbv2.png"
+  },
+  "passed": true,
+  "findings": []
+}
