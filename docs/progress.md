@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C7 — Results and write-up
-**Next step:** C7 clean-clone check (D-043), then the definition of done, resume bullets, the final mock interview and sign-off. The GPU instance is terminated (D-044).
+**Next step:** C7: push and record the CI run id, then the final mock interview, resume bullets (Anuj edits) and sign-off. The clean clone reproduced the committed ORT results byte for byte (D-043); the GPU instance is terminated (D-044).
 
 ## C7 — Results and write-up
 Plan agreed 2026-10-17:
@@ -39,8 +39,23 @@ Mac:
 - [x] README (task, budgets, tools, Mermaid architecture diagram, generated results table, Pareto plots, key findings with report links, limitations including the Orin section, reproduction, licenses), `LICENSE` (MIT), decision records D-041–D-044. Checking the README against its sources:
   - D-029's 3.4% is compute time between two identical builds, not `infer` p99.
   - TensorRT engines don't run on an older runtime, and hardware compatibility isn't supported on JetPack ([engine compatibility](https://docs.nvidia.com/deeplearning/tensorrt/latest/inference-library/engine-compatibility.html)).
-- [ ] Clean-clone check (D-043)
-- [ ] Definition of done, each item with output
+- [x] Clean-clone check (D-043, 2026-10-17): `git clone` of `429b7df` into a scratch directory, an empty `EDGEINFER_CACHE`, `$CITYSCAPES_ROOT` set, the README's Mac steps in order. Every step passed:
+  - `uv sync` and `uv sync --project tools/modelopt`; the CI subset, 299 passed, 17 deselected (111 s); `make_results.py --check` (1 s).
+  - `edgeinfer golden --model deeplabv3plus_mbv2` (12 s): weights downloaded into the empty cache, 32 golden outputs matching `data/golden_hashes/deeplabv3plus_mbv2.sha256`.
+  - `deploy run --recipe configs/deploy/deeplabv3plus_mbv2__ort_cpu.yaml`, `--dry-run` first. The dry run said every gate would run ("code changed since 1a62c44": the one-line `cli.py` fix of `deploy status`), so no gate was reused and the clone measured everything itself. The run took 2062 s: export 5.2 s, convert 384.7 s (calibration, quantization, FP16 conversion), validate 0.1 s, parity 18.0 s, accuracy 1241.9 s, perf 411.9 s; it published v1 to `dev`.
+  - **Same bytes.** The FP32 export is `98b5428431cd` (sha256 `eb8c0889f940…`) and the INT8+FP16 model `0fc604c5e1e0` (sha256 `d341750795ba…`), identical to the committed run `deploy/deeplabv3plus_mbv2__ort_cpu/20261017T182358Z`.
+  - **Same accuracy.** FP32 67.086 and INT8+FP16 66.812 over full val, in the deploy's gate and again in two separate `edgeinfer eval` runs. Per-class IoU and pixel accuracy are identical to the committed reports.
+  - The clone's reports (git SHA `429b7df`, clean tree) stay in the scratch directory. They repeat the committed ones and aren't added.
+  - No README step was missing.
+- [x] Definition of done (`docs/roadmap.md`), checked 2026-10-17:
+  - **C1–C7 exit criteria recorded.** C1–C6 each have a sign-off here. C7's last open items are the resume bullets, the mock interview and the sign-off.
+  - **Every number traces to a report.** `make_results.py --check` exits 0: `docs/results.md` and the README table are generated from 63 clean reports. Of the README's 35 decimal numbers outside the table, 31 sit in a sentence with a report link; the other 4 are version numbers and Orin specifications cited from NVIDIA's pages.
+  - **Both models have a final engine and an explained trade-off.** DeepLab INT8+FP16 with the stem in FP16, and SegFormer FP16 (`docs/results.md` §1, §4, §5; D-033, D-035).
+  - **The pipeline blocks a broken model.** SegFormer INT8+FP16 without D-034's exclusion is blocked at golden parity on the T4, and BGR preprocessing at parity in CI (`test_deploy.py`) and in the Airflow DAG.
+  - **No Cityscapes data or derived tensors in git, in any commit.** `git log --all --name-only` filtered for `.npz .npy .png .jpg .jpeg .cache .calib .engine .plan .onnx .pt .pth`, `leftImg8bit` and `gtFine` finds only `docs/figures/pareto__deeplabv3plus_mbv2.png` and `pareto__segformer_b0.png`, the plots drawn from reports.
+  - **`docs/decisions.md` complete.** D-001 to D-044 with no gaps, each with Context, Options, Rationale and Consequences. `grep -rn "TODO(Anuj)" docs/` finds nothing.
+  - **GPU instance.** Terminated (D-044, below).
+- [ ] CI green after the C7 push (run id)
 - [x] GPU instance terminated (D-044, 2026-10-17): `gpu-destroy.sh` dry run, then `--yes`. `gpu-status.sh` finds no instance; no EBS volumes or snapshots remain in us-east-1. The project used 11.60 GPU-hours of the ~25 budgeted.
 - [ ] Resume bullets (`private/`), final mock interview, sign-off
 
