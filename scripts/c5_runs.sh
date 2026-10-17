@@ -24,7 +24,7 @@ cd "$(dirname "$0")/.."
 read -ra MODELS <<< "${MODELS:-segformer_b0 deeplabv3plus_mbv2}"
 QCFG=int8_percentile  # C3's calibration for both models (D-019)
 
-fp32() { ls artifacts/onnx/"$1"/"$1"__fp32__*.onnx; }
+fp32() { ls artifacts/onnx/"$1"/"$1"__fp32__????????????.onnx; }  # <id[:12]>.onnx only
 sha() { git rev-parse --short HEAD; }
 
 # Run a gate command: exit 1 means "checks failed, report written" and is a result to

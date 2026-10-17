@@ -26,6 +26,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import tempfile
 import time
 from pathlib import Path
@@ -272,10 +273,16 @@ def quantize_modelopt(
     os.close(fd)
     tmp = Path(tmp_name)
     try:
-        summary = runner({"onnx_path": str(fp32_path.resolve()), "output_path": str(tmp.resolve()),
-                          "calibration_data": str(calib_dir.resolve()), "input_name": INPUT_NAME,
-                          "calibration_method": settings["calibration_method"],
-                          "calibrate_per_node": CALIBRATE_PER_NODE})  # fmt: skip
+        # ModelOpt writes intermediate models next to its input (and leaves them behind if
+        # interrupted), so it reads a copy in a scratch directory, never artifacts/onnx/.
+        with tempfile.TemporaryDirectory() as scratch:
+            src = Path(scratch) / "model.onnx"
+            shutil.copyfile(fp32_path, src)
+            summary = runner({"onnx_path": str(src), "output_path": str(tmp.resolve()),
+                              "calibration_data": str(calib_dir.resolve()),
+                              "input_name": INPUT_NAME,
+                              "calibration_method": settings["calibration_method"],
+                              "calibrate_per_node": CALIBRATE_PER_NODE})  # fmt: skip
         model = onnx.load(str(tmp))
         props = {p.key: p.value for p in onnx.load(str(fp32_path)).metadata_props}
         onnx.helper.set_model_props(model, {

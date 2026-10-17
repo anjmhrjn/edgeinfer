@@ -261,3 +261,12 @@ def test_real_modelopt_quantize_on_tiny_model(setup):
     backend = get_backend("ort_cpu")
     backend.load(path, cfg)
     assert backend.infer(x).dtype == np.float32
+
+
+def test_modelopt_reads_a_copy_of_the_fp32_model(setup):
+    """ModelOpt leaves intermediate files next to its input; they must not land in the
+    artifact directory (an interrupted run once left two there)."""
+    cfg, _, _, root, tmp, fp32 = setup
+    fake = FakeModelOptQuantize()
+    quantize_modelopt(fp32, cfg, _minmax(setup), root, tmp / "onnx", tmp / "calib", runner=fake)
+    assert Path(fake.calls[0]["onnx_path"]).parent != fp32.parent
