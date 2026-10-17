@@ -8,12 +8,14 @@
 #   remote.sh push-artifacts <path>.. copy files or directories under artifacts/ (ONNX models
 #                                    with their sidecars, golden outputs)
 #   remote.sh pull-reports           copy artifacts/reports/ back to the Mac
+#   remote.sh sha256 <path>          print the sha256 of a file under artifacts/ on the
+#                                    instance (exit 1 if it isn't there); registry checks
 #
 # Cityscapes data goes only to this private instance, never anywhere public (license).
 set -euo pipefail
 source "$(dirname "$0")/gpu-config.sh"
 
-usage() { sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 [ $# -ge 1 ] || usage
 action=$1
 shift
@@ -104,6 +106,14 @@ sudo docker run --rm $tty --gpus all --hostname $GPU_NAME \\
         ;;
     pull-reports)
         pull_reports
+        ;;
+    sha256)
+        [ $# -eq 1 ] || usage
+        case "$1" in
+            artifacts/?*) ;;
+            *) die "sha256 takes a path under artifacts/, got $1" ;;
+        esac
+        remote_sh "set -o pipefail; cd $GPU_REMOTE_DIR && sha256sum $(printf '%q' "$1") | cut -d' ' -f1"
         ;;
     *) usage ;;
 esac

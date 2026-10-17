@@ -7,6 +7,8 @@ data/raw/
 artifacts/*
 # Reports hold metrics only (no data) and are committed for traceability (D-010).
 !artifacts/reports/
+# The model registry: ids, hashes, locations and report paths only (D-037).
+!artifacts/registry/
 *.npz
 *.engine
 *.plan

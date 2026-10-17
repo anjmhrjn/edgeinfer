@@ -6,6 +6,7 @@ precision: int8_fp16
 quant:
   config: int8_percentile
   exclusions: null
+  groups: null
 fp16: null
 build: build
 target: trt

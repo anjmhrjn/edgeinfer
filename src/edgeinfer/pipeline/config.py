@@ -41,6 +41,7 @@ def _path(name_or_path: str | Path, subdir: Path) -> Path:
 class QuantSpec:
     config: str  # configs/quant/<name>.yaml, or a path
     exclusions: str | None  # configs/quant/exclusions/<name>.yaml, or a path; null: none
+    groups: str | None  # layer-group rules; null: configs/quant/groups/<model>.yaml
 
     @classmethod
     def from_dict(cls, d: Any, where: str) -> QuantSpec:
@@ -48,6 +49,7 @@ class QuantSpec:
         return cls(
             config=str(d["config"]),
             exclusions=None if d["exclusions"] is None else str(d["exclusions"]),
+            groups=None if d["groups"] is None else str(d["groups"]),
         )
 
 
@@ -78,11 +80,14 @@ class Recipe:
         }
         for key, needed in needs.items():
             if needed and d[key] is None:
-                raise ConfigError(f"{where}.{key}: required for precision {precision!r} "
-                                  f"on target {target!r}")  # fmt: skip
+                raise ConfigError(
+                    f"{where}.{key}: required for precision {precision!r} on target {target!r}"
+                )
             if not needed and d[key] is not None:
-                raise ConfigError(f"{where}.{key}: not used for precision {precision!r} "
-                                  f"on target {target!r}; set it to null")  # fmt: skip
+                raise ConfigError(
+                    f"{where}.{key}: not used for precision {precision!r} "
+                    f"on target {target!r}; set it to null"
+                )
         return cls(
             name=name,
             model=str(d["model"]),
@@ -119,8 +124,10 @@ class ParityGate:
     @classmethod
     def from_dict(cls, d: Any, where: str) -> ParityGate:
         d = _take(cls, d, where)
-        return cls(manifest=str(d["manifest"]),
-                   inputs=_choice(d["inputs"], PARITY_INPUTS, f"{where}.inputs"))  # fmt: skip
+        return cls(
+            manifest=str(d["manifest"]),
+            inputs=_choice(d["inputs"], PARITY_INPUTS, f"{where}.inputs"),
+        )
 
 
 @dataclass(frozen=True)

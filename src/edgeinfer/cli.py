@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import time
 import traceback
 from collections.abc import Iterator
 from pathlib import Path
@@ -167,6 +168,7 @@ def cmd_export(args: argparse.Namespace) -> int:
     if dirty:
         print("warning: uncommitted changes; this report must not back any published number")
     out_root = Path(args.out) if args.out else ONNX_DIR
+    t0 = time.time()
     path, meta = export_model(cfg, out_root, force=args.force)
     ops = Counter(n.op_type for n in onnx.load(str(path)).graph.node)
     report = make_report(
@@ -188,12 +190,19 @@ def cmd_export(args: argparse.Namespace) -> int:
             "op_counts": dict(sorted(ops.items())),
             "sanity_max_abs": meta["sanity_max_abs"],
             "sanity_max_abs_ref": meta["sanity_max_abs_ref"],
+            "reused": _reused(path, t0),
         },
     )
     report_dir = Path(args.report_dir) if args.report_dir else REPORTS_DIR
     out = write_report(report, report_dir / f"export__{cfg.name}__{sha[:7]}.json")
     print(f"{path} ({meta['size_bytes'] / 1e6:.1f} MB, {sum(ops.values())} nodes) -> {out}")
     return 0
+
+
+def _reused(path: Path, t0: float) -> bool:
+    """True when the output file predates this command: an existing artifact with the same
+    id was reused instead of made. The deploy pipeline reports it as a skipped stage."""
+    return path.stat().st_mtime < t0
 
 
 def _print_findings(findings: list[dict[str, str]]) -> None:
@@ -418,6 +427,7 @@ def cmd_quantize(args: argparse.Namespace) -> int:
                     "device": f"cpu ({platform.machine()})", "versions": {}}  # fmt: skip
     metrics: dict = {}
     findings = []
+    t0 = time.time()
     try:
         calibration_entries(qcfg.calibration)  # refuse a bad manifest before loading data
         out_root = Path(args.out_root) if args.out_root else None
@@ -456,6 +466,7 @@ def cmd_quantize(args: argparse.Namespace) -> int:
             metrics = {k: meta[k] for k in keys} | extra
             metrics["calibration_dev"] = {k: cal[1][k] for k in
                                           ("seconds", "peak_rss_bytes", "n_tensors")}  # fmt: skip
+            metrics["reused"] = _reused(path, t0)
             print(f"{path} ({meta['size_bytes'] / 1e6:.1f} MB), quantized "
                   f"{meta['placement']['quantized_nodes']}, excluded "
                   f"{meta['placement']['excluded_nodes'] or 'none'}")  # fmt: skip
@@ -515,6 +526,7 @@ def cmd_fp16(args: argparse.Namespace) -> int:
                     "versions": package_versions("onnx")}  # fmt: skip
     metrics: dict = {}
     findings = []
+    t0 = time.time()
     try:
         path, meta = convert_fp16(
             fp32_path, cfg, fcfg, cityscapes_root(args.root),
@@ -526,6 +538,7 @@ def cmd_fp16(args: argparse.Namespace) -> int:
         metrics = {k: meta[k] for k in ("file", "sha256", "size_bytes", "parent_artifact_id",
                                         "calibration", "placement", "autocast_seconds",
                                         "autocast_peak_rss_bytes")}  # fmt: skip
+        metrics["reused"] = _reused(path, t0)
         pl = meta["placement"]
         print(f"{path} ({meta['size_bytes'] / 1e6:.1f} MB): {pl['fp16_nodes']} nodes FP16, "
               f"{len(pl['fp32_nodes'])} kept FP32, {pl['cast_nodes']} casts")  # fmt: skip
@@ -849,6 +862,7 @@ def cmd_build(args: argparse.Namespace) -> int:
               "build_config": bcfg.to_dict(), "debug_outputs": debug}  # fmt: skip
     metrics: dict = {}
     findings = []
+    t0 = time.time()
     try:
         roots = {"out_root": Path(args.out_root)} if args.out_root else {}
         path, meta = build_engine(onnx_path, cfg, bcfg, debug, **roots)
@@ -857,6 +871,7 @@ def cmd_build(args: argparse.Namespace) -> int:
                 "num_layers", "layers_file", "device_memory_bytes", "timing_cache",
                 "build_seconds")  # fmt: skip
         metrics = {k: meta[k] for k in keys}
+        metrics["reused"] = _reused(path, t0)
         # What the engine actually runs in (strong typing should match the ONNX model).
         layers = json.loads((path.parent / meta["layers_file"]).read_text())
         metrics["layer_output_datatypes"] = layer_datatypes(layers)

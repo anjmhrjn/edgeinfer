@@ -71,9 +71,15 @@ def _git(*args: str) -> str:
     ).stdout.strip()
 
 
+# The model registry records what was published. It is no input to any measurement and
+# isn't synced to the GPU instance, so its changes don't make a report dirty (D-037).
+DIRTY_EXCLUDE = (":(exclude)artifacts/registry",)
+
+
 def git_state() -> tuple[str, bool]:
     """(HEAD SHA, whether tracked files have uncommitted changes)."""
-    return _git("rev-parse", "HEAD"), bool(_git("status", "--porcelain", "--untracked-files=no"))
+    status = _git("status", "--porcelain", "--untracked-files=no", "--", ".", *DIRTY_EXCLUDE)
+    return _git("rev-parse", "HEAD"), bool(status)
 
 
 def package_versions(*names: str) -> dict[str, str]:

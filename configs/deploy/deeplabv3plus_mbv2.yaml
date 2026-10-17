@@ -5,6 +5,7 @@ precision: int8_fp16
 quant:
   config: int8_percentile
   exclusions: deeplabv3plus_mbv2__sens
+  groups: null
 fp16: null
 build: build
 target: trt

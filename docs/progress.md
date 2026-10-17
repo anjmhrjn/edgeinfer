@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C6 — Gated deployment pipeline (CPU + GPU)
-**Next step:** C6 step 3, the pipeline core (stages, executors, gate reuse, deploy report). The GPU instance is stopped, not terminated; C6's GPU session is within days (D-023).
+**Next step:** C6 step 5, the `edgeinfer deploy` CLI (run, `--stage`, `--dry-run`, rollback, status) and the report codes. The GPU instance is stopped, not terminated; C6's GPU session is within days (D-023).
 
 ## C6 — Gated deployment pipeline
 Plan agreed 2026-10-17:
@@ -24,8 +24,11 @@ Mac:
   - Airflow 3 import paths: `from airflow.sdk import DAG`; `from airflow.providers.standard.operators.bash import BashOperator`. The standard provider (1.19.0 in the constraints) ships with `apache-airflow-core`.
   - `airflow dags test` on macOS arm64 runs a DAG in-process without a scheduler, and `{{ params.* }}` templating works. A non-zero exit fails the task and the run. BashOperator's `skip_on_exit_code` defaults to 99, so our exit codes 0/1/2 keep their meaning.
 - [x] Recipe and gates configs and loaders (`pipeline/config.py`, `configs/gates.yaml`, `configs/deploy/`)
-- [ ] Pipeline core: stages, executors, gate reuse, deploy report
-- [ ] Registry: publish, aliases, rollback, status
+- [x] Pipeline core: stages, executors, gate reuse, deploy report (`pipeline/runner.py`, `executor.py`, `reuse.py`)
+  - Producing commands (export, quantize, fp16, build) now report `reused`: the output file predates the command, because an artifact with the same id already existed.
+  - `remote.sh sha256 <path>` checks a file on the instance, for rollback.
+  - Found while writing it: a committed registry would mark every later report `git_dirty`. After a publish it is a modified tracked file, and on the instance, where it isn't synced, git sees it as deleted. `reports.git_state` now leaves `artifacts/registry/` out of the dirty check: it records results and is never an input to a measurement (D-037).
+- [x] Registry: publish, aliases, rollback (`pipeline/registry.py`); tests `test_registry.py`, `test_reuse.py`, and `test_deploy.py` on the fixture
 - [ ] `edgeinfer deploy` CLI and report codes
 - [ ] Fixture end to end in CI: pass, rerun reused, BGR blocked, rollback
 - [ ] DeepLab final recipe on `ort_cpu` to `dev`; `--dry-run` of the `trt` recipes
