@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C5 — TensorRT INT8 and mixed precision (GPU)
-**Next step:** C5 Mac code: `edgeinfer candidates`, the TensorRT scorer and the ModelOpt placement artifact. The GPU instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
+**Next step:** finish the ModelOpt placement run on the Mac, push to GitHub (CI), then GPU session 1 (checklist under C5). The instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
 
 ## C5 — TensorRT INT8 and mixed precision
 Plan agreed 2026-10-16:
@@ -26,9 +26,21 @@ Mac:
 - [x] `int8_fp16` artifacts: `edgeinfer quantize --float-dtype fp16`, placement and scale-rounding checks, `VALIDATE_FLOAT_PRECISION`; `int8_fp16` tolerance set = `int8` (D-031)
 - [x] Precheck on ORT CPU (`scripts/c5_runs.sh precheck`, reports `*int8_fp16*__439d506.json`): validator clean, golden parity passes, `sens_val100` within 0.055 points of the C3 INT8 models (D-031 Evidence)
 - [x] Candidate sets (`analyze/candidates.py`), engine layer summary and per-layer profile attribution (`backends/trt_layers.py`); code and tests, not yet wired into the CLI
-- [ ] ModelOpt placement artifact (`edgeinfer quantize --tool modelopt`)
-- [ ] `edgeinfer candidates`, TensorRT scorer (`edgeinfer sensitivity --candidates`), build layer check, trtexec per-layer profile
-- [ ] `scripts/c5_runs.sh` GPU phases, `scripts/pareto.py`, decision records D-032+
+- [x] Candidate sets (`edgeinfer candidates`): 32 INT8 + INT8+FP16 configurations per model, every one validated (`candidates__<model>__int8_percentile__top5__95ef750.json`); TensorRT scorer (`edgeinfer sensitivity --candidates`, D-032)
+- [x] Build: engine layer summary and Q/DQ fusion check (`BUILD_QDQ_UNFUSED`); trtexec `--profile` (per-layer time by layer kind)
+- [x] Pareto front and the final-engine rule, fixed before any INT8 result (`analyze/pareto.py`, D-033); `scripts/pareto.py` (matplotlib, `plots` group)
+- [x] `scripts/c5_runs.sh` (Mac and GPU phases), `scripts/c5_gpu.py` (session-1 phases in the container)
+- [x] ModelOpt placement artifact (`edgeinfer quantize --tool modelopt`); SegFormer min/max with our placement done (`quantize__segformer_b0__int8_minmax_fp16__ort__3064e28.json`)
+- [ ] ModelOpt placement for both models, DeepLab min/max with ours (`scripts/c5_runs.sh placement`): ModelOpt's per-node calibration on 200 images ran > 60 min for SegFormer on the Mac without finishing, so it runs as the last Mac job
+- [ ] CI green on GitHub for the C5 Mac commits
+
+GPU session 1 (accuracy, ~2.5 h), in order:
+1. `scripts/gpu-up.sh`; `scripts/c5_runs.sh push`; `push-data` isn't needed (val and golden are on the instance from C4)
+2. `scripts/c5_runs.sh smoke`: the image rebuilds once (new `uv.lock`). Then: GPU tests including `test_implicit_int8_is_gone` (D-031 on 11.3) and `test_int8_engine_fuses_qdq`, whose printed layer summary is the first real check of the inspector format; `trtexec --help` for the profile flags
+3. `scripts/c5_runs.sh gpu build`: check every INT8 build report for `BUILD_QDQ_UNFUSED` before going on
+4. `scripts/c5_runs.sh gpu parity`, then `gpu sub` (sens_val100 for FP32, FP16, C3 INT8, INT8+FP16, placement pair)
+5. `scripts/c5_runs.sh gpu sens` (both models)
+6. Pull reports, log the session in `private/gpu-log.md`, `scripts/gpu-down.sh`
 
 ## C4 — GPU environment, TensorRT FP32/FP16, performance probe
 The GPU quota request (2026-10-14) is still pending, so C4 is split. **C4a** prepares everything that can be written and tested on the Mac; **C4b** runs it on the T4. The roadmap's C4 exit criteria are met in C4b. Plan agreed 2026-10-16: NGC TensorRT container, `cuda-python` for device buffers and timing, an optional `TimedBackend` protocol for per-stage times, SSH limited to the current IP.

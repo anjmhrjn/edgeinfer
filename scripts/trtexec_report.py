@@ -18,6 +18,7 @@ from pathlib import Path
 
 from edgeinfer.artifacts import load_sidecar
 from edgeinfer.backends.trt import runtime_fingerprint
+from edgeinfer.backends.trt_layers import profile_summary
 from edgeinfer.perf.probe import load_perf_config
 from edgeinfer.perf.telemetry import GpuSampler, clock_findings
 from edgeinfer.perf.trtexec import compare_compute, summarize_times
@@ -26,6 +27,12 @@ from edgeinfer.reports import REPORTS_DIR, git_state, make_report, write_report
 # Flags checked against `trtexec --help` of TensorRT 11.3.0.99 on 2026-10-16. warmUp is in
 # milliseconds; duration=0 makes the iteration count the only stopping rule.
 TRTEXEC_FLAGS = ["--warmUp=2000", "--iterations=1000", "--duration=0"]
+# --profile (C5 task 5): a second, separate run with per-layer timing. Per-layer profiling
+# synchronizes after every layer, so its total is above the plain run's; it is used for
+# shares of time by layer kind, never as the engine's latency. To check against
+# `trtexec --help` of TensorRT 11.3 in the first C5 session.
+PROFILE_FLAGS = ["--warmUp=2000", "--iterations=200", "--duration=0", "--dumpProfile",
+                 "--separateProfileRun"]  # fmt: skip
 
 
 def main() -> int:
@@ -33,6 +40,8 @@ def main() -> int:
     ap.add_argument("--engine", required=True)
     ap.add_argument("--perf-report", help="perf report of the same engine to compare against")
     ap.add_argument("--out", help="report path (default: artifacts/reports/trtexec__...)")
+    ap.add_argument("--profile", action="store_true",
+                    help="also a per-layer profile run, summarized by layer kind")  # fmt: skip
     ap.add_argument(
         "--clock-mhz",
         type=int,
@@ -62,6 +71,13 @@ def main() -> int:
         with GpuSampler() as sampler:
             subprocess.run(cmd, check=True, stdout=subprocess.DEVNULL)
         spans = summarize_times(json.loads(times.read_text()))
+        profile = None
+        if args.profile:
+            prof = Path(tmp) / "profile.json"
+            pcmd = ["trtexec", f"--loadEngine={engine}", *PROFILE_FLAGS, f"--exportProfile={prof}"]
+            subprocess.run(pcmd, check=True, stdout=subprocess.DEVNULL)
+            layers = json.loads((engine.parent / meta["layers_file"]).read_text())
+            profile = profile_summary(json.loads(prof.read_text()), layers)
 
     findings = clock_findings([sampler.summary] if sampler.summary else [], lock)
     if sampler.error:
@@ -71,6 +87,8 @@ def main() -> int:
     metrics: dict = {"spans_ms": spans, "telemetry_during": sampler.summary}
     if probe is not None:
         metrics |= compare_compute(spans, probe["metrics"]["spans_ms"])
+    if profile is not None:
+        metrics["profile"] = profile
     runtime = runtime_fingerprint()
     sha, _ = git_state()
     report = make_report(
@@ -82,6 +100,7 @@ def main() -> int:
                                    "cuda_driver": str(runtime["cuda_driver"]),
                                    "cuda_runtime": str(runtime["cuda_runtime"])}},
         inputs={"artifact": engine.name, "trtexec_flags": TRTEXEC_FLAGS, "gpu_clock_mhz": lock,
+                "profile_flags": PROFILE_FLAGS if args.profile else None,
                 "perf_report": Path(args.perf_report).name if args.perf_report else None},
         metrics=metrics, findings=findings, passed=passed,
     )  # fmt: skip
