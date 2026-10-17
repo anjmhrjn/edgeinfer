@@ -1,0 +1,747 @@
+{
+  "schema_version": "1",
+  "tool": "candidates",
+  "created_at": "2026-10-17T01:35:42+00:00",
+  "git_sha": "83ea9db0ced7b64401b447cbe580340bb02d59f6",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "onnxruntime.quantization+modelopt",
+  "precision": "int8_fp16",
+  "artifact_id": "none",
+  "inputs": {
+    "artifact": "segformer_b0__fp32__0ef7fcdb0cdc.onnx",
+    "quant_config": {
+      "name": "int8_percentile",
+      "activation_type": "int8",
+      "weight_type": "int8",
+      "activation_symmetric": true,
+      "weight_symmetric": true,
+      "per_channel": true,
+      "op_types": [
+        "Conv",
+        "MatMul",
+        "Gemm"
+      ],
+      "quantize_outputs": false,
+      "quantize_bias": false,
+      "calibration": {
+        "manifest": "calib_train200",
+        "limit": null,
+        "method": "percentile",
+        "num_bins": 2048,
+        "num_quantized_bins": null,
+        "percentile": 99.99,
+        "chunk_images": 2
+      }
+    },
+    "ranking_report": "sensitivity__segformer_b0__int8_percentile__sens_val100__cb60f28.json",
+    "top": 5,
+    "base_exclusions": "configs/quant/exclusions/segformer_b0__unfused_fp16.yaml"
+  },
+  "thresholds": {},
+  "metrics": {
+    "groups": [
+      "s2.mlp",
+      "s3.attn_matmul",
+      "s2.attn_matmul",
+      "s0.patch_embed",
+      "s0.attn_proj"
+    ],
+    "n_configs": 32,
+    "base_exclusions": {
+      "name": "segformer_b0__unfused_fp16",
+      "model": "segformer_b0",
+      "groups": [],
+      "nodes": [
+        "node_MatMul_6",
+        "node_conv2d_2",
+        "node_MatMul_86",
+        "node_conv2d_4",
+        "node_conv2d_5",
+        "node_MatMul_174",
+        "node_conv2d_7",
+        "node_MatMul_251",
+        "node_conv2d_9",
+        "node_conv2d_10",
+        "node_MatMul_339",
+        "node_conv2d_12",
+        "node_MatMul_416",
+        "node_conv2d_14",
+        "node_conv2d_15",
+        "node_conv2d_16",
+        "node_conv2d_17"
+      ]
+    },
+    "calibration_id": "59a94b20667a9f49ee7786b2120ceab86cdabc2a5a331ccf97a9fa00324cbdbf",
+    "configs": [
+      {
+        "excluded": [],
+        "int8": {
+          "file": "segformer_b0__int8__51a788e321a4.onnx",
+          "artifact_id": "51a788e321a45f901a60c0ba146929deddc1d6d9a0c938f824135e99591782cf"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__1a423bded776.onnx",
+          "artifact_id": "1a423bded7768944366a8f5414f041139c6b872d5f20bcc56ee18d8ddb1952e0"
+        },
+        "scale_rounding": {
+          "n_values": 10701,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__7d4e7d674f66.onnx",
+          "artifact_id": "7d4e7d674f66f41feb81eaaa3ad23aa94eb76be871ea0988633c0d0e6978d1e9"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__7bd520344d9d.onnx",
+          "artifact_id": "7bd520344d9d194e2015c0f3a5057a80e9e7ff9a9945290e4879a3a0b4821098"
+        },
+        "scale_rounding": {
+          "n_values": 9093,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__3cabf85ad2b9.onnx",
+          "artifact_id": "3cabf85ad2b9028695be13264d75723ea97b849115e068007e2f0e4865a83da7"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__81753c92af76.onnx",
+          "artifact_id": "81753c92af764d65bb118e0f09f2371b2ed6fb570f258d615c3068ae082b3c97"
+        },
+        "scale_rounding": {
+          "n_values": 10685,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.attn_matmul"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__1509f33e61b4.onnx",
+          "artifact_id": "1509f33e61b4330565f4d7a84e7785e6ba3a578e6ec597c52b48becf5763f1c3"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__dea879af980b.onnx",
+          "artifact_id": "dea879af980b0c738604325b0161ed0e23f78ce675ade94062ffbf655918f39e"
+        },
+        "scale_rounding": {
+          "n_values": 10685,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__8d773e32bf41.onnx",
+          "artifact_id": "8d773e32bf41c09e9dbe01158bde66ab44a9646cc28d31c734af1d8e4b8500d4"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__27a8f90514d8.onnx",
+          "artifact_id": "27a8f90514d87720474abd1e2a553dadf40d06e119766c03f338448963e5d72f"
+        },
+        "scale_rounding": {
+          "n_values": 10667,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__45f307e94e3a.onnx",
+          "artifact_id": "45f307e94e3a04a632dc860848e8a6ae4e4c27d1e105a77679d26a2953c213e1"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__6221ab64a912.onnx",
+          "artifact_id": "6221ab64a912b047e2d5250db845abf4ebf5ce2d4b54d391ae46d2ae6ee7e0b9"
+        },
+        "scale_rounding": {
+          "n_values": 10433,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__6320ad702908.onnx",
+          "artifact_id": "6320ad702908750d450d60e8d5da8058408298b56c48da312b689c060a1cfed0"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__99f91e5fc0df.onnx",
+          "artifact_id": "99f91e5fc0dfa9df7904610cb0189ab01bd91478d0c6de8b5a6559020181b7f4"
+        },
+        "scale_rounding": {
+          "n_values": 9077,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s2.attn_matmul"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__0b51b7f49c50.onnx",
+          "artifact_id": "0b51b7f49c500f367e1c79772c783e04036e03c6655309e510de38eeda3f9665"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__9407c3615668.onnx",
+          "artifact_id": "9407c3615668f98d682fce192b9b813505ec4c11978e31d5b93af97cd1fc1f60"
+        },
+        "scale_rounding": {
+          "n_values": 9077,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__0ad40b63d380.onnx",
+          "artifact_id": "0ad40b63d3807c6312d3a5f6a40b2949e1f05b2515833e2f08e1512235d2d0c6"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__a27d797a8f90.onnx",
+          "artifact_id": "a27d797a8f905513b9d2716b95dc3d97d3fafa32633dadce3e73ceaecb53d9a2"
+        },
+        "scale_rounding": {
+          "n_values": 9059,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__8eef6448e2f7.onnx",
+          "artifact_id": "8eef6448e2f7b74587a7e7a154738f89a00915f5506c1fe76c55dfa6955ca606"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__9043059b1f35.onnx",
+          "artifact_id": "9043059b1f352d555794fc582b0e5f230f076debfa69a55cbbbc9173179d0c70"
+        },
+        "scale_rounding": {
+          "n_values": 8825,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul",
+          "s2.attn_matmul"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__78d5cfd75dc7.onnx",
+          "artifact_id": "78d5cfd75dc712422ac8023c05033c1f6e743033209e373e1c4ac31a44fb62c1"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__7b8b31e896cc.onnx",
+          "artifact_id": "7b8b31e896cc7e1207468a7ab2ce76afee63fa6224b17c76fe939f106971864f"
+        },
+        "scale_rounding": {
+          "n_values": 10669,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul",
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__2e30d8d90ecd.onnx",
+          "artifact_id": "2e30d8d90ecd1dd03dcbeb343425712da88f7cea793be7ad9abe0f53d10f4051"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__69b189edd47f.onnx",
+          "artifact_id": "69b189edd47f8d86b87898abf73e728d0bf43a50cdc10841779ca09fda21e567"
+        },
+        "scale_rounding": {
+          "n_values": 10651,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__684ef7cab4a0.onnx",
+          "artifact_id": "684ef7cab4a05a5716fc5088096a820698d235df82b6f47d9ff8e1b10eac7736"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__40b6d7d6fcc2.onnx",
+          "artifact_id": "40b6d7d6fcc281294fa5fad68ee427da9c56d868ece06228dc40ef1e27ed091c"
+        },
+        "scale_rounding": {
+          "n_values": 10417,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.attn_matmul",
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__970952e31027.onnx",
+          "artifact_id": "970952e310279c6ec3b7717d9673287fa71da2a6376f5f3f491503b1c4122131"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__681dfc758751.onnx",
+          "artifact_id": "681dfc7587514f63cff00fafef671f37ae6c1c844d9846c4a6718abc444063f3"
+        },
+        "scale_rounding": {
+          "n_values": 10651,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.attn_matmul",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__7c73c2b9ae3a.onnx",
+          "artifact_id": "7c73c2b9ae3a92be8e3398c9a79fa0dc9b2a6f765c66dc7e71446970fcb4a568"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__70c4a4888faa.onnx",
+          "artifact_id": "70c4a4888faa0b13545bd168e30ad6f392c694a6084cae52c5fd08118574bd76"
+        },
+        "scale_rounding": {
+          "n_values": 10417,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__cdfdb22c2190.onnx",
+          "artifact_id": "cdfdb22c2190f9a88946b28eced54eecf78350f253820ddb74e9693c97d62c25"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__73e3f1bd3f00.onnx",
+          "artifact_id": "73e3f1bd3f00f4d01db808f96dbb4e26f14ed1bbf89617f01673d88173cd7772"
+        },
+        "scale_rounding": {
+          "n_values": 10399,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul",
+          "s2.attn_matmul"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__63407589da88.onnx",
+          "artifact_id": "63407589da88811de78d23ebd80452af6b4ffce78fbdb94664d286103c331d94"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__779ead8fe71c.onnx",
+          "artifact_id": "779ead8fe71ce71cc7ae96cdfb0381da3da29cb5cf926082ce82c941606a09fa"
+        },
+        "scale_rounding": {
+          "n_values": 9061,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul",
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__5f0c64572e77.onnx",
+          "artifact_id": "5f0c64572e776f6098d69f41602e5456853861489a46d47e730e460822ebc9ff"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__d4e8e832dee3.onnx",
+          "artifact_id": "d4e8e832dee356fe9c31c7ffcc36cd80d54d24ad88b642ec64e6fa3af6dd886e"
+        },
+        "scale_rounding": {
+          "n_values": 9043,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__279d8da459d6.onnx",
+          "artifact_id": "279d8da459d69541608fef982ba233312fa58e8fbad12976c3b9b5331ceca87a"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__a30a59af6fc4.onnx",
+          "artifact_id": "a30a59af6fc405fa7aa536be8093e2b464f976ba9002d7f77d397e28699720a8"
+        },
+        "scale_rounding": {
+          "n_values": 8809,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s2.attn_matmul",
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__b91a5ef2f83b.onnx",
+          "artifact_id": "b91a5ef2f83b3de9b0e7d878b314df30a2b6fc720799df901a77b66fef7f9692"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__0b7b5f2bae79.onnx",
+          "artifact_id": "0b7b5f2bae794c93ec9f54b5ef2459d6a22a6f84206bee8b480d3a4a7700def5"
+        },
+        "scale_rounding": {
+          "n_values": 9043,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s2.attn_matmul",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__dd99f34fbd02.onnx",
+          "artifact_id": "dd99f34fbd02c98aaf3c85fdc28df5c461538b7fa41d728dca78027cb9191ee4"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__3bb86c53f425.onnx",
+          "artifact_id": "3bb86c53f4256ce10ba0fbd65da7f12831c751f92b34b7c0b810827ffc5301eb"
+        },
+        "scale_rounding": {
+          "n_values": 8809,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__18a5df2ebd54.onnx",
+          "artifact_id": "18a5df2ebd5415950c03450f70f39d8e71bc855e1138bfb675e74440d4028118"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__f6230e1d96b2.onnx",
+          "artifact_id": "f6230e1d96b29d278bbfd2c07b8d74d51fc01cd7fe2f4b62bfd8963f83b2edf9"
+        },
+        "scale_rounding": {
+          "n_values": 8791,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul",
+          "s2.attn_matmul",
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__0db50e186b12.onnx",
+          "artifact_id": "0db50e186b126e731c4676a953820e677a075d5e1943606a6ab37986447f46a1"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__940fe19dd260.onnx",
+          "artifact_id": "940fe19dd26025f02b83c05705697d83de8ed93ae133ec3664da74e287ec1c48"
+        },
+        "scale_rounding": {
+          "n_values": 10635,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul",
+          "s2.attn_matmul",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__71c145643c68.onnx",
+          "artifact_id": "71c145643c68c16f17a637a1d530b44086926443757ede34e9bba9718ec38a32"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__715138aaa629.onnx",
+          "artifact_id": "715138aaa629d5a0d6a9041ecb82b4282b044b2d8285829b17f4da8acf5cc2bb"
+        },
+        "scale_rounding": {
+          "n_values": 10401,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul",
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__81b9e49aa7d0.onnx",
+          "artifact_id": "81b9e49aa7d0bc6dad38d93c2bd795efec184cbe63b540cf4f82dda440c85cdc"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__5af97abb48e5.onnx",
+          "artifact_id": "5af97abb48e5ae9991ffad04abcd970b5d4ff1c6ba88539cd90c9d32a679a2f4"
+        },
+        "scale_rounding": {
+          "n_values": 10383,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.attn_matmul",
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__3cfda9ae0b42.onnx",
+          "artifact_id": "3cfda9ae0b4210eb93302a6465840c05774fc71a6aef969cb1fd3eaae38ba977"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__011925e95aa9.onnx",
+          "artifact_id": "011925e95aa952b0d59788f6853442897348a43a4a52ccd9bda141304b17163e"
+        },
+        "scale_rounding": {
+          "n_values": 10383,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul",
+          "s2.attn_matmul",
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__d398a736ca36.onnx",
+          "artifact_id": "d398a736ca36d2a0887c42b0105c876f8be5ba2bbda679bb4eeb72c771c81648"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__60b3eab140a4.onnx",
+          "artifact_id": "60b3eab140a49fa9cf06f6e98dbf1e858055a72432918c0d8147a2b65a952f45"
+        },
+        "scale_rounding": {
+          "n_values": 9027,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul",
+          "s2.attn_matmul",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__eef9a339bb3c.onnx",
+          "artifact_id": "eef9a339bb3c26ba19ffc9a2810f0dad40b42ac4a2862c8dbff4866e3ba78215"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__1a6a8ff9f5eb.onnx",
+          "artifact_id": "1a6a8ff9f5eb227029bcca869333d4c47f11017beda52e2ef49772c03b780dcd"
+        },
+        "scale_rounding": {
+          "n_values": 8793,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul",
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__47be283fb7b0.onnx",
+          "artifact_id": "47be283fb7b0e5b1cb25aac1dcf5501811176467568ae0ad9a206c61e009d0fd"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__77f8e619e911.onnx",
+          "artifact_id": "77f8e619e911c6509411a171f06391f1042a4287639999124bb7c67034e958e3"
+        },
+        "scale_rounding": {
+          "n_values": 8775,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s2.attn_matmul",
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__3924ece76b02.onnx",
+          "artifact_id": "3924ece76b02e793c1c22e254848903c78ba14318ef774dcc69a22f30efc5b19"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__828e12fad2e9.onnx",
+          "artifact_id": "828e12fad2e9c0d6420683e532e88b20f1f94c241e946978d96ade4e4770127d"
+        },
+        "scale_rounding": {
+          "n_values": 8775,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul",
+          "s2.attn_matmul",
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__3545522d69d0.onnx",
+          "artifact_id": "3545522d69d0ee5ba2abb31e018e61a32e488ac0a4caf1f7ac71f6b56a149d13"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__84c0d3f031fd.onnx",
+          "artifact_id": "84c0d3f031fda31b41803d3f1d44a340a52e2c67cd1b279d74f0682d1c11ac48"
+        },
+        "scale_rounding": {
+          "n_values": 10367,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul",
+          "s2.attn_matmul",
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__1fd0977fcf18.onnx",
+          "artifact_id": "1fd0977fcf1830856121d6d99e3ceb96f9df5766bffd334a739de5bc54ae45ac"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__bb3b4804c78f.onnx",
+          "artifact_id": "bb3b4804c78f1db290efe318ec39ffa2cb7189f8927136ef1f7d027f74d8520f"
+        },
+        "scale_rounding": {
+          "n_values": 8759,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.0004779924270771892,
+          "max_rel_change_at": "val_555_DequantizeLinear_Output"
+        }
+      }
+    ]
+  },
+  "passed": true,
+  "findings": []
+}
