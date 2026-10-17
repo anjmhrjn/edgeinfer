@@ -1,0 +1,722 @@
+{
+  "schema_version": "1",
+  "tool": "candidates",
+  "created_at": "2026-10-17T00:12:47+00:00",
+  "git_sha": "95ef750819074753361646ef9a00fd0e59142479",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "onnxruntime.quantization+modelopt",
+  "precision": "int8_fp16",
+  "artifact_id": "none",
+  "inputs": {
+    "artifact": "deeplabv3plus_mbv2__fp32__98b5428431cd.onnx",
+    "quant_config": {
+      "name": "int8_percentile",
+      "activation_type": "int8",
+      "weight_type": "int8",
+      "activation_symmetric": true,
+      "weight_symmetric": true,
+      "per_channel": true,
+      "op_types": [
+        "Conv",
+        "MatMul",
+        "Gemm"
+      ],
+      "quantize_outputs": false,
+      "quantize_bias": false,
+      "calibration": {
+        "manifest": "calib_train200",
+        "limit": null,
+        "method": "percentile",
+        "num_bins": 2048,
+        "num_quantized_bins": null,
+        "percentile": 99.99,
+        "chunk_images": 2
+      }
+    },
+    "ranking_report": "sensitivity__deeplabv3plus_mbv2__int8_percentile__sens_val100__da584fa.json",
+    "top": 5
+  },
+  "thresholds": {},
+  "metrics": {
+    "groups": [
+      "bb.stem_16",
+      "bb.s24",
+      "head",
+      "bb.s64",
+      "bb.s32"
+    ],
+    "n_configs": 32,
+    "calibration_id": "a08dc6d943c00c7e77895d89f12ef4b740f78a28020ccaa048c07c8c265d18c9",
+    "configs": [
+      {
+        "excluded": [],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__2110a1487014.onnx",
+          "artifact_id": "2110a1487014c1037478ecb1e4d23766744e87975289d32c7741e36a4152d735"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__6f15e13a1fd0.onnx",
+          "artifact_id": "6f15e13a1fd033f0b8fef6f0954f9f41d712f85a2d3f26a1c1338a4672de6e25"
+        },
+        "scale_rounding": {
+          "n_values": 17747,
+          "subnormal_in_fp16": 42,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__d3dcca5f82e9.onnx",
+          "artifact_id": "d3dcca5f82e9806513f8dd89027767b8b934c0cc10023ce37543fcc7460ac2c2"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__0fc604c5e1e0.onnx",
+          "artifact_id": "0fc604c5e1e0f3b6fc3f1fc3663a3ee6624c00af756aaa8ae387bb6d63976a6c"
+        },
+        "scale_rounding": {
+          "n_values": 17661,
+          "subnormal_in_fp16": 32,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.s24"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__2e93120f0337.onnx",
+          "artifact_id": "2e93120f03370ebf806986336c8d19b8a7b0d742a8a3d2404feb70624111d23c"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__8afb883fc565.onnx",
+          "artifact_id": "8afb883fc565b7dbee9c658cc06065cd062c9ca71741c8fffd4218022cdb7212"
+        },
+        "scale_rounding": {
+          "n_values": 17207,
+          "subnormal_in_fp16": 42,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "head"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__4086fdb4ca46.onnx",
+          "artifact_id": "4086fdb4ca4652fa0fca5921269a3c8bd717427b1e670a3ced4941f20ff8ab31"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__55bc4f0cb796.onnx",
+          "artifact_id": "55bc4f0cb79649745bc53a0d0a8e279ec0b1e169338874c3f7bc62edd887776f"
+        },
+        "scale_rounding": {
+          "n_values": 17468,
+          "subnormal_in_fp16": 42,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.s64"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__e4a9ec7e3258.onnx",
+          "artifact_id": "e4a9ec7e32584cdf82336ccba451bd8078f5999c7702915260be1c79b3c739b1"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__04bf0c8a762c.onnx",
+          "artifact_id": "04bf0c8a762cc1d880dd046b4dbd27c221c7f9670a1a9817b1cb543ce7729e10"
+        },
+        "scale_rounding": {
+          "n_values": 14779,
+          "subnormal_in_fp16": 32,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__2595b0980e6e.onnx",
+          "artifact_id": "2595b0980e6ebfd2e14f5421f8d65dd4a11ede246e50f94c6bb083fd777528f3"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__3225e733b30d.onnx",
+          "artifact_id": "3225e733b30df90156f021e27f14e3d4c29ac6bb6c3b387dbad328c9ab1cdb22"
+        },
+        "scale_rounding": {
+          "n_values": 16579,
+          "subnormal_in_fp16": 41,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "bb.s24"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__ea21ef8fac1b.onnx",
+          "artifact_id": "ea21ef8fac1b7b423d03d0ee4e67eeaa54310cb08e49ec8cf26b7603d2dee40c"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__4935514c2109.onnx",
+          "artifact_id": "4935514c21096a98022dc86bfca8c57448dfa9ed9af891551e86c3b233923ca0"
+        },
+        "scale_rounding": {
+          "n_values": 17121,
+          "subnormal_in_fp16": 32,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "head"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__796c904e8237.onnx",
+          "artifact_id": "796c904e82378362e3daf31241e62bac7ca38e583779fe88879a8f7249d013b8"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__a8572303e027.onnx",
+          "artifact_id": "a8572303e027672477ef687609ab0a00357138b77a1e85b606d6ea8d64b408f1"
+        },
+        "scale_rounding": {
+          "n_values": 17382,
+          "subnormal_in_fp16": 32,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "bb.s64"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__4d35dfb201da.onnx",
+          "artifact_id": "4d35dfb201da0d8ffb274656d966eb904e365edfd0f15ed7bb6803e383bbe818"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__ab1efc6d606a.onnx",
+          "artifact_id": "ab1efc6d606a1a12afc16d22a1a3daf7b3e091935886408a7425e1c46afac811"
+        },
+        "scale_rounding": {
+          "n_values": 14693,
+          "subnormal_in_fp16": 22,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__f29eda5c67a3.onnx",
+          "artifact_id": "f29eda5c67a37c267b378188758223824267d919b8c40ab79242981ade231232"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__4dd8e007870f.onnx",
+          "artifact_id": "4dd8e007870f313dfc3674f778b9b364693aec4da3390d02a50c2a7dcec96cab"
+        },
+        "scale_rounding": {
+          "n_values": 16493,
+          "subnormal_in_fp16": 31,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.s24",
+          "head"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__b3788a442022.onnx",
+          "artifact_id": "b3788a4420227b1c57f39bb2d5cdb8c15ef6f4c811076470acb83c984433a900"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__4f84ec919eb1.onnx",
+          "artifact_id": "4f84ec919eb19eb544edc9df0a5014167a2939b61c8da3e913081df92c9988db"
+        },
+        "scale_rounding": {
+          "n_values": 16928,
+          "subnormal_in_fp16": 42,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.s24",
+          "bb.s64"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__473449ddd2c9.onnx",
+          "artifact_id": "473449ddd2c93a427fa8cf7e9ffc55aa35350d7cc3ce80b9928aaad59ecbacc8"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__60c5ef517bf3.onnx",
+          "artifact_id": "60c5ef517bf324fefbbc3d8a43162e511ce2d7c189414ee7cf874209459c150d"
+        },
+        "scale_rounding": {
+          "n_values": 14239,
+          "subnormal_in_fp16": 32,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.s24",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__4c2a5fb07b11.onnx",
+          "artifact_id": "4c2a5fb07b11587f7e17e0862820a0390bf143d407d7c4c8ead88f77053e2c5d"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__8c48b51dec2a.onnx",
+          "artifact_id": "8c48b51dec2a9026bc782b2ac23cdf98ebaa02d42d2fedc6434ce5944469073b"
+        },
+        "scale_rounding": {
+          "n_values": 16039,
+          "subnormal_in_fp16": 41,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "head",
+          "bb.s64"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__37520f9293bf.onnx",
+          "artifact_id": "37520f9293bf77b7a53302dd5302094d804e7635a2c904d510fbb61c1b1e46d4"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__7bb3c7a75c9c.onnx",
+          "artifact_id": "7bb3c7a75c9c36a0a78118d86b4cbd99c26ac5921b7bb1f2fb7b7cdcd416544b"
+        },
+        "scale_rounding": {
+          "n_values": 14500,
+          "subnormal_in_fp16": 32,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "head",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__727758da9d5a.onnx",
+          "artifact_id": "727758da9d5a8926c5a021e7481f82567d8530ffb62ee8505dbff05916838eba"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__cabbcdd25756.onnx",
+          "artifact_id": "cabbcdd25756a63aa69e71bea13dd88f8c7e3b171d989803f913d0b83c8a6863"
+        },
+        "scale_rounding": {
+          "n_values": 16300,
+          "subnormal_in_fp16": 41,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.s64",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__4e3005876704.onnx",
+          "artifact_id": "4e30058767044028fc372d8d6523027aee4cdbe084b982d4c715c4135df0b7c4"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__0d048cdad774.onnx",
+          "artifact_id": "0d048cdad774a5e5787c3b014f98ad8738cdfd96b9344af0d754ef89aaff0f04"
+        },
+        "scale_rounding": {
+          "n_values": 13611,
+          "subnormal_in_fp16": 31,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "bb.s24",
+          "head"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__b39957172918.onnx",
+          "artifact_id": "b399571729189a6eda68cce3379c6853b5e94e9e83ec69d54f500ffefecb8e2f"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__868043043c8a.onnx",
+          "artifact_id": "868043043c8ac22a4d24bfd430e217fac54a1fd7e4b5c4398bf9b3807ffcf246"
+        },
+        "scale_rounding": {
+          "n_values": 16842,
+          "subnormal_in_fp16": 32,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "bb.s24",
+          "bb.s64"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__cdea04757d8b.onnx",
+          "artifact_id": "cdea04757d8bf9c691182416f79ce1853b80cf78e2f0a42143caa445807e5411"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__eace5dd13a15.onnx",
+          "artifact_id": "eace5dd13a15c9069c2831c6ff918c572584012023b867c2560e3c66f0bc0542"
+        },
+        "scale_rounding": {
+          "n_values": 14153,
+          "subnormal_in_fp16": 22,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "bb.s24",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__e634f3c46c02.onnx",
+          "artifact_id": "e634f3c46c02a2fa37291cc58a57937652484327f2dfe141d1c6dad70b0360ec"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__135316774714.onnx",
+          "artifact_id": "135316774714202a522ec4268f3a3a24a17bb87d14ed3642b79fc2a8dbea0cbb"
+        },
+        "scale_rounding": {
+          "n_values": 15953,
+          "subnormal_in_fp16": 31,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "head",
+          "bb.s64"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__d6b7acdf0507.onnx",
+          "artifact_id": "d6b7acdf05078c241710e776660dc2a6218b2581067dff355c1d93fba6c9f0ee"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__69f12ea4c2d5.onnx",
+          "artifact_id": "69f12ea4c2d55a78683b63ee3b0324d48477b938c1c3ecda00443aac84f693cd"
+        },
+        "scale_rounding": {
+          "n_values": 14414,
+          "subnormal_in_fp16": 22,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "head",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__1be9075917ef.onnx",
+          "artifact_id": "1be9075917ef7e96fba0ef59c1f50658aafaa50ced4dd397a0cb9e9f8408dd1f"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__997e199c4a29.onnx",
+          "artifact_id": "997e199c4a290117f8ddb3864fcda9413754bc5c64abd5b6be771d4ffdafc6fc"
+        },
+        "scale_rounding": {
+          "n_values": 16214,
+          "subnormal_in_fp16": 31,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "bb.s64",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__090157694595.onnx",
+          "artifact_id": "090157694595587d2d40ed3c8f124cfe5e39bd54f4d9a9ee5730a11afd0996ae"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__88398a4f1f6a.onnx",
+          "artifact_id": "88398a4f1f6af427cfb68768fca1668a6251f4ad1242f6c3476188d7a30b0618"
+        },
+        "scale_rounding": {
+          "n_values": 13525,
+          "subnormal_in_fp16": 21,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.s24",
+          "head",
+          "bb.s64"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__863088c36512.onnx",
+          "artifact_id": "863088c3651200f84915b36fd535d59a67fb3c9a4af994e395048cec2550aee0"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__6846d6171655.onnx",
+          "artifact_id": "6846d61716550b6bdc9908234b8a772ae984e87f24d4965624e46e2b57ee578d"
+        },
+        "scale_rounding": {
+          "n_values": 13960,
+          "subnormal_in_fp16": 32,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.s24",
+          "head",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__dcad03c0fa85.onnx",
+          "artifact_id": "dcad03c0fa853ec91b8a23480e86b2e3b42bd05e5fc56d2141a8895b6a243c84"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__924c46b5b5a1.onnx",
+          "artifact_id": "924c46b5b5a1a4594c7ff86d3fd8a73ee07c22d606cd83c9b6bce19102bd75a6"
+        },
+        "scale_rounding": {
+          "n_values": 15760,
+          "subnormal_in_fp16": 41,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.s24",
+          "bb.s64",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__b63dfb36dee8.onnx",
+          "artifact_id": "b63dfb36dee8e027b85ee99bc71286f86cd488e4afc6a490dc913157661aec94"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__bced86a70611.onnx",
+          "artifact_id": "bced86a706118cd01248cfcadff0ac4b840281f4ee62c32cd57700d608fa7e37"
+        },
+        "scale_rounding": {
+          "n_values": 13071,
+          "subnormal_in_fp16": 31,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "head",
+          "bb.s64",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__aa5fed5e7c09.onnx",
+          "artifact_id": "aa5fed5e7c09774962bff70d935fada8a122a41aaea0cf2b4fb2b8b9d980ed4a"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__b2a312f55f5c.onnx",
+          "artifact_id": "b2a312f55f5c345cf75ed74011796227e59dbd3bfb046449dd6741dc5ba4250e"
+        },
+        "scale_rounding": {
+          "n_values": 13332,
+          "subnormal_in_fp16": 31,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "bb.s24",
+          "head",
+          "bb.s64"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__9d4fe7a33cd3.onnx",
+          "artifact_id": "9d4fe7a33cd382c7d0653e50c16f1f25d3cc36ea4272cf21ddeffc14fca7312c"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__4133d7108053.onnx",
+          "artifact_id": "4133d710805366612b249e9d30f8242b846ac84354c9e5f2f8efc1af099c04f8"
+        },
+        "scale_rounding": {
+          "n_values": 13874,
+          "subnormal_in_fp16": 22,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "bb.s24",
+          "head",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__c1e3bcc583b9.onnx",
+          "artifact_id": "c1e3bcc583b9e94d1fe50be38fc4a4716bff98cc1bdb9f5184009007c3a20c34"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__7aa3e8ef511c.onnx",
+          "artifact_id": "7aa3e8ef511cf70fbf9499d5cf71d473c8cd98d24e8c75d91a4828b7f79a3ee6"
+        },
+        "scale_rounding": {
+          "n_values": 15674,
+          "subnormal_in_fp16": 31,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "bb.s24",
+          "bb.s64",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__49c948fdccc6.onnx",
+          "artifact_id": "49c948fdccc621b909f1b8d9e89b0b7788962913299fc6c5f87bc05876178135"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__4f262e4f760a.onnx",
+          "artifact_id": "4f262e4f760a95aaffa366ed6508f1ec8ec53041282eb1ff37042abd2e79f607"
+        },
+        "scale_rounding": {
+          "n_values": 12985,
+          "subnormal_in_fp16": 21,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "head",
+          "bb.s64",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__8bc09402dc33.onnx",
+          "artifact_id": "8bc09402dc33ae2b76eb1d2c0cb1bf28a2d383bd81c0a80b74d355a15b4ba33e"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__ae511ec28fd2.onnx",
+          "artifact_id": "ae511ec28fd2d3b4154daa54f724a15d059d71e78d04b1d278ab8df2d44c8a3c"
+        },
+        "scale_rounding": {
+          "n_values": 13246,
+          "subnormal_in_fp16": 21,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.s24",
+          "head",
+          "bb.s64",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__368d247a1a25.onnx",
+          "artifact_id": "368d247a1a258d098c59f3d7a49837fcc5a0e001cf0fc6f9ad65404da1453d1c"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__d60661c60933.onnx",
+          "artifact_id": "d60661c6093375cfd4544b13a429a0dbf58079520b8c878224c58cc677bad92e"
+        },
+        "scale_rounding": {
+          "n_values": 12792,
+          "subnormal_in_fp16": 31,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "bb.stem_16",
+          "bb.s24",
+          "head",
+          "bb.s64",
+          "bb.s32"
+        ],
+        "int8": {
+          "file": "deeplabv3plus_mbv2__int8__c49a82bd07b6.onnx",
+          "artifact_id": "c49a82bd07b6fd62c1ccd6353636de9abdf0f9b544971ffb79299db110753223"
+        },
+        "int8_fp16": {
+          "file": "deeplabv3plus_mbv2__int8_fp16__0bf21681c6aa.onnx",
+          "artifact_id": "0bf21681c6aaf0631c1f95b2952a2a6848eefc7e6d484097681ccd22aa4037c1"
+        },
+        "scale_rounding": {
+          "n_values": 12706,
+          "subnormal_in_fp16": 21,
+          "max_rel_change": 0.014768220727244243,
+          "max_rel_change_at": "net.backbone.high_level_features.17.conv.0.0.weight_DequantizeLinear_Output"
+        }
+      }
+    ]
+  },
+  "passed": true,
+  "findings": []
+}

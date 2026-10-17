@@ -1,0 +1,722 @@
+{
+  "schema_version": "1",
+  "tool": "candidates",
+  "created_at": "2026-10-17T00:12:08+00:00",
+  "git_sha": "95ef750819074753361646ef9a00fd0e59142479",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "onnxruntime.quantization+modelopt",
+  "precision": "int8_fp16",
+  "artifact_id": "none",
+  "inputs": {
+    "artifact": "segformer_b0__fp32__0ef7fcdb0cdc.onnx",
+    "quant_config": {
+      "name": "int8_percentile",
+      "activation_type": "int8",
+      "weight_type": "int8",
+      "activation_symmetric": true,
+      "weight_symmetric": true,
+      "per_channel": true,
+      "op_types": [
+        "Conv",
+        "MatMul",
+        "Gemm"
+      ],
+      "quantize_outputs": false,
+      "quantize_bias": false,
+      "calibration": {
+        "manifest": "calib_train200",
+        "limit": null,
+        "method": "percentile",
+        "num_bins": 2048,
+        "num_quantized_bins": null,
+        "percentile": 99.99,
+        "chunk_images": 2
+      }
+    },
+    "ranking_report": "sensitivity__segformer_b0__int8_percentile__sens_val100__cb60f28.json",
+    "top": 5
+  },
+  "thresholds": {},
+  "metrics": {
+    "groups": [
+      "s2.mlp",
+      "s3.attn_matmul",
+      "s2.attn_matmul",
+      "s0.patch_embed",
+      "s0.attn_proj"
+    ],
+    "n_configs": 32,
+    "calibration_id": "59a94b20667a9f49ee7786b2120ceab86cdabc2a5a331ccf97a9fa00324cbdbf",
+    "configs": [
+      {
+        "excluded": [],
+        "int8": {
+          "file": "segformer_b0__int8__8b88379284a9.onnx",
+          "artifact_id": "8b88379284a9c161eafc898995d177f2344dcea8676afb3787b89220af6b368e"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__4031ccefacfb.onnx",
+          "artifact_id": "4031ccefacfbc25b049248b9f19e9a5a8a05c9c03e80c6f1e8ef6c10c2a1bf39"
+        },
+        "scale_rounding": {
+          "n_values": 15823,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__4a3058c85aab.onnx",
+          "artifact_id": "4a3058c85aab67e4793414232634f2172ac20466e1e0262a8455172a8c397904"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__1f7ddcee82bd.onnx",
+          "artifact_id": "1f7ddcee82bdfc4cd71180b327a910cf442bf67f07c49394b1a66f5b3efa8534"
+        },
+        "scale_rounding": {
+          "n_values": 12931,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__182299772a58.onnx",
+          "artifact_id": "182299772a5815ffec6280d1294aa47e8c9e49c6f2e1749a48cbcc128b31cc1c"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__f1a85329e2c4.onnx",
+          "artifact_id": "f1a85329e2c4f23d083efd5ecbed409a7593d2bfb1600658061fab13d2a826b0"
+        },
+        "scale_rounding": {
+          "n_values": 15807,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.attn_matmul"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__f77060ae4d49.onnx",
+          "artifact_id": "f77060ae4d49ee4be89aa7ee76049494e829e55c249a07e3b2f73490b94682e3"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__237d01729063.onnx",
+          "artifact_id": "237d017290637826458eac4dec0699e3ffc54bee120e53ded9d02531c451b5b5"
+        },
+        "scale_rounding": {
+          "n_values": 15807,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__336fd9f738e4.onnx",
+          "artifact_id": "336fd9f738e41475757ce73411d49b3f7794ae2a4f3a8edd7a4ab045b518c814"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__6bc18628a024.onnx",
+          "artifact_id": "6bc18628a024060668560e245e68f0cbf11ad866e377e2082a5cebe4c512087a"
+        },
+        "scale_rounding": {
+          "n_values": 15789,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__9f42ad17f2cb.onnx",
+          "artifact_id": "9f42ad17f2cb92b7d640dd151d45f50cecd9967c4066775b22baadcc356483d1"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__0677bf58730a.onnx",
+          "artifact_id": "0677bf58730a48162d2a9b052f0763d4f3fbd5c4cbbb21151681a328a44906b3"
+        },
+        "scale_rounding": {
+          "n_values": 15487,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__3f58944a0387.onnx",
+          "artifact_id": "3f58944a0387ce0d5846604c4a463407cf4126b7765266c7b6ea6d3ae4077ac0"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__91c718b49e8c.onnx",
+          "artifact_id": "91c718b49e8ccb908945bd6f8fc6037a255d91f72629388a9f4af5cfb439a8d0"
+        },
+        "scale_rounding": {
+          "n_values": 12915,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s2.attn_matmul"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__9acff79b58f8.onnx",
+          "artifact_id": "9acff79b58f882809b3db970aa18729efa9ff7e420bd09195c65344eea20f1a0"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__6b157b082a1b.onnx",
+          "artifact_id": "6b157b082a1ba44ad2bd50d1efa4e1e9a105c1bb44b7cb4d5ef0218d3ac82773"
+        },
+        "scale_rounding": {
+          "n_values": 12915,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__28dc362290a5.onnx",
+          "artifact_id": "28dc362290a5a821dbc3db7ddae8f0236b3f22c3d3082b14f541bb49c68a3702"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__a3df3b99197d.onnx",
+          "artifact_id": "a3df3b99197dbcdc3607c830553cee541726fc8c69072464ce05ad31d70f7b29"
+        },
+        "scale_rounding": {
+          "n_values": 12897,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__0f3a173e03aa.onnx",
+          "artifact_id": "0f3a173e03aa36aa54d095efd8a9f40b6ef7effbe1af9329d017ffb7026fb77e"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__55542aa3367e.onnx",
+          "artifact_id": "55542aa3367ef15ccd3a10dd11ebbb12aeba270edfabd3b3c3dd035d860645d4"
+        },
+        "scale_rounding": {
+          "n_values": 12595,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul",
+          "s2.attn_matmul"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__71995290f7ec.onnx",
+          "artifact_id": "71995290f7ec6bf2e7a9330efffbec4f7b45307904fd54692aab2b9b9aeadd65"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__0ec31eab53af.onnx",
+          "artifact_id": "0ec31eab53af47d136cbd5966da96f369d14312f5368c203b101faa933af8aba"
+        },
+        "scale_rounding": {
+          "n_values": 15791,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul",
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__17839f3c603b.onnx",
+          "artifact_id": "17839f3c603b85e408439c9e43af34bc747ab8308e13f6eb571c454169e0a364"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__cb2c0a337139.onnx",
+          "artifact_id": "cb2c0a33713977b88d1b4af9f1349f9902c97753b95ae1b2cdcb891fc97b283d"
+        },
+        "scale_rounding": {
+          "n_values": 15773,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__29012b82ef23.onnx",
+          "artifact_id": "29012b82ef238cc0f17a8fd5d6ffe2c9a0364a88afae005644cbe87b5af7df17"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__2a453dc0ab00.onnx",
+          "artifact_id": "2a453dc0ab00505082b3cba6a947d8c116e2f804bd38904e21ee9c568f3b3260"
+        },
+        "scale_rounding": {
+          "n_values": 15471,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.attn_matmul",
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__a05a82aa4d1c.onnx",
+          "artifact_id": "a05a82aa4d1c4f874546aab2dff89a27f0aa487f883f1212365e6bc2cf82bde9"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__3ba3c904f565.onnx",
+          "artifact_id": "3ba3c904f56580f1035fe449c0d33f158e0a41aa723909acbc71fc0ad144ad19"
+        },
+        "scale_rounding": {
+          "n_values": 15773,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.attn_matmul",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__d9907d3cb31a.onnx",
+          "artifact_id": "d9907d3cb31a4529a27f0cf2ca891952af16394d1b5da3f1e0a7743b9b720168"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__d05d5886c4b1.onnx",
+          "artifact_id": "d05d5886c4b1da9a5f9ccb1ef3e0299c8debaef147723bc6571f402be13bb339"
+        },
+        "scale_rounding": {
+          "n_values": 15471,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__c2d99a11ae83.onnx",
+          "artifact_id": "c2d99a11ae8393f9fd72f81c0342e3f33c6c896842765dcf90fd81d03e620c70"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__1c10e4952b67.onnx",
+          "artifact_id": "1c10e4952b670b370371d791e73ec93f55a31aae9fd9b49856de1631a247512c"
+        },
+        "scale_rounding": {
+          "n_values": 15453,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul",
+          "s2.attn_matmul"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__53f7c1997b2d.onnx",
+          "artifact_id": "53f7c1997b2dba667df8259b1c6b07bc2fe83fa68dd13e7bf505e315205de63b"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__e3f3a0bf751c.onnx",
+          "artifact_id": "e3f3a0bf751c5dfdf89ab8f75b529369b4977c700aead1aa6177acc10268e44e"
+        },
+        "scale_rounding": {
+          "n_values": 12899,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul",
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__7f97acdd833e.onnx",
+          "artifact_id": "7f97acdd833e98d142bb17d417b68c2d68d8a72ecc308233d59c304f24d6266f"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__ff3f9de8a3f7.onnx",
+          "artifact_id": "ff3f9de8a3f7dc86fbd825b845ef54c57ba0e70d41d2b3e719dc7dedc885b798"
+        },
+        "scale_rounding": {
+          "n_values": 12881,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__d597bfaff36e.onnx",
+          "artifact_id": "d597bfaff36e6576f8f4086b1403d15210b3f13b209bc0b953683e44cc74765e"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__65b8fb6fd120.onnx",
+          "artifact_id": "65b8fb6fd1200634a3b8f425856b85948df8b0bc1a4f1a357ee0131d4f10a188"
+        },
+        "scale_rounding": {
+          "n_values": 12579,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s2.attn_matmul",
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__fc1d1c922686.onnx",
+          "artifact_id": "fc1d1c9226861c124d7c92a850d61b2f616cb60f7d9334d1eb99a6e39a661248"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__025449e6bf94.onnx",
+          "artifact_id": "025449e6bf9425dc9efd91ad360a43c486b455b4e225180513b1171ad68767be"
+        },
+        "scale_rounding": {
+          "n_values": 12881,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s2.attn_matmul",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__ff45b30c5a03.onnx",
+          "artifact_id": "ff45b30c5a03a77b40f66245fa46fe4b8d4034f3e83fa5d2e68bdb6930f4e101"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__e8d37ba14b1a.onnx",
+          "artifact_id": "e8d37ba14b1ae0fdd1fd77ec28103be28f8cd025efa164ebd490705ea39b1a77"
+        },
+        "scale_rounding": {
+          "n_values": 12579,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__88d4917d9e25.onnx",
+          "artifact_id": "88d4917d9e2575b03b9a884fcc554ab5356351fb0b35cd7f9c76b0be8679e2f2"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__bad218aa1f04.onnx",
+          "artifact_id": "bad218aa1f0450c5ad64d2441c94b47be3c5b26118fd2ff8bf6ffcaf530f568a"
+        },
+        "scale_rounding": {
+          "n_values": 12561,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul",
+          "s2.attn_matmul",
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__ae7b6cc06780.onnx",
+          "artifact_id": "ae7b6cc06780ddae6cd99589794be5a0988a3e8535f018a8ce14bafb81339ca8"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__011389909283.onnx",
+          "artifact_id": "011389909283eb31e5bcd93db99675185d241b0b5b3b3c12fe3c5c6507c1552e"
+        },
+        "scale_rounding": {
+          "n_values": 15757,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul",
+          "s2.attn_matmul",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__bb84c95c778e.onnx",
+          "artifact_id": "bb84c95c778ee3324689d9f5995bc1eed11dbc7ca0b33f395df945be112e046a"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__4c6fac4dc932.onnx",
+          "artifact_id": "4c6fac4dc932cbf8ab1cfec64336ca339ab60928fa4369f587974c7ae40c44b0"
+        },
+        "scale_rounding": {
+          "n_values": 15455,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul",
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__9448f8dae47b.onnx",
+          "artifact_id": "9448f8dae47bd331195dc1cef471f0c29de1b4f0803483545e68cc4c6d274ce9"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__767fd0a1ceba.onnx",
+          "artifact_id": "767fd0a1ceba4dfb3732f4c62e18dee0b8b81d860d62e4b676e09f4599af82e0"
+        },
+        "scale_rounding": {
+          "n_values": 15437,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.attn_matmul",
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__d2e50a469db1.onnx",
+          "artifact_id": "d2e50a469db1051d9cc8678095cbf67c311bec0da9b2310b8f4205fbfa33e342"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__2d3b523096f4.onnx",
+          "artifact_id": "2d3b523096f42a8be705b34d5a362d02927af83f5beb8f36bb5834a91e601562"
+        },
+        "scale_rounding": {
+          "n_values": 15437,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul",
+          "s2.attn_matmul",
+          "s0.patch_embed"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__863cebb9d962.onnx",
+          "artifact_id": "863cebb9d962f3ebd7bf13020ff80054d516f661b7db688af1711d035222379f"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__3c90b227805f.onnx",
+          "artifact_id": "3c90b227805fed13c39afc9e2fd66287b33c52b3169793b0b797853b75648dce"
+        },
+        "scale_rounding": {
+          "n_values": 12865,
+          "subnormal_in_fp16": 2,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul",
+          "s2.attn_matmul",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__40a488276718.onnx",
+          "artifact_id": "40a488276718ef954c7e4d949e4c01af9c395ef4cb96c89ac0b456c25ab1a002"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__19ee027c8e26.onnx",
+          "artifact_id": "19ee027c8e2677d21e3a7aee448f47fdf50c315e35a7becfe7f14985d5937443"
+        },
+        "scale_rounding": {
+          "n_values": 12563,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul",
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__9686cd3dab20.onnx",
+          "artifact_id": "9686cd3dab20039cf6c397b47a703354ac1b606aa8dcc87dd0ff36cdc82b40d0"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__7848562ff991.onnx",
+          "artifact_id": "7848562ff991bdce581f5f84f7b145f008bd4a7342040c74b3cc106e36ece4b8"
+        },
+        "scale_rounding": {
+          "n_values": 12545,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s2.attn_matmul",
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__b909e3e3b629.onnx",
+          "artifact_id": "b909e3e3b629167cc4ab87e4961a930fb581007596f25f464de7f38495a0ea97"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__b310c4a6a200.onnx",
+          "artifact_id": "b310c4a6a20072f05fd31e297e13b45ba683870fe6fecedd207e62d87d5eb611"
+        },
+        "scale_rounding": {
+          "n_values": 12545,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s3.attn_matmul",
+          "s2.attn_matmul",
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__98563aca0fa7.onnx",
+          "artifact_id": "98563aca0fa7105e1bd5e14222c346edc7b2f090e39f7c7c5f21abb31f00b526"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__d10444a8fe78.onnx",
+          "artifact_id": "d10444a8fe782a652083ee80a8bf96a3f71a8bbb27cf1f9a8b7bf6248d81e389"
+        },
+        "scale_rounding": {
+          "n_values": 15421,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      },
+      {
+        "excluded": [
+          "s2.mlp",
+          "s3.attn_matmul",
+          "s2.attn_matmul",
+          "s0.patch_embed",
+          "s0.attn_proj"
+        ],
+        "int8": {
+          "file": "segformer_b0__int8__2b6c2bc39c30.onnx",
+          "artifact_id": "2b6c2bc39c30d5ce778b78c8bf478c746c8d4dc976680ba645a0c5c91f3b4e10"
+        },
+        "int8_fp16": {
+          "file": "segformer_b0__int8_fp16__694da5a118d5.onnx",
+          "artifact_id": "694da5a118d5c2f661bed0e0068080bbd23a04c3479546c8ff86967e6d111aab"
+        },
+        "scale_rounding": {
+          "n_values": 12529,
+          "subnormal_in_fp16": 0,
+          "max_rel_change": 0.00048673547716547046,
+          "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+        }
+      }
+    ]
+  },
+  "passed": true,
+  "findings": []
+}
