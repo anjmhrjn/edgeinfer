@@ -8,7 +8,8 @@
 /private/
 /data/raw/
 /artifacts/
-/.venv/
+# Every environment, including tools/modelopt/ and tools/airflow/ (929 MB and 217 MB).
+.venv/
 __pycache__/
 .pytest_cache/
 .ruff_cache/

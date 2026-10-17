@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C6 — Gated deployment pipeline (CPU + GPU)
-**Next step:** C6 step 8, a local Airflow run of the deploy DAG (a passing run and a fault blocked at a gate). The GPU instance is stopped, not terminated; C6's GPU session is within days (D-023).
+**Next step:** C6 GPU session (needs Anuj's go-ahead to start the instance): both final recipes to `production`, rerun, SegFormer fault, v2 + rollback, one DAG run on `trt`. The GPU instance is stopped, not terminated; C6's GPU session is within days (D-023).
 
 ## C6 — Gated deployment pipeline
 Plan agreed 2026-10-17:
@@ -36,7 +36,10 @@ Mac:
   - **Accuracy gate.** FP32 67.086 (as in C2/C4, `e264b0b`, `7ac2253`), INT8+FP16 66.812: a drop of 0.274 points against the 1.0 budget. TensorRT's engine of the same model scored 66.758 in C5, 0.054 points away.
   - **Warm rerun** (`…/20261017T185213Z/deploy.json`): 1.1 s. Every stage was skipped or reused, and publish found v1 already registered.
   - **TensorRT recipes, Mac stages run in advance** (`deploy run --stage export|convert|validate`, runs `20261017T1852*Z`). Each resolves to the C5 artifact it is meant to deploy: DeepLab `0fc604c5e1e0` (INT8+FP16, stem FP16), SegFormer `e15dc3063aac` (FP16), DeepLab runner-up `d3dcca5f82e9` (C3 INT8+FP32), SegFormer fault `4031ccefacfb` (INT8+FP16, no exclusions). `--dry-run` of these recipes can only say every GPU gate runs: there is no earlier GPU run.
-- [ ] Airflow DAG, import test and CI job, a local run
+- [x] Airflow DAG (`pipelines/airflow/dags/deploy_model.py`), import test (`tests/test_airflow_dag.py`, CI job `airflow-dag`), and two local runs (`airflow dags test`, Airflow 3.3.2, Mac):
+  - **`deeplabv3plus_mbv2__ort_cpu`.** All nine tasks succeeded in one pipeline run (`deploy/deeplabv3plus_mbv2__ort_cpu/20261017T185619Z/deploy.json`). Every stage was skipped or reused, and v1 was already registered.
+  - **`faults/deeplabv3plus_mbv2__bgr_ort_cpu`** (DeepLab FP32 with BGR preprocessing). Export ran (4.2 s, a new id `06beefdf8b6a` with a BGR contract) and validate passed, because the contract matches the config. **Parity failed**: `PARITY_INPUT_MISMATCH` ("channels are reversed… check input.channel_order"), and mIoU on the golden images fell from 67.53 to 56.26. Then accuracy, perf and publish were `upstream_failed`, the DAG run failed, and the registry was unchanged (`deploy/deeplabv3plus_mbv2__bgr_ort_cpu/*/deploy.json`).
+- [x] `scripts/rsync-excludes.txt` excluded only the root `.venv/`, so `remote.sh` copied `tools/modelopt/.venv` (929 MB), and now would copy `tools/airflow/.venv`, to the instance. It now excludes `.venv/` at any depth.
 
 GPU session:
 - [ ] Both final recipes → `production` (cold), rerun (reused), SegFormer fault blocked, v2 + rollback, one DAG run on `trt`

@@ -1,0 +1,56 @@
+{
+  "schema_version": "1",
+  "tool": "export",
+  "created_at": "2026-10-17T18:56:39+00:00",
+  "git_sha": "d746bea22771de9a42bb67d17243006ca67f1f89",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "torch": "2.14.1",
+      "onnx": "1.23.2",
+      "onnxscript": "0.7.2"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "onnx",
+  "precision": "fp32",
+  "artifact_id": "06beefdf8b6a77b8e9070ca6e1786ed91ebe57e44e08fe1db0af5cba5f12dde0",
+  "inputs": {
+    "weights_id": "sha256:c878c2a817f83df8e027b3245c9f474a78af9f8dc76e90450768197252c5095d",
+    "export": {
+      "exporter": "torch.onnx.export(dynamo=True)",
+      "opset": 20,
+      "optimize": true,
+      "external_data": false,
+      "static_shape": true
+    }
+  },
+  "thresholds": {},
+  "metrics": {
+    "file": "deeplabv3plus_mbv2__fp32__06beefdf8b6a.onnx",
+    "sha256": "554a9aa7dbd55c3ab4567b5ff5d246e8ce15833aa4334089d988edaf46187af9",
+    "size_bytes": 21106101,
+    "n_nodes": 117,
+    "op_counts": {
+      "Add": 10,
+      "Clip": 34,
+      "Concat": 2,
+      "Conv": 60,
+      "ReduceMean": 1,
+      "Relu": 8,
+      "Resize": 2
+    },
+    "sanity_max_abs": 2.2411346435546875e-05,
+    "sanity_max_abs_ref": 9.680733680725098,
+    "reused": false
+  },
+  "passed": true,
+  "findings": []
+}
