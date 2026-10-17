@@ -1,0 +1,171 @@
+{
+  "schema_version": "1",
+  "tool": "finalists",
+  "created_at": "2026-10-17T14:01:21+00:00",
+  "git_sha": "96757a1e11832d1238d7cd4a88e1269d1c434796",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "report data",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "trt",
+  "precision": "mixed",
+  "artifact_id": "none",
+  "inputs": {
+    "sensitivity": "sensitivity__segformer_b0__trt__int8_fp16__sens_val100__8baee58.json"
+  },
+  "thresholds": {},
+  "metrics": {
+    "finalists": [
+      {
+        "label": "sens_s0.patch_embed",
+        "kind": "int8_fp16",
+        "excluded": [
+          "s0.patch_embed"
+        ],
+        "engine_id": "e026cc67fb96bda26ad9a93452848fbed9fd97024c8bb6a3211e31ae8e964305",
+        "delta_points": -0.2587140347899419,
+        "source": "sensitivity__segformer_b0__trt__int8_fp16__sens_val100__8baee58.json",
+        "latency_ms": 5.67969,
+        "engine": "artifacts/engines/segformer_b0/segformer_b0__int8_fp16__e026cc67fb96.engine",
+        "latency_source": "trtexec__segformer_b0__sens_s0.patch_embed__c5__990MHz__de889fd.json"
+      },
+      {
+        "label": "sens_s2.attn_matmul",
+        "kind": "int8_fp16",
+        "excluded": [
+          "s2.attn_matmul"
+        ],
+        "engine_id": "238b71dbef28571bed19ad55e5fc88968cbfdd2661363ea7a529dfa7c834a10c",
+        "delta_points": -0.21247924692130438,
+        "source": "sensitivity__segformer_b0__trt__int8_fp16__sens_val100__8baee58.json",
+        "latency_ms": 5.99951,
+        "engine": "artifacts/engines/segformer_b0/segformer_b0__int8_fp16__238b71dbef28.engine",
+        "latency_source": "trtexec__segformer_b0__sens_s2.attn_matmul__c5__990MHz__de889fd.json"
+      },
+      {
+        "label": "sens_s2.mlp",
+        "kind": "int8_fp16",
+        "excluded": [
+          "s2.mlp"
+        ],
+        "engine_id": "cc34d514f4c82f77a42af6d7e0817895ef43ee63cc4a0b0152bdbc0bf1bac988",
+        "delta_points": -0.16317681494721903,
+        "source": "sensitivity__segformer_b0__trt__int8_fp16__sens_val100__8baee58.json",
+        "latency_ms": 6.02539,
+        "engine": "artifacts/engines/segformer_b0/segformer_b0__int8_fp16__cc34d514f4c8.engine",
+        "latency_source": "trtexec__segformer_b0__sens_s2.mlp__c5__990MHz__de889fd.json"
+      }
+    ],
+    "pool": [
+      {
+        "label": "int8_c3_none",
+        "kind": "int8_fp32",
+        "engine_id": "392e80b246227748e35d71d2372948a7a532a52650fc4f82a9acc550a0b82e47",
+        "delta_points": -0.303555554016699,
+        "source": "eval__segformer_b0__trt__int8_c3_none__sens_val100__512x1024__204bef4.json",
+        "latency_ms": 11.1875,
+        "engine": "artifacts/engines/segformer_b0/segformer_b0__int8__392e80b24622.engine",
+        "latency_source": "trtexec__segformer_b0__int8_c3_none__c5__990MHz__de889fd.json"
+      },
+      {
+        "label": "int8fp16_unfused",
+        "kind": "int8_fp16",
+        "engine_id": "91660a0d4baf96fbfb85f50149a336f6496dbcf6b5f9904f0d76833facf389bc",
+        "delta_points": -0.2907819259481026,
+        "source": "eval__segformer_b0__trt__int8fp16_unfused__sens_val100__512x1024__8baee58.json",
+        "latency_ms": 6.03564,
+        "engine": "artifacts/engines/segformer_b0/segformer_b0__int8_fp16__91660a0d4baf.engine",
+        "latency_source": "trtexec__segformer_b0__int8fp16_unfused__c5__990MHz__de889fd.json"
+      },
+      {
+        "label": "sens_s2.mlp",
+        "kind": "int8_fp16",
+        "excluded": [
+          "s2.mlp"
+        ],
+        "engine_id": "cc34d514f4c82f77a42af6d7e0817895ef43ee63cc4a0b0152bdbc0bf1bac988",
+        "delta_points": -0.16317681494721903,
+        "source": "sensitivity__segformer_b0__trt__int8_fp16__sens_val100__8baee58.json",
+        "latency_ms": 6.02539,
+        "engine": "artifacts/engines/segformer_b0/segformer_b0__int8_fp16__cc34d514f4c8.engine",
+        "latency_source": "trtexec__segformer_b0__sens_s2.mlp__c5__990MHz__de889fd.json"
+      },
+      {
+        "label": "sens_s3.attn_matmul",
+        "kind": "int8_fp16",
+        "excluded": [
+          "s3.attn_matmul"
+        ],
+        "engine_id": "3f01a34cdbf3807c215e282be34b0f147657b83bea8f8cc4c0a1b76e73ce2df4",
+        "delta_points": -0.22788379003219061,
+        "source": "sensitivity__segformer_b0__trt__int8_fp16__sens_val100__8baee58.json",
+        "latency_ms": 6.02905,
+        "engine": "artifacts/engines/segformer_b0/segformer_b0__int8_fp16__3f01a34cdbf3.engine",
+        "latency_source": "trtexec__segformer_b0__sens_s3.attn_matmul__c5__990MHz__de889fd.json"
+      },
+      {
+        "label": "sens_s2.attn_matmul",
+        "kind": "int8_fp16",
+        "excluded": [
+          "s2.attn_matmul"
+        ],
+        "engine_id": "238b71dbef28571bed19ad55e5fc88968cbfdd2661363ea7a529dfa7c834a10c",
+        "delta_points": -0.21247924692130438,
+        "source": "sensitivity__segformer_b0__trt__int8_fp16__sens_val100__8baee58.json",
+        "latency_ms": 5.99951,
+        "engine": "artifacts/engines/segformer_b0/segformer_b0__int8_fp16__238b71dbef28.engine",
+        "latency_source": "trtexec__segformer_b0__sens_s2.attn_matmul__c5__990MHz__de889fd.json"
+      },
+      {
+        "label": "sens_s0.patch_embed",
+        "kind": "int8_fp16",
+        "excluded": [
+          "s0.patch_embed"
+        ],
+        "engine_id": "e026cc67fb96bda26ad9a93452848fbed9fd97024c8bb6a3211e31ae8e964305",
+        "delta_points": -0.2587140347899419,
+        "source": "sensitivity__segformer_b0__trt__int8_fp16__sens_val100__8baee58.json",
+        "latency_ms": 5.67969,
+        "engine": "artifacts/engines/segformer_b0/segformer_b0__int8_fp16__e026cc67fb96.engine",
+        "latency_source": "trtexec__segformer_b0__sens_s0.patch_embed__c5__990MHz__de889fd.json"
+      },
+      {
+        "label": "sens_s0.attn_proj",
+        "kind": "int8_fp16",
+        "excluded": [
+          "s0.attn_proj"
+        ],
+        "engine_id": "7db484c50c51b26febab256e2aae11d513363d07249d513ce3bf62b960dc3ff5",
+        "delta_points": -0.2696617410770208,
+        "source": "sensitivity__segformer_b0__trt__int8_fp16__sens_val100__8baee58.json",
+        "latency_ms": 6.74365,
+        "engine": "artifacts/engines/segformer_b0/segformer_b0__int8_fp16__7db484c50c51.engine",
+        "latency_source": "trtexec__segformer_b0__sens_s0.attn_proj__c5__990MHz__de889fd.json"
+      }
+    ],
+    "selection": {
+      "target_drop_points": 0.30000000000000004,
+      "n": 3,
+      "outside_target": [
+        "int8_c3_none"
+      ],
+      "off_front": [
+        "int8fp16_unfused",
+        "sens_s0.attn_proj",
+        "sens_s3.attn_matmul"
+      ],
+      "front_not_taken": []
+    }
+  },
+  "passed": true,
+  "findings": []
+}
