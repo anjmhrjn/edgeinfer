@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C6 — Gated deployment pipeline (CPU + GPU)
-**Next step:** C6 step 7, DeepLab's final recipe end to end on `ort_cpu` (to `dev`), then `--dry-run` of the `trt` recipes. The GPU instance is stopped, not terminated; C6's GPU session is within days (D-023).
+**Next step:** C6 step 8, a local Airflow run of the deploy DAG (a passing run and a fault blocked at a gate). The GPU instance is stopped, not terminated; C6's GPU session is within days (D-023).
 
 ## C6 — Gated deployment pipeline
 Plan agreed 2026-10-17:
@@ -31,7 +31,11 @@ Mac:
 - [x] Registry: publish, aliases, rollback (`pipeline/registry.py`); tests `test_registry.py`, `test_reuse.py`, and `test_deploy.py` on the fixture
 - [x] `edgeinfer deploy run|rollback|status` (`run --stage --run-id` for Airflow, `--dry-run` judged with the recipe's last run) and the `DEPLOY_*`/`REGISTRY_*` codes in `docs/report-codes.md`
 - [x] Fixture end to end in CI (`tests/test_deploy.py`): pass → `dev`; rerun all skipped/reused; changed code reruns the gates; BGR blocked at parity (`PARITY_INPUT_MISMATCH`); failed checks never reused; one stage at a time; dirty tree blocks publish; CLI dry run, rollback, status
-- [ ] DeepLab final recipe on `ort_cpu` to `dev`; `--dry-run` of the `trt` recipes
+- [x] DeepLab's final model on ORT CPU (`deploy run --recipe deeplabv3plus_mbv2__ort_cpu`), published as v1 to `dev` (`artifacts/registry/deeplabv3plus_mbv2.json`):
+  - **Cold run** (`deploy/deeplabv3plus_mbv2__ort_cpu/20261017T182358Z/deploy.json`): 27 min 49 s. Export and convert were skipped: the commands reused C5's FP32 export and INT8+FP16 model `0fc604c5e1e0`. The gates ran: validate 0.1 s, golden parity 17.4 s, accuracy 1230.9 s (two full-val evals), perf 419.7 s (not enforced, `DEPLOY_GATE_NOT_ENFORCED`).
+  - **Accuracy gate.** FP32 67.086 (as in C2/C4, `e264b0b`, `7ac2253`), INT8+FP16 66.812: a drop of 0.274 points against the 1.0 budget. TensorRT's engine of the same model scored 66.758 in C5, 0.054 points away.
+  - **Warm rerun** (`…/20261017T185213Z/deploy.json`): 1.1 s. Every stage was skipped or reused, and publish found v1 already registered.
+  - **TensorRT recipes, Mac stages run in advance** (`deploy run --stage export|convert|validate`, runs `20261017T1852*Z`). Each resolves to the C5 artifact it is meant to deploy: DeepLab `0fc604c5e1e0` (INT8+FP16, stem FP16), SegFormer `e15dc3063aac` (FP16), DeepLab runner-up `d3dcca5f82e9` (C3 INT8+FP32), SegFormer fault `4031ccefacfb` (INT8+FP16, no exclusions). `--dry-run` of these recipes can only say every GPU gate runs: there is no earlier GPU run.
 - [ ] Airflow DAG, import test and CI job, a local run
 
 GPU session:

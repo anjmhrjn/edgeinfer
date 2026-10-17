@@ -1,0 +1,126 @@
+{
+  "schema_version": "1",
+  "tool": "deploy",
+  "created_at": "2026-10-17T18:52:48+00:00",
+  "git_sha": "1a62c4452a1b14d7d0d723f2cad263244a593d9b",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "pipeline",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "trt",
+  "precision": "int8_fp16",
+  "artifact_id": "none",
+  "inputs": {
+    "recipe": "segformer_b0__int8fp16_no_unfused",
+    "recipe_hash": "79d0632feba7e8b488547d36cd2658fb2a8b0c397fe9a0b255bff2b65142bbc9",
+    "settings": {
+      "name": "segformer_b0__int8fp16_no_unfused",
+      "model": "segformer_b0",
+      "precision": "int8_fp16",
+      "quant": {
+        "config": "int8_percentile",
+        "exclusions": null,
+        "groups": null
+      },
+      "fp16": null,
+      "build": "build",
+      "target": "trt",
+      "gates": "gates"
+    },
+    "gates": {
+      "parity": {
+        "manifest": "golden_val32",
+        "inputs": "images"
+      },
+      "accuracy": {
+        "manifest": "eval_val",
+        "precisions": [
+          "int8",
+          "int8_fp16"
+        ]
+      },
+      "perf": {
+        "perf_config": "perf"
+      }
+    }
+  },
+  "thresholds": {},
+  "metrics": {
+    "run_id": "20261017T185246Z",
+    "stages": {
+      "export": {
+        "status": "skipped",
+        "passed": true,
+        "reports": [
+          "artifacts/reports/deploy/segformer_b0__int8fp16_no_unfused/20261017T185246Z/export/export__segformer_b0__1a62c44.json"
+        ],
+        "seconds": 0.4,
+        "where": "local"
+      },
+      "convert": {
+        "status": "skipped",
+        "passed": true,
+        "reports": [
+          "convert.json"
+        ],
+        "seconds": 0.1,
+        "where": "local"
+      },
+      "validate": {
+        "checks": [
+          {
+            "name": "validate",
+            "key": {
+              "check": "validate",
+              "artifact": {
+                "id": "4031ccefacfbc25b049248b9f19e9a5a8a05c9c03e80c6f1e8ef6c10c2a1bf39",
+                "sha256": "945325ce9be0f3be6187756ecf3805cf7c792ce89d20e5c52957edddd4b51e39"
+              },
+              "settings": {},
+              "files": {
+                "configs/models/segformer_b0.yaml": "23b305d0fb0c789297945f2b53ef515df9a68d8c910509e9718b1bad6c33a868",
+                "configs/supported_ops.yaml": "c594186bdfaa3a5e7ddea5e72fa29a93604c6610540a5647da07932868af79d4"
+              }
+            },
+            "reason": "no earlier check with this key",
+            "report": "deploy/segformer_b0__int8fp16_no_unfused/20261017T185246Z/validate.json",
+            "status": "ran",
+            "passed": true,
+            "reused_from": null,
+            "findings": []
+          }
+        ],
+        "passed": true,
+        "status": "ran",
+        "seconds": 0.1,
+        "where": "local"
+      }
+    },
+    "artifacts": {
+      "fp32": {
+        "path": "artifacts/onnx/segformer_b0/segformer_b0__fp32__0ef7fcdb0cdc.onnx",
+        "id": "0ef7fcdb0cdc344827ec5243eb2f914c1f53a3385ad4d21cdca71488cff55288",
+        "sha256": "04cbd382cfc8ed129500f20b2ce653a29e90f0899505e5c8b9133eb815b7316a",
+        "precision": "fp32"
+      },
+      "onnx": {
+        "path": "artifacts/onnx/segformer_b0/segformer_b0__int8_fp16__4031ccefacfb.onnx",
+        "id": "4031ccefacfbc25b049248b9f19e9a5a8a05c9c03e80c6f1e8ef6c10c2a1bf39",
+        "sha256": "945325ce9be0f3be6187756ecf3805cf7c792ce89d20e5c52957edddd4b51e39",
+        "precision": "int8_fp16"
+      }
+    },
+    "published": null
+  },
+  "passed": false,
+  "findings": []
+}

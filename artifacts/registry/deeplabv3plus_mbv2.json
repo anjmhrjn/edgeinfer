@@ -1,0 +1,49 @@
+{
+  "model": "deeplabv3plus_mbv2",
+  "versions": [
+    {
+      "version": 1,
+      "model": "deeplabv3plus_mbv2",
+      "artifact_id": "0fc604c5e1e0f3b6fc3f1fc3663a3ee6624c00af756aaa8ae387bb6d63976a6c",
+      "sha256": "d341750795ba8e71d421e64d54256d93558af31ad29ecce375e16e735123a1f0",
+      "precision": "int8_fp16",
+      "target": "ort_cpu",
+      "location": "artifacts/onnx/deeplabv3plus_mbv2/deeplabv3plus_mbv2__int8_fp16__0fc604c5e1e0.onnx",
+      "recipe": "deeplabv3plus_mbv2__ort_cpu",
+      "recipe_hash": "a28ab073e66401bd903088abf663fd51223b1770c3b88f4d3330416189211a7b",
+      "run_id": "20261017T182358Z",
+      "deploy_report": "deploy/deeplabv3plus_mbv2__ort_cpu/20261017T182358Z/deploy.json",
+      "git_sha": "1a62c4452a1b14d7d0d723f2cad263244a593d9b",
+      "gate_reports": {
+        "validate": [
+          "deploy/deeplabv3plus_mbv2__ort_cpu/20261017T182358Z/validate.json"
+        ],
+        "parity": [
+          "deploy/deeplabv3plus_mbv2__ort_cpu/20261017T182358Z/parity.json"
+        ],
+        "accuracy": [
+          "deploy/deeplabv3plus_mbv2__ort_cpu/20261017T182358Z/eval_fp32.json",
+          "deploy/deeplabv3plus_mbv2__ort_cpu/20261017T182358Z/eval.json"
+        ],
+        "perf": [
+          "deploy/deeplabv3plus_mbv2__ort_cpu/20261017T182358Z/perf.json"
+        ]
+      },
+      "published_at": "2026-10-17T18:51:47+00:00",
+      "rolled_back_from": []
+    }
+  ],
+  "aliases": {
+    "dev": 1
+  },
+  "history": [
+    {
+      "at": "2026-10-17T18:51:47+00:00",
+      "alias": "dev",
+      "action": "publish",
+      "from": null,
+      "to": 1,
+      "reason": "deploy run 20261017T182358Z"
+    }
+  ]
+}

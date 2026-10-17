@@ -1,0 +1,126 @@
+{
+  "schema_version": "1",
+  "tool": "deploy",
+  "created_at": "2026-10-17T18:52:45+00:00",
+  "git_sha": "1a62c4452a1b14d7d0d723f2cad263244a593d9b",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "pipeline",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "trt",
+  "precision": "int8",
+  "artifact_id": "none",
+  "inputs": {
+    "recipe": "deeplabv3plus_mbv2__int8",
+    "recipe_hash": "41e99b41dbf9c8507212638bad9e166ee45e980332773772439fa57c91b82dd3",
+    "settings": {
+      "name": "deeplabv3plus_mbv2__int8",
+      "model": "deeplabv3plus_mbv2",
+      "precision": "int8",
+      "quant": {
+        "config": "int8_percentile",
+        "exclusions": "deeplabv3plus_mbv2__sens",
+        "groups": null
+      },
+      "fp16": null,
+      "build": "build",
+      "target": "trt",
+      "gates": "gates"
+    },
+    "gates": {
+      "parity": {
+        "manifest": "golden_val32",
+        "inputs": "images"
+      },
+      "accuracy": {
+        "manifest": "eval_val",
+        "precisions": [
+          "int8",
+          "int8_fp16"
+        ]
+      },
+      "perf": {
+        "perf_config": "perf"
+      }
+    }
+  },
+  "thresholds": {},
+  "metrics": {
+    "run_id": "20261017T185244Z",
+    "stages": {
+      "export": {
+        "status": "skipped",
+        "passed": true,
+        "reports": [
+          "artifacts/reports/deploy/deeplabv3plus_mbv2__int8/20261017T185244Z/export/export__deeplabv3plus_mbv2__1a62c44.json"
+        ],
+        "seconds": 0.4,
+        "where": "local"
+      },
+      "convert": {
+        "status": "skipped",
+        "passed": true,
+        "reports": [
+          "convert.json"
+        ],
+        "seconds": 0.1,
+        "where": "local"
+      },
+      "validate": {
+        "checks": [
+          {
+            "name": "validate",
+            "key": {
+              "check": "validate",
+              "artifact": {
+                "id": "d3dcca5f82e9806513f8dd89027767b8b934c0cc10023ce37543fcc7460ac2c2",
+                "sha256": "3c2ecb7e8a98a2d0b46e6f416d5c9cefb756afab27f294385a6930dce27d925a"
+              },
+              "settings": {},
+              "files": {
+                "configs/models/deeplabv3plus_mbv2.yaml": "3c72b48c162e7cbdc069482ee43a11a5793d91a2657eceef44cfd4ce1c9772c1",
+                "configs/supported_ops.yaml": "c594186bdfaa3a5e7ddea5e72fa29a93604c6610540a5647da07932868af79d4"
+              }
+            },
+            "reason": "no earlier check with this key",
+            "report": "deploy/deeplabv3plus_mbv2__int8/20261017T185244Z/validate.json",
+            "status": "ran",
+            "passed": true,
+            "reused_from": null,
+            "findings": []
+          }
+        ],
+        "passed": true,
+        "status": "ran",
+        "seconds": 0.1,
+        "where": "local"
+      }
+    },
+    "artifacts": {
+      "fp32": {
+        "path": "artifacts/onnx/deeplabv3plus_mbv2/deeplabv3plus_mbv2__fp32__98b5428431cd.onnx",
+        "id": "98b5428431cd9bbe3b80354b251010db60b811b0a081b59afad424b477bfaa4b",
+        "sha256": "eb8c0889f9402faee783b2f31538f2d018ce6bc8b95d753cd5c9b19e5f76746c",
+        "precision": "fp32"
+      },
+      "onnx": {
+        "path": "artifacts/onnx/deeplabv3plus_mbv2/deeplabv3plus_mbv2__int8__d3dcca5f82e9.onnx",
+        "id": "d3dcca5f82e9806513f8dd89027767b8b934c0cc10023ce37543fcc7460ac2c2",
+        "sha256": "3c2ecb7e8a98a2d0b46e6f416d5c9cefb756afab27f294385a6930dce27d925a",
+        "precision": "int8"
+      }
+    },
+    "published": null
+  },
+  "passed": false,
+  "findings": []
+}

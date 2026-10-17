@@ -1,0 +1,131 @@
+{
+  "schema_version": "1",
+  "tool": "quantize",
+  "created_at": "2026-10-17T18:52:47+00:00",
+  "git_sha": "1a62c4452a1b14d7d0d723f2cad263244a593d9b",
+  "git_dirty": false,
+  "env": {
+    "host": "Anujs-MacBook-Pro.local",
+    "device": "cpu (arm64)",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "threads": null,
+    "versions": {
+      "python": "3.12.14",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "onnxruntime": "1.31.0",
+      "onnx": "1.23.2",
+      "modelopt_env.nvidia-modelopt": "0.47.0",
+      "modelopt_env.onnx": "1.21.0",
+      "modelopt_env.onnxruntime": "1.24.4",
+      "modelopt_env.numpy": "2.5.4",
+      "modelopt_env.lock_sha256": "bd54ba9656050c98a3a728fc7e140e9f7bfaa3ccb2b23e7e475f45c66a8f98f0"
+    }
+  },
+  "model": "segformer_b0",
+  "backend": "onnxruntime.quantization",
+  "precision": "int8_fp16",
+  "artifact_id": "4031ccefacfbc25b049248b9f19e9a5a8a05c9c03e80c6f1e8ef6c10c2a1bf39",
+  "inputs": {
+    "artifact": "segformer_b0__fp32__0ef7fcdb0cdc.onnx",
+    "config": "segformer_b0",
+    "quant_config": {
+      "name": "int8_percentile",
+      "activation_type": "int8",
+      "weight_type": "int8",
+      "activation_symmetric": true,
+      "weight_symmetric": true,
+      "per_channel": true,
+      "op_types": [
+        "Conv",
+        "MatMul",
+        "Gemm"
+      ],
+      "quantize_outputs": false,
+      "quantize_bias": false,
+      "calibration": {
+        "manifest": "calib_train200",
+        "limit": null,
+        "method": "percentile",
+        "num_bins": 2048,
+        "num_quantized_bins": null,
+        "percentile": 99.99,
+        "chunk_images": 2
+      }
+    },
+    "exclusions": {
+      "name": "none",
+      "model": "segformer_b0",
+      "groups": [],
+      "nodes": []
+    },
+    "groups": "segformer_b0.yaml",
+    "float_dtype": "fp16",
+    "tool": "ort"
+  },
+  "thresholds": {},
+  "metrics": {
+    "file": "segformer_b0__int8_fp16__4031ccefacfb.onnx",
+    "sha256": "945325ce9be0f3be6187756ecf3805cf7c792ce89d20e5c52957edddd4b51e39",
+    "size_bytes": 4007640,
+    "parent_artifact_id": "8b88379284a9c161eafc898995d177f2344dcea8676afb3787b89220af6b368e",
+    "calibration": {
+      "calibration_id": "59a94b20667a9f49ee7786b2120ceab86cdabc2a5a331ccf97a9fa00324cbdbf",
+      "manifest": "calib_train200",
+      "limit": null,
+      "n_images": 200,
+      "method": "percentile",
+      "options": {
+        "symmetric": true,
+        "num_bins": 2048,
+        "percentile": 99.99
+      }
+    },
+    "placement": {
+      "quantized_nodes": {
+        "Conv": 20,
+        "MatMul": 68
+      },
+      "excluded_nodes": {},
+      "n_quantize_linear": 94,
+      "n_dequantize_linear": 166,
+      "unshared_inputs": null
+    },
+    "excluded_nodes": [],
+    "int8_artifact_id": "8b88379284a9c161eafc898995d177f2344dcea8676afb3787b89220af6b368e",
+    "float_precision": {
+      "fp16_nodes": 566,
+      "fp16_by_op": {
+        "Add": 68,
+        "Concat": 1,
+        "Conv": 20,
+        "DequantizeLinear": 166,
+        "Gelu": 8,
+        "LayerNormalization": 30,
+        "MatMul": 68,
+        "Mul": 16,
+        "Relu": 1,
+        "Reshape": 92,
+        "Resize": 4,
+        "Softmax": 8,
+        "Transpose": 84
+      },
+      "fp32_nodes": [],
+      "cast_nodes": 2
+    },
+    "scale_rounding": {
+      "n_values": 15823,
+      "subnormal_in_fp16": 2,
+      "max_rel_change": 0.00048673547716547046,
+      "max_rel_change_at": "model.segformer.stages.3.blocks.1.mlp.dwconv.dwconv.weight_DequantizeLinear_Output"
+    },
+    "calibration_dev": {
+      "seconds": 690.6,
+      "peak_rss_bytes": 4452614144,
+      "n_tensors": 182
+    },
+    "reused": true
+  },
+  "passed": true,
+  "findings": []
+}
