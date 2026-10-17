@@ -20,6 +20,7 @@ from __future__ import annotations
 from typing import Any
 
 TIE_REL = 0.035
+N_FINALISTS = 3  # INT8 engines per model that get the full probe and full-val eval (C5 plan)
 
 Point = dict[str, Any]
 
@@ -38,6 +39,29 @@ def pareto_front(points: list[Point]) -> list[Point]:
         if not dominated:
             front.append(p)
     return sorted(front, key=lambda p: (p["latency_ms"], -p["delta_points"]))
+
+
+def select_finalists(
+    points: list[Point], target_points: float, n: int = N_FINALISTS
+) -> tuple[list[Point], dict[str, Any]]:
+    """The INT8 engines worth the expensive checks (probe ~15 min, full val ~7 min each).
+    Each point has `label`, `latency_ms` (trtexec compute p50 at the clock lock) and
+    `delta_points` on the sensitivity images. Kept: within the subset target (the same
+    margin greedy selection uses, D-017), on the Pareto front of those, the `n` fastest.
+    A point off the front is slower and less accurate than another candidate, so it can't
+    win the final rule unless trtexec misranks it, which C4 measured at 0.7-2.3%.
+    Returns (finalists sorted by latency, the reasoning)."""
+    within = [p for p in points if p["delta_points"] >= -target_points]
+    front = pareto_front(within)
+    finalists = front[:n]
+    why = {
+        "target_drop_points": target_points,
+        "n": n,
+        "outside_target": sorted(p["label"] for p in points if p not in within),
+        "off_front": sorted(p["label"] for p in within if p not in front),
+        "front_not_taken": [p["label"] for p in front[n:]],
+    }
+    return finalists, why
 
 
 def select_final(

@@ -30,3 +30,20 @@ def test_docker_build_context_is_an_allowlist():
     rules = [line for line in lines if not line.startswith("#")]
     assert rules[0] == "*", "the build context must start from nothing"
     assert all(rule.startswith("!") for rule in rules[1:])
+
+
+def test_c5_gpu_labels_and_phases(monkeypatch):
+    # Report file names carry these labels, and the pool of final-engine candidates is
+    # chosen by kind: the placement pair (D-015) and the baselines must never be in it.
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    import c5_gpu
+
+    kinds = {label: c5_gpu.kind_of(label) for label in
+             ("fp16", "int8_c3_sens", "int8fp16_unfused", "int8fp16_minmax_ort",
+              "int8fp16_minmax_modelopt", "sens_full")}  # fmt: skip
+    assert {k for k, v in kinds.items() if v in c5_gpu.POOL_KINDS} == {
+        "int8_c3_sens", "int8fp16_unfused", "sens_full"}  # fmt: skip
+    assert c5_gpu.sens_label([]) == "sens_full"
+    assert c5_gpu.sens_label(["s2.mlp", "s0.patch_embed"]) == "sens_s0.patch_embed+s2.mlp"
+    doc = c5_gpu.__doc__
+    assert all(f"\n  {phase} " in doc for phase in c5_gpu.PHASES)

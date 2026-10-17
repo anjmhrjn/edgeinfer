@@ -54,6 +54,15 @@ def cmd_eval(args: argparse.Namespace) -> int:
     entries = load_manifest(args.manifest)
     if args.limit:
         entries = entries[: args.limit]
+    subsets = {}
+    for sub_manifest in args.subset:
+        ids = {str(e) for e in load_manifest(sub_manifest)}
+        missing = ids - {str(e) for e in load_manifest(args.manifest)}
+        if missing:
+            print(f"error: {len(missing)} images of {sub_manifest} aren't in {args.manifest}, "
+                  f"e.g. {sorted(missing)[0]}")  # fmt: skip
+            return 2
+        subsets[Path(sub_manifest).stem] = ids
     root = cityscapes_root(args.root)
     sha, dirty = git_state()
     if dirty:
@@ -64,7 +73,11 @@ def cmd_eval(args: argparse.Namespace) -> int:
     h, w = cfg.input.height, cfg.input.width
     print(f"eval {cfg.name} on {args.backend}, {len(entries)} images at {h}x{w}")
     metrics, findings = evaluate(
-        cfg, backend, islice(iter_samples(root, entries), len(entries)), total=len(entries)
+        cfg,
+        backend,
+        islice(iter_samples(root, entries), len(entries)),
+        total=len(entries),
+        subsets=subsets,
     )
     report = make_report(
         tool="eval",
@@ -74,6 +87,7 @@ def cmd_eval(args: argparse.Namespace) -> int:
             "manifest": Path(args.manifest).stem,
             "artifact": Path(args.artifact).name if args.artifact else None,
             "limit": args.limit,
+            "subsets": sorted(subsets),
             "input_hw": [h, w],
             "eval_resolution": "label (full)",
         },
@@ -84,6 +98,9 @@ def cmd_eval(args: argparse.Namespace) -> int:
     name = f"eval__{cfg.name}__{args.backend}__{Path(args.manifest).stem}__{h}x{w}{limit_tag}"
     out = Path(args.out) if args.out else REPORTS_DIR / f"{name}__{sha[:7]}.json"
     write_report(report, out)
+    for name, sm in metrics.get("subsets", {}).items():
+        score = "none" if sm["miou"] is None else f"{sm['miou']:.4f}"
+        print(f"  {name}: mIoU {score} over {sm['n_images']} images")
     print(f"mIoU {metrics['miou']:.4f} over {metrics['n_images']} images -> {out}")
     return 0
 
@@ -985,6 +1002,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--height", type=int, help="override the config input height")
     p.add_argument("--width", type=int, help="override the config input width")
     p.add_argument("--limit", type=int, help="first N images only (smoke runs)")
+    p.add_argument("--subset", action="append", default=[], metavar="MANIFEST",
+                   help="also score these images (all in --manifest) alone, same pass")  # fmt: skip
     p.add_argument("--out", help="report path (default: artifacts/reports/...)")
     p.set_defaults(func=cmd_eval)
 

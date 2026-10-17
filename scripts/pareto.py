@@ -59,11 +59,17 @@ def collect(args: argparse.Namespace) -> tuple[list[dict], list[dict], dict]:
         points.append({"label": label, "kind": kind, "engine_id": ev["artifact_id"],
                        "delta_points": (ev["metrics"]["miou"] - fp32_miou) * 100,
                        "sources": [Path(path).name]})  # fmt: skip
-    timings = {}
-    for path in sorted(REPORTS_DIR.glob(f"trtexec__{args.model}__*.json")):
+    # The newest passing report per engine at the lock: C4 and C5 both timed the FP16 engine,
+    # and every point should come from the same session where there is a choice.
+    newest: dict[str, tuple[str, float, str]] = {}
+    for path in REPORTS_DIR.glob(f"trtexec__{args.model}__*.json"):
         r = _load(str(path))
-        if r["inputs"].get("gpu_clock_mhz") == args.clock_mhz and not r.get("git_dirty"):
-            timings[r["artifact_id"]] = (r["metrics"]["spans_ms"]["compute"]["p50"], path.name)
+        if r["inputs"].get("gpu_clock_mhz") != args.clock_mhz or r.get("git_dirty"):
+            continue
+        if r["passed"] and r["created_at"] > newest.get(r["artifact_id"], ("",))[0]:
+            p50 = r["metrics"]["spans_ms"]["compute"]["p50"]
+            newest[r["artifact_id"]] = (r["created_at"], p50, path.name)
+    timings = {aid: (p50, name) for aid, (_, p50, name) in newest.items()}
     drawn, unmeasured = [], []
     for p in points:
         if p["engine_id"] in timings:

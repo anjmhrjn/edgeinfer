@@ -1,6 +1,11 @@
 """Pareto front and the pre-registered final-engine rule (C5)."""
 
-from edgeinfer.analyze.pareto import pareto_front, select_final, sensitivity_points
+from edgeinfer.analyze.pareto import (
+    pareto_front,
+    select_final,
+    select_finalists,
+    sensitivity_points,
+)
 
 
 def _p(label, ms, delta):
@@ -13,6 +18,21 @@ def test_pareto_front():
     front = [p["label"] for p in pareto_front(pts)]
     # fp32 is dominated by fp16; int8_bad by int8; equal points both stay.
     assert front == ["int8", "mixed", "fp16", "same"]
+
+
+def test_finalists_are_the_fastest_front_points_within_target():
+    pts = [_p("full", 4.0, -0.6), _p("a", 4.2, -0.25), _p("b", 4.3, -0.1), _p("c", 4.4, -0.2),
+           _p("d", 4.8, 0.0), _p("e", 5.0, 0.05)]  # fmt: skip
+    finalists, why = select_finalists(pts, 0.3, n=3)
+    assert [p["label"] for p in finalists] == ["a", "b", "d"]
+    assert why["outside_target"] == ["full"]  # fastest, but loses too much
+    assert why["off_front"] == ["c"]  # slower and less accurate than b
+    assert why["front_not_taken"] == ["e"]
+
+
+def test_no_finalist_when_nothing_is_within_target():
+    finalists, why = select_finalists([_p("full", 4.0, -0.6)], 0.3)
+    assert finalists == [] and why["outside_target"] == ["full"]
 
 
 def _f(label, p99, drop_full=0.2, drop_heldout=0.2, nodes=60):

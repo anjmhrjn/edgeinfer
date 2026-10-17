@@ -74,6 +74,30 @@ def test_harness_end_to_end_on_fake_data(fake_cityscapes):
     assert all(f["code"] == "EVAL_CLASS_ABSENT" for f in findings)
 
 
+def test_subset_scores_match_a_separate_run(fake_cityscapes):
+    # C5 scores full val and the held-out images in one pass; each subset must come out
+    # exactly as if it had been evaluated on its own.
+    from dataclasses import replace
+
+    cfg = load_model_config("segformer_b0")
+    cfg = replace(cfg, input=replace(cfg.input, height=4, width=8))
+    root = cityscapes_root(fake_cityscapes)
+    entries = build_manifest(ManifestSpec("t", "val", None, None), list_image_ids(root, "val"))
+    part = entries[1:4]
+    metrics, _ = evaluate(cfg, OracleBackend(0), iter_samples(root, entries),
+                          subsets={"part": {str(e) for e in part}})  # fmt: skip
+    alone, _ = evaluate(cfg, OracleBackend(0), iter_samples(root, part))
+    sub = metrics["subsets"]["part"]
+    assert sub["n_images"] == 3 and metrics["n_images"] == 6
+    assert sub["miou"] == alone["miou"] and sub["per_class_iou"] == alone["per_class_iou"]
+    assert sub["miou"] != metrics["miou"]
+    # A subset with none of its images evaluated has no score (not NaN, which can't be written).
+    metrics, _ = evaluate(cfg, OracleBackend(0), iter_samples(root, entries[:1]),
+                          subsets={"part": {str(e) for e in part}})  # fmt: skip
+    assert metrics["subsets"]["part"] == {"miou": None, "pixel_accuracy": None,
+                                          "per_class_iou": None, "n_images": 0}  # fmt: skip
+
+
 def test_engine_plan_hash_is_recorded_in_inputs():
     # TensorRT builds with the same inputs (same artifact id) can differ in kernel choice.
     meta = {**META, "artifact_sha256": "ab" * 32}

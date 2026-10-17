@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C5 — TensorRT INT8 and mixed precision (GPU)
-**Next step:** finish the ModelOpt placement run on the Mac, write the session-2 phases (trtexec for every engine, probe for finalists, full val and held-out evals, per-layer profile, nsys), then GPU session 2. The instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
+**Next step:** finish the ModelOpt placement run on the Mac, then GPU session 2 (phases written: see the session-2 checklist below). The instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
 
 ## C5 — TensorRT INT8 and mixed precision
 Plan agreed 2026-10-16:
@@ -44,6 +44,16 @@ GPU session 1 (2026-10-17, 00:30–02:05 UTC, 1.57 GPU-hours):
 - [x] TensorRT sensitivity, both models (`sensitivity__<model>__trt__int8_fp16__sens_val100__{204bef4,8baee58}.json`)
 - [ ] Placement pair (ours vs ModelOpt): moved to session 2, because ModelOpt's calibration is still running on the Mac
 - [ ] Session 2 start: delete `parity__segformer_b0__trt__int8fp16_none__debug__…__layers__204bef4.json` on the instance (written before the NaN fix; the corrected rerun is `…__9cb5e07.json`), or the next sync brings it back
+
+GPU session 2 (latency and confirmation; `scripts/c5_runs.sh` and `scripts/c5_gpu.py`, in this order):
+- [x] Phases written and checked against the session-1 reports on the Mac: `clean`, `gpu build`/`sub` (placement pair), `trtexec`, `finalists`, `perf`, `parity`, `eval`, `final`, `profile`, `nsys`. `edgeinfer eval --subset` scores the held-out images and `sens_val100` in the same full-val pass, so no image is inferred twice per engine.
+- [ ] `clean`, `push` (placement pair), `smoke`
+- [ ] Placement pair: build, `sens_val100`
+- [ ] trtexec at 990 MHz for every engine with a `sens_val100` score (Pareto x axis)
+- [ ] Finalists: within the subset target, on the Pareto front, the 3 fastest (`analyze/pareto.py:select_finalists`)
+- [ ] Probe for finalists and FP16; golden parity and full val (with held-out) for finalists, FP16 and FP32
+- [ ] Final engine per model by the D-033 rule (`final__<model>__*.json`)
+- [ ] Per-layer profile of FP16 and the best INT8 engine; nsys trace of SegFormer's best INT8 engine
 
 ### C5 session 1 results — TensorRT 11.3 on the T4, sens_val100 (100 val images), 512×1024
 Change is in mIoU points against the FP32 engine on the same images. The FP32 engines match ORT FP32 (SegFormer 69.155, DeepLab 66.796).

@@ -17,15 +17,32 @@
 #
 # GPU sessions (start with gpu-up.sh, stop with gpu-down.sh; reports come back by themselves):
 #   scripts/c5_runs.sh push       the ONNX models every GPU phase needs, with sidecars
+#   scripts/c5_runs.sh clean      session 2, first: delete the per-layer report written before
+#                                 the NaN fix on the instance (the next sync would bring it back)
 #   scripts/c5_runs.sh smoke      container, TensorRT, GPU tests (incl. INT8 build and fusion)
-#   scripts/c5_runs.sh gpu PHASE  scripts/c5_gpu.py PHASE in the container (build, sub, parity,
-#                                 sens; see its docstring)
+#   scripts/c5_runs.sh gpu PHASE  scripts/c5_gpu.py PHASE in the container; see its docstring.
+#                                 Session 1: build, sub, parity, sens. Session 2: build, sub
+#                                 (placement pair), trtexec, finalists, perf, parity, eval,
+#                                 final, profile, nsys. Latency phases lock the SM clock first
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 # MODELS="deeplabv3plus_mbv2" runs a phase for a subset of the models.
 read -ra MODELS <<< "${MODELS:-segformer_b0 deeplabv3plus_mbv2}"
 QCFG=int8_percentile  # C3's calibration for both models (D-019)
+
+# Clock locking is a host setting (the container has no privileges), as in c4_runs.sh. It
+# lasts until a reboot; gpu-down.sh stops the instance, which resets it.
+lock_clocks() {
+  local mhz
+  mhz=$(uv run --no-sync python -c \
+    'from edgeinfer.perf.probe import load_perf_config; print(load_perf_config().gpu_clock_mhz)')
+  scripts/remote.sh host "sudo nvidia-smi --lock-gpu-clocks=$mhz,$mhz && nvidia-smi --query-gpu=clocks.sm,clocks.max.sm --format=csv"
+}
+
+# Written before the NaN fix (it reads non-finite layers as exact); the corrected rerun is
+# ...__layers__9cb5e07.json. Deleted locally, still on the instance after session 1.
+STALE_REPORT=parity__segformer_b0__trt__int8fp16_none__debug__golden_val32__golden__layers__204bef4.json
 
 fp32() { ls artifacts/onnx/"$1"/"$1"__fp32__????????????.onnx; }  # <id[:12]>.onnx only
 sha() { git rev-parse --short HEAD; }
@@ -144,16 +161,22 @@ PY
   scripts/remote.sh push-artifacts artifacts/onnx/tiny_fixture "${files[@]}"
 }
 
-phase=${1:?usage: scripts/c5_runs.sh precheck|placement|candidates|dwfp16|push|smoke|gpu PHASE}
+phase=${1:?usage: scripts/c5_runs.sh precheck|placement|candidates|dwfp16|push|clean|smoke|gpu PHASE}
 case "$phase" in
   precheck) precheck ;;
   placement) placement ;;
   candidates) candidates ;;
   dwfp16) dwfp16 ;;
   push) push ;;
+  clean)
+    # shellcheck source=scripts/gpu-config.sh
+    source scripts/gpu-config.sh
+    scripts/remote.sh host "cd ~/$GPU_REMOTE_DIR/artifacts/reports && if [ -e $STALE_REPORT ]; then rm -v $STALE_REPORT; else echo 'already gone: $STALE_REPORT'; fi" ;;
   smoke)
     scripts/remote.sh run "python -c 'import tensorrt; print(\"tensorrt\", tensorrt.__version__)' \
 && pytest -q tests/test_trt.py tests/test_trt_meta.py tests/test_trt_layers.py tests/test_perf.py -s" ;;
-  gpu) scripts/remote.sh run "python scripts/c5_gpu.py ${2:?gpu PHASE}" ;;
+  gpu)
+    case ${2:?gpu PHASE} in trtexec|perf|profile|nsys) lock_clocks ;; esac
+    scripts/remote.sh run "MODELS='${MODELS[*]}' python scripts/c5_gpu.py $2" ;;
   *) echo "unknown phase: $phase" >&2; exit 2 ;;
 esac
