@@ -53,7 +53,7 @@ Mac:
   - **Both models have a final engine and an explained trade-off.** DeepLab INT8+FP16 with the stem in FP16, and SegFormer FP16 (`docs/results.md` §1, §4, §5; D-033, D-035).
   - **The pipeline blocks a broken model.** SegFormer INT8+FP16 without D-034's exclusion is blocked at golden parity on the T4, and BGR preprocessing at parity in CI (`test_deploy.py`) and in the Airflow DAG.
   - **No Cityscapes data or derived tensors in git, in any commit.** `git log --all --name-only` filtered for `.npz .npy .png .jpg .jpeg .cache .calib .engine .plan .onnx .pt .pth`, `leftImg8bit` and `gtFine` finds only `docs/figures/pareto__deeplabv3plus_mbv2.png` and `pareto__segformer_b0.png`, the plots drawn from reports.
-  - **`docs/decisions.md` complete.** D-001 to D-044 with no gaps, each with Context, Options, Rationale and Consequences. `grep -rn "TODO(Anuj)" docs/` finds nothing.
+  - **`docs/decisions.md` complete.** D-001 to D-044 with no gaps, each with Context, Options, Rationale and Consequences. The pre-push grep for TODO markers in `docs/` finds nothing.
   - **GPU instance.** Terminated (D-044, below).
 - [ ] CI green after the C7 push (run id)
 - [x] GPU instance terminated (D-044, 2026-10-17): `gpu-destroy.sh` dry run, then `--yes`. `gpu-status.sh` finds no instance; no EBS volumes or snapshots remain in us-east-1. The project used 11.60 GPU-hours of the ~25 budgeted.
