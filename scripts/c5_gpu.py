@@ -95,10 +95,19 @@ def int8_models(m: str) -> dict[str, str]:
     return models
 
 
-def built(m: str, sha: str) -> list[str]:
-    """Labels of int8_models(m) built at this SHA (build reports present)."""
-    return [label for label in int8_models(m)
-            if (REPORTS_DIR / f"build__{m}__{label}__{sha}.json").is_file()]  # fmt: skip
+def latest(pattern: str) -> str | None:
+    """The newest clean report matching `pattern`, by creation time; None if there is none.
+    Phases run at different SHAs within a session, so reports are found by what they
+    describe, not by the SHA in their name."""
+    found = [(json.loads(p.read_text()), p.name) for p in REPORTS_DIR.glob(pattern)]
+    found = [(r["created_at"], name) for r, name in found if not r.get("git_dirty")]
+    return max(found)[1] if found else None
+
+
+def built(m: str) -> dict[str, str]:
+    """label -> latest build report, for the labels of int8_models(m) that are built."""
+    reports = {label: latest(f"build__{m}__{label}__*.json") for label in int8_models(m)}
+    return {label: rep for label, rep in reports.items() if rep}
 
 
 def baselines(m: str) -> dict[str, str]:
@@ -109,21 +118,23 @@ def baselines(m: str) -> dict[str, str]:
 def build(sha: str) -> None:
     for m in MODELS:
         for label, qrep in int8_models(m).items():
-            if (REPORTS_DIR / f"build__{m}__{label}__{sha}.json").is_file():
-                continue  # built in an earlier run at this SHA
+            if latest(f"build__{m}__{label}__*.json"):
+                continue  # built in an earlier run
             edgeinfer("build", "--model", m, "--artifact", str(onnx_of(qrep)),
                       "--out", str(REPORTS_DIR / f"build__{m}__{label}__{sha}.json"))  # fmt: skip
 
 
-def engines(m: str, sha: str) -> dict[str, Path]:
+def engines(m: str) -> dict[str, Path]:
     out = {label: engine_of(rep) for label, rep in baselines(m).items()}
-    out |= {label: engine_of(f"build__{m}__{label}__{sha}.json") for label in built(m, sha)}
+    out |= {label: engine_of(rep) for label, rep in built(m).items()}
     return out
 
 
 def sub(sha: str) -> None:
     for m in MODELS:
-        for label, eng in engines(m, sha).items():
+        for label, eng in engines(m).items():
+            if latest(f"eval__{m}__trt__{label}__sens_val100__512x1024__*.json"):
+                continue  # evaluated in an earlier run
             out = REPORTS_DIR / f"eval__{m}__trt__{label}__sens_val100__512x1024__{sha}.json"
             edgeinfer("eval", "--model", m, "--backend", "trt", "--artifact", str(eng),
                       "--manifest", "sens_val100", "--out", str(out))  # fmt: skip
@@ -131,7 +142,9 @@ def sub(sha: str) -> None:
 
 def parity(sha: str) -> None:
     for m in MODELS:
-        for label, eng in engines(m, sha).items():
+        for label, eng in engines(m).items():
+            if latest(f"parity__{m}__trt__{label}__golden_val32__golden__*.json"):
+                continue  # checked in an earlier run
             if label.startswith(("int8_c3", "int8fp16_none", "int8fp16_sens")):
                 out = REPORTS_DIR / f"parity__{m}__trt__{label}__golden_val32__golden__{sha}.json"
                 edgeinfer("parity", "--model", m, "--backend", "trt", "--artifact", str(eng),
