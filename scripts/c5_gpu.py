@@ -77,15 +77,28 @@ def edgeinfer(*argv: str) -> int:
 
 
 def int8_models(m: str) -> dict[str, str]:
-    """label -> quantize report of the INT8 models built outside the sensitivity search."""
-    return {
+    """label -> quantize report of the INT8 models built outside the sensitivity search.
+    The placement pair is included once both of its reports exist (ModelOpt's calibration
+    runs for hours on the Mac, so it can arrive a session later)."""
+    models = {
         "int8_c3_none": f"quantize__{m}__int8_percentile__none__cb60f28.json",
         "int8_c3_sens": f"quantize__{m}__int8_percentile__sens__da584fa.json",
         "int8fp16_none": one(f"quantize__{m}__int8_percentile_fp16__none__*.json"),
         "int8fp16_sens": one(f"quantize__{m}__int8_percentile_fp16__sens__*.json"),
-        "int8fp16_minmax_ort": one(f"quantize__{m}__int8_minmax_fp16__ort__*.json"),
-        "int8fp16_minmax_modelopt": one(f"quantize__{m}__int8_minmax_fp16__modelopt__*.json"),
     }
+    pair = {f"int8fp16_minmax_{tool}": f"quantize__{m}__int8_minmax_fp16__{tool}__*.json"
+            for tool in ("ort", "modelopt")}  # fmt: skip
+    if all(any(REPORTS_DIR.glob(pattern)) for pattern in pair.values()):
+        models |= {label: one(pattern) for label, pattern in pair.items()}
+    else:
+        print(f"{m}: placement pair not complete yet, skipped", flush=True)
+    return models
+
+
+def built(m: str, sha: str) -> list[str]:
+    """Labels of int8_models(m) built at this SHA (build reports present)."""
+    return [label for label in int8_models(m)
+            if (REPORTS_DIR / f"build__{m}__{label}__{sha}.json").is_file()]  # fmt: skip
 
 
 def baselines(m: str) -> dict[str, str]:
@@ -96,13 +109,15 @@ def baselines(m: str) -> dict[str, str]:
 def build(sha: str) -> None:
     for m in MODELS:
         for label, qrep in int8_models(m).items():
+            if (REPORTS_DIR / f"build__{m}__{label}__{sha}.json").is_file():
+                continue  # built in an earlier run at this SHA
             edgeinfer("build", "--model", m, "--artifact", str(onnx_of(qrep)),
                       "--out", str(REPORTS_DIR / f"build__{m}__{label}__{sha}.json"))  # fmt: skip
 
 
 def engines(m: str, sha: str) -> dict[str, Path]:
     out = {label: engine_of(rep) for label, rep in baselines(m).items()}
-    out |= {label: engine_of(f"build__{m}__{label}__{sha}.json") for label in int8_models(m)}
+    out |= {label: engine_of(f"build__{m}__{label}__{sha}.json") for label in built(m, sha)}
     return out
 
 
