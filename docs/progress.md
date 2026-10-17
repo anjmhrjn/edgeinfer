@@ -1,7 +1,7 @@
 # Progress
 
 **Current checkpoint:** C5 — TensorRT INT8 and mixed precision (GPU)
-**Next step:** Anuj decides the SegFormer placement pair (below), then GPU session 2 (phases written: see the session-2 checklist). The instance is stopped; terminate it if C5's GPU work is more than ~2 weeks away (D-023).
+**Next step:** C5 write-up on the Mac: the INT8 speedup explained from the per-layer profiles, the placement comparison (DeepLab on TensorRT and ORT, SegFormer on ORT, D-036), C5 in `docs/results.md`, then the teach-back and Anuj's sign-off. GPU work for C5 is done (2 sessions, 5.19 GPU-hours). The instance is stopped; terminate it if C6's GPU work is more than ~2 weeks away (D-023).
 
 ## C5 — TensorRT INT8 and mixed precision
 Plan agreed 2026-10-16:
@@ -44,21 +44,43 @@ GPU session 1 (2026-10-17, 00:30–02:05 UTC, 1.57 GPU-hours):
 - [x] Found and fixed on the way: per-layer parity read NaN/Inf tensors as perfect matches (`PARITY_LAYER_NONFINITE`). The one report written before the fix was replaced by a corrected rerun.
 - [x] `sens_val100` on TensorRT for FP32, FP16, C3 INT8 and INT8+FP16 (`eval__<model>__trt__<label>__sens_val100__*.json`)
 - [x] TensorRT sensitivity, both models (`sensitivity__<model>__trt__int8_fp16__sens_val100__{204bef4,8baee58}.json`)
-- [ ] Placement pair (ours vs ModelOpt): moved to session 2, because ModelOpt's calibration is still running on the Mac
-- [ ] Session 2 start: delete `parity__segformer_b0__trt__int8fp16_none__debug__…__layers__204bef4.json` on the instance (written before the NaN fix; the corrected rerun is `…__9cb5e07.json`), or the next sync brings it back
+- [x] Placement pair (ours vs ModelOpt): moved to session 2, because ModelOpt's calibration was still running on the Mac
+- [x] Session 2 start: delete `parity__segformer_b0__trt__int8fp16_none__debug__…__layers__204bef4.json` on the instance (written before the NaN fix; the corrected rerun is `…__9cb5e07.json`), or the next sync brings it back
 
-GPU session 2 (latency and confirmation; `scripts/c5_runs.sh` and `scripts/c5_gpu.py`, in this order):
+GPU session 2 (2026-10-17, 13:36–17:13 UTC, 3.62 GPU-hours; `scripts/c5_runs.sh` and `scripts/c5_gpu.py`, in this order):
 - [x] Phases written and checked against the session-1 reports on the Mac: `clean`, `gpu build`/`sub` (placement pair), `trtexec`, `finalists`, `perf`, `parity`, `eval`, `final`, `profile`, `nsys`. `edgeinfer eval --subset` scores the held-out images and `sens_val100` in the same full-val pass, so no image is inferred twice per engine.
-- [ ] `clean`, `push` (placement pair), `smoke`
-- [ ] Placement pair: build, `sens_val100`
-- [ ] trtexec at 990 MHz for every engine with a `sens_val100` score (Pareto x axis)
-- [ ] Finalists: within the subset target, on the Pareto front, the 3 fastest (D-035)
-- [ ] Probe for finalists and FP16; golden parity and full val (with held-out) for finalists, FP16 and FP32
-- [ ] Final engine per model: the gates and golden parity, then the D-033 rule (D-035, `final__<model>__*.json`)
-- [ ] Per-layer profile of FP16 and the best INT8 engine; nsys trace of SegFormer's best INT8 engine
+- [x] `clean`, `push` (placement pair), `smoke` (60/60)
+- [x] Placement pair: build, `sens_val100`. SegFormer's pair is reported on ORT only (D-036): both engines leave the 17 D-034 nodes unfused, and ours scores 0.10 mIoU on TensorRT.
+- [x] trtexec at 990 MHz for every engine with a `sens_val100` score (Pareto x axis); Pareto plots `docs/figures/pareto__<model>.png` (`pareto__<model>__dd84833.json`)
+- [x] Finalists: within the subset target, on the Pareto front, the 3 fastest (D-035; `finalists__<model>__6efac63.json`)
+- [x] Probe for finalists and FP16; golden parity and full val (with held-out) for finalists, FP16 and FP32
+- [x] Final engine per model: the gates and golden parity, then the D-033 rule (D-035, `final__<model>__acaa81b.json`)
+- [x] Per-layer profile of FP16 and the best INT8 engine (`trtexec__<model>__<label>__c5profile__990MHz__ab77361.json`); nsys trace of SegFormer's best INT8 engine (`nsys__segformer_b0__int8_fp16__1bd25bf.json`)
+- Found during session 2: session 1's lookup of `build__segformer_b0__int8fp16_none__*.json` picked up the newer debug build, so SegFormer's full-INT8+FP16 `sens_val100` score came from the debug engine. Lookups now skip `__debug__` reports and match the engine id; the real engine was re-scored (mIoU 0.05, broken by D-034 as well), and no conclusion changes.
 
-Open before session 2 (Anuj):
-- **SegFormer placement pair.** Neither SegFormer min/max model keeps the 17 nodes TensorRT doesn't fuse in FP16 (D-034); `--tool modelopt` takes no exclusions. Both will probably fail golden parity on TensorRT for that reason, not because of placement. Options: build them anyway and report the comparison on ORT only for SegFormer; or re-make our min/max model with the D-034 exclusions (ModelOpt's still can't have them).
+### C5 session 2 results — TensorRT 11.3 on the T4, full val (500 images), 512×1024
+Finalists and FP16. Change is in mIoU points against the FP32 engine on the same images: full val 70.577 / 67.086, held out (`val_minus_sens100`, 400 images) 70.203 / 66.507. Latency is the probe (20 warmup + 3 × 400 frames at the 990 MHz lock).
+- Reports: `final__<model>__acaa81b.json`, which lists each row's sources.
+  - Probe: `perf__<model>__trt__<label>__c5__6efac63.json`.
+  - Full val: `eval__<model>__trt__<label>__eval_val__c5__512x1024__ad4bfcf.json`.
+  - Golden parity: `parity__…`.
+
+| Model | Engine | Full val change | Held-out change | `infer` p99 (≤ 33.3 ms) | compute p50 | GPU memory | Engine file |
+|---|---|---|---|---|---|---|---|
+| SegFormer-B0 | **FP16 (final)** | +0.006 | +0.007 | 9.548 ms | 6.004 ms | 299 MiB | 15.7 MiB |
+| SegFormer-B0 | INT8+FP16, `s0.patch_embed` in FP16 (best INT8) | −0.103 | +0.005 | 9.349 ms | 5.817 ms | 269 MiB | 8.4 MiB |
+| SegFormer-B0 | INT8+FP16, `s2.attn_matmul` in FP16 | −0.153 | −0.099 | 9.705 ms | 6.156 ms | 269 MiB | 8.6 MiB |
+| SegFormer-B0 | INT8+FP16, `s2.mlp` in FP16 | −0.066 | +0.011 | 9.711 ms | 6.173 ms | 267 MiB | 8.5 MiB |
+| DeepLabV3+ MBv2 | **INT8+FP16, `bb.stem_16` in FP16 (final)** | −0.328 | −0.428 | 6.547 ms | 3.078 ms | 179 MiB | 5.8 MiB |
+| DeepLabV3+ MBv2 | INT8+FP32, `bb.stem_16` in FP32 (C3 deployed) | −0.211 | −0.315 | 7.057 ms | 3.579 ms | 203 MiB | 5.9 MiB |
+| DeepLabV3+ MBv2 | FP16 | +0.013 | +0.015 | 8.486 ms | 4.986 ms | 193 MiB | 10.4 MiB |
+
+- **Final engines** (D-033, every row passes the perf gates and golden parity):
+  - **SegFormer: FP16.** The best INT8 engine's `infer` p99 is 2.1% below FP16's, inside the 3.5% tie band, and a tie goes to fewer quantized nodes. INT8 halves the engine file and saves 30 MiB of device memory, but neither is a budget constraint.
+  - **DeepLab: INT8+FP16 with the stem in FP16.** `infer` p99 is 23% below FP16, and compute 38% below. The cost is 0.33 points on full val and 0.43 on the held-out images, within the 1.0 budget.
+- **SegFormer's INT8 engines are within 0.16 points of FP32 on full val.** That fits session 1: full INT8 was already within the subset target.
+- **SegFormer FP16's `infer` p99 is 9.548 ms here against 11.82 ms in C4**, while p50 (9.42 vs 9.40 ms) and compute p50 (6.00 vs 6.07 ms) barely move. The p99 difference is host jitter in the Python `infer` span (D-028), which is why the tie band exists.
+- Why INT8 gains so little for SegFormer: the per-layer profiles are in; the write-up is next (`docs/results.md`).
 
 ### C5 session 1 results — TensorRT 11.3 on the T4, sens_val100 (100 val images), 512×1024
 Change is in mIoU points against the FP32 engine on the same images. The FP32 engines match ORT FP32 (SegFormer 69.155, DeepLab 66.796).
