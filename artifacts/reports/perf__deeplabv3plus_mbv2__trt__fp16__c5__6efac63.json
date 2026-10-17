@@ -1,0 +1,296 @@
+{
+  "schema_version": "1",
+  "tool": "perf",
+  "created_at": "2026-10-17T15:48:36+00:00",
+  "git_sha": "6efac637d80c85234d1f66e9b641986daf10355f",
+  "git_dirty": false,
+  "env": {
+    "host": "edgeinfer-gpu",
+    "device": "cuda:0 (Tesla T4, sm_75)",
+    "platform": "Linux-7.0.0-1014-aws-x86_64-with-glibc2.39",
+    "threads": null,
+    "versions": {
+      "python": "3.12.3",
+      "edgeinfer": "0.1.0",
+      "numpy": "2.5.4",
+      "tensorrt": "11.3.0.99",
+      "cuda_driver": "13040",
+      "cuda_runtime": "13040"
+    }
+  },
+  "model": "deeplabv3plus_mbv2",
+  "backend": "trt",
+  "precision": "fp16",
+  "artifact_id": "65c595342fa9b348ff6874b86b76cf478cb940a4ead549d0589e4b90c05aa9a6",
+  "inputs": {
+    "frames": "golden_val32",
+    "frame_hw": [
+      1024,
+      2048
+    ],
+    "artifact": "deeplabv3plus_mbv2__fp16__65c595342fa9.engine",
+    "perf_config": {
+      "warmup_iterations": 20,
+      "iterations": 400,
+      "repeats": 3,
+      "manifest": "golden_val32",
+      "max_images": 8,
+      "postprocess_size": "label",
+      "max_repeat_p99_spread": 0.1,
+      "gpu_clock_mhz": 990
+    },
+    "gc": "enabled; collected before each repeat",
+    "artifact_sha256": "091c179fb55b0323c16794a686994d45f07f2927e202a9cd948e61c413f7aa39"
+  },
+  "thresholds": {
+    "latency": {
+      "span": "infer",
+      "p99_ms_max": 33.3
+    },
+    "memory": {
+      "device_used_mib_max": 953
+    }
+  },
+  "metrics": {
+    "spans_ms": {
+      "e2e": {
+        "n": 1200,
+        "mean": 744.67246753,
+        "std": 12.985146288601173,
+        "min": 712.765701,
+        "p50": 744.668118,
+        "p90": 760.670045,
+        "p99": 776.751295,
+        "max": 789.911881
+      },
+      "preprocess": {
+        "n": 1200,
+        "mean": 73.66084399333333,
+        "std": 2.472610699855324,
+        "min": 63.614737,
+        "p50": 73.757646,
+        "p90": 76.599452,
+        "p99": 79.232649,
+        "max": 83.657658
+      },
+      "infer": {
+        "n": 1200,
+        "mean": 8.365439095,
+        "std": 0.055599594711406866,
+        "min": 8.145713,
+        "p50": 8.366825,
+        "p90": 8.436277,
+        "p99": 8.485551,
+        "max": 8.511771
+      },
+      "postprocess": {
+        "n": 1200,
+        "mean": 662.6461844416666,
+        "std": 11.0934647180081,
+        "min": 637.608506,
+        "p50": 662.37056,
+        "p90": 676.867982,
+        "p99": 690.977875,
+        "max": 705.68622
+      },
+      "h2d": {
+        "n": 1200,
+        "mean": 1.0753584009408952,
+        "std": 0.00636337258220093,
+        "min": 1.065567970275879,
+        "p50": 1.073472023010254,
+        "p90": 1.0839040279388428,
+        "p99": 1.0968960523605347,
+        "max": 1.1122560501098633
+      },
+      "compute": {
+        "n": 1200,
+        "mean": 4.9857173657417295,
+        "std": 0.0031919802284084697,
+        "min": 4.974815845489502,
+        "p50": 4.985695838928223,
+        "p90": 4.9898881912231445,
+        "p99": 4.993279933929443,
+        "max": 4.9983038902282715
+      },
+      "d2h": {
+        "n": 1200,
+        "mean": 0.38371642676492534,
+        "std": 0.003324266861207062,
+        "min": 0.3800640106201172,
+        "p50": 0.3824320137500763,
+        "p90": 0.3882879912853241,
+        "p99": 0.39366400241851807,
+        "max": 0.4009599983692169
+      }
+    },
+    "throughput_fps": 1.3428069309047228,
+    "repeats": [
+      {
+        "e2e_p50_ms": 743.602063,
+        "e2e_p99_ms": 764.339572,
+        "p99_ms": {
+          "e2e": 764.339572,
+          "preprocess": 77.904705,
+          "infer": 8.493933,
+          "postprocess": 678.577238,
+          "h2d": 1.094208002090454,
+          "compute": 4.993247985839844,
+          "d2h": 0.39161598682403564
+        },
+        "throughput_fps": 1.3470290462827856,
+        "telemetry_before": {
+          "name": "Tesla T4",
+          "driver_version": "595.91.07",
+          "pstate": "P0",
+          "clocks.sm": 990.0,
+          "clocks.max.sm": 1590.0,
+          "clocks.mem": 5000.0,
+          "temperature.gpu": 30.0,
+          "power.draw": 28.77,
+          "power.limit": 70.0,
+          "memory.used": 193.0,
+          "memory.total": 15360.0
+        },
+        "telemetry_after": {
+          "name": "Tesla T4",
+          "driver_version": "595.91.07",
+          "pstate": "P0",
+          "clocks.sm": 990.0,
+          "clocks.max.sm": 1590.0,
+          "clocks.mem": 5000.0,
+          "temperature.gpu": 30.0,
+          "power.draw": 29.31,
+          "power.limit": 70.0,
+          "memory.used": 193.0,
+          "memory.total": 15360.0
+        },
+        "telemetry_during": {
+          "samples": 2408,
+          "interval_ms": 100,
+          "clocks.sm_min": 990.0,
+          "clocks.sm_max": 990.0,
+          "power.draw_max": 41.9,
+          "temperature.gpu_max": 31.0,
+          "clocks_event_reasons": "0x0",
+          "throttle_reasons": []
+        }
+      },
+      {
+        "e2e_p50_ms": 740.530111,
+        "e2e_p99_ms": 762.408068,
+        "p99_ms": {
+          "e2e": 762.408068,
+          "preprocess": 78.518155,
+          "infer": 8.430377,
+          "postprocess": 677.818578,
+          "h2d": 1.0958080291748047,
+          "compute": 4.993279933929443,
+          "d2h": 0.39446398615837097
+        },
+        "throughput_fps": 1.3495369863150408,
+        "telemetry_before": {
+          "name": "Tesla T4",
+          "driver_version": "595.91.07",
+          "pstate": "P0",
+          "clocks.sm": 990.0,
+          "clocks.max.sm": 1590.0,
+          "clocks.mem": 5000.0,
+          "temperature.gpu": 30.0,
+          "power.draw": 28.82,
+          "power.limit": 70.0,
+          "memory.used": 193.0,
+          "memory.total": 15360.0
+        },
+        "telemetry_after": {
+          "name": "Tesla T4",
+          "driver_version": "595.91.07",
+          "pstate": "P0",
+          "clocks.sm": 990.0,
+          "clocks.max.sm": 1590.0,
+          "clocks.mem": 5000.0,
+          "temperature.gpu": 30.0,
+          "power.draw": 28.82,
+          "power.limit": 70.0,
+          "memory.used": 193.0,
+          "memory.total": 15360.0
+        },
+        "telemetry_during": {
+          "samples": 2403,
+          "interval_ms": 100,
+          "clocks.sm_min": 990.0,
+          "clocks.sm_max": 990.0,
+          "power.draw_max": 40.84,
+          "temperature.gpu_max": 30.0,
+          "clocks_event_reasons": "0x0",
+          "throttle_reasons": []
+        }
+      },
+      {
+        "e2e_p50_ms": 749.518699,
+        "e2e_p99_ms": 779.842263,
+        "p99_ms": {
+          "e2e": 779.842263,
+          "preprocess": 79.800217,
+          "infer": 8.483374,
+          "postprocess": 695.054124,
+          "h2d": 1.0977920293807983,
+          "compute": 4.9929280281066895,
+          "d2h": 0.3928320109844208
+        },
+        "throughput_fps": 1.3319894088731201,
+        "telemetry_before": {
+          "name": "Tesla T4",
+          "driver_version": "595.91.07",
+          "pstate": "P0",
+          "clocks.sm": 990.0,
+          "clocks.max.sm": 1590.0,
+          "clocks.mem": 5000.0,
+          "temperature.gpu": 30.0,
+          "power.draw": 29.0,
+          "power.limit": 70.0,
+          "memory.used": 193.0,
+          "memory.total": 15360.0
+        },
+        "telemetry_after": {
+          "name": "Tesla T4",
+          "driver_version": "595.91.07",
+          "pstate": "P0",
+          "clocks.sm": 990.0,
+          "clocks.max.sm": 1590.0,
+          "clocks.mem": 5000.0,
+          "temperature.gpu": 30.0,
+          "power.draw": 28.67,
+          "power.limit": 70.0,
+          "memory.used": 193.0,
+          "memory.total": 15360.0
+        },
+        "telemetry_during": {
+          "samples": 2434,
+          "interval_ms": 100,
+          "clocks.sm_min": 990.0,
+          "clocks.sm_max": 990.0,
+          "power.draw_max": 41.55,
+          "temperature.gpu_max": 30.0,
+          "clocks_event_reasons": "0x0",
+          "throttle_reasons": []
+        }
+      }
+    ],
+    "repeat_p99_spread": 0.007491830491028708,
+    "repeat_p99_spread_span": "infer",
+    "span_inconsistencies": 0,
+    "device_stages_timed": true,
+    "host_peak_rss_bytes": 1210978304,
+    "device_used_mib_max": 193.0,
+    "artifact_size_bytes": 10859580,
+    "device_memory": {
+      "engine_activation_bytes": 45892096,
+      "io_bytes": 8781824,
+      "engine_file_bytes": 10859580,
+      "device_used_delta_bytes": 92274688
+    }
+  },
+  "passed": true,
+  "findings": []
+}
