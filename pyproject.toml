@@ -56,6 +56,9 @@ exclude = ["*.md"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "BLE", "SIM", "RUF"]
+# The generated docs use a true minus sign and the multiplication sign on purpose
+# (scripts/make_results.py); ruff would otherwise flag them as look-alikes of - and x.
+allowed-confusables = ["−", "×"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

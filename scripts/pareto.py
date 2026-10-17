@@ -160,6 +160,15 @@ def plot(model: str, points: list[dict], front: list[dict], target: float, budge
     plt.close(fig)
 
 
+def plot_report(report: dict, out: Path) -> None:
+    """Redraw a figure from its `pareto` report alone (scripts/make_results.py --plots)."""
+    points = report["metrics"]["points"]
+    by_label = {p["label"]: p for p in points}
+    front = [by_label[label] for label in report["metrics"]["front"]]
+    t = report["thresholds"]
+    plot(report["model"], points, front, t["target_drop_points"], t["miou_drop_budget_points"], out)
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--model", required=True)

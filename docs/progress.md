@@ -3,6 +3,30 @@
 **Current checkpoint:** C7 — Results and write-up
 **Next step:** plan C7 in plan mode from `docs/roadmap.md`. The GPU instance is stopped, not terminated; its engines back the registry's `production` versions (D-037). Before the next GPU session's first `remote.sh` call, delete the four overwritten C6 runs on the instance (see C6).
 
+## C7 — Results and write-up
+Plan agreed 2026-10-17:
+- **Results from a manifest (D-041).** `configs/results.yaml` names the report behind every row. `scripts/make_results.py` writes `docs/results.md` and the README's results table from those reports only, and refuses missing or dirty reports and rows whose cells measured different artifacts. `--check` (in CI) fails if the committed text differs from a regeneration.
+- **License (D-042).** MIT for this repo's code. The vendored DeepLab code stays MIT, the SegFormer weights are NVIDIA's non-commercial license, and Cityscapes is never redistributed.
+- **Reproducibility (D-043).** A Mac clean clone with an empty weights cache: the CI tests, `make_results.py --check`, and DeepLab's ORT CPU recipe deployed from nothing, expected to give the committed ids and accuracy.
+- **GPU instance (D-044).** Terminated after C7 (`gpu-destroy.sh`). The registry's TensorRT versions then can't be rolled back to until rebuilt (D-037).
+- **Smaller choices.** A Mermaid architecture diagram; plots redrawn from the `pareto` reports; the table's latency is the gated `infer` span, with e2e alongside; the main table uses C5's selection reports, with C6's re-measurement as a run-to-run check.
+- **No new measurements and no GPU session.**
+
+Mac:
+- [x] `configs/results.yaml` (63 reports), `scripts/make_results.py` (`--check`, `--plots`), `tests/test_make_results.py`. CI runs `--check` through `test_committed_results_are_current`, inside the existing test job.
+  - Each row's reports must have measured the same artifact, by id and by sha256. A row may name a reason with `different_artifacts:`; no row needs one.
+  - `--plots` redraws the Pareto figures from the `pareto` reports alone (`scripts/pareto.py:plot_report`). The redrawn PNGs are byte-identical to the committed ones.
+- [x] `docs/results.md` generated and checked against the C5 and C6 tables here and the `final__*` reports: every value agrees. Found on the way:
+  - Three times quoted in C6 were wall-clock times, not report values: the ORT warm rerun ("1.1 s"), "20 s wall" and the DAG's "15 s". They're replaced by the deploy reports' sums of stage times (0.6 s for the ORT rerun).
+  - SegFormer's ORT "percentile + sensitivity exclusions" model is the plain percentile model (`8b88379284a9`): sensitivity excluded no group. The row says so.
+  - SegFormer's FP16 engine file is the size of its FP32 one (open since C4), now a note on the row.
+- [ ] Orin-class limitations, verified against NVIDIA docs
+- [ ] README, `LICENSE`, decision records D-041–D-044
+- [ ] Clean-clone check (D-043)
+- [ ] Definition of done, each item with output
+- [ ] GPU instance terminated (D-044)
+- [ ] Resume bullets (`private/`), final mock interview, sign-off
+
 ## C6 — Gated deployment pipeline
 Plan agreed 2026-10-17:
 - **Registry (D-037).** Our own file registry, `artifacts/registry/<model>.json`, metadata only and committed. It holds versions and a `production` alias; rollback moves the alias to the previous passing version after re-checking its sha256.
@@ -34,7 +58,7 @@ Mac:
 - [x] DeepLab's final model on ORT CPU (`deploy run --recipe deeplabv3plus_mbv2__ort_cpu`), published as v1 to `dev` (`artifacts/registry/deeplabv3plus_mbv2.json`):
   - **Cold run** (`deploy/deeplabv3plus_mbv2__ort_cpu/20261017T182358Z/deploy.json`): 27 min 49 s. Export and convert were skipped: the commands reused C5's FP32 export and INT8+FP16 model `0fc604c5e1e0`. The gates ran: validate 0.1 s, golden parity 17.4 s, accuracy 1230.9 s (two full-val evals), perf 419.7 s (not enforced, `DEPLOY_GATE_NOT_ENFORCED`).
   - **Accuracy gate.** FP32 67.086 (as in C2/C4, `e264b0b`, `7ac2253`), INT8+FP16 66.812: a drop of 0.274 points against the 1.0 budget. TensorRT's engine of the same model scored 66.758 in C5, 0.054 points away.
-  - **Warm rerun** (`…/20261017T185213Z/deploy.json`): 1.1 s. Every stage was skipped or reused, and publish found v1 already registered.
+  - **Warm rerun** (`…/20261017T185213Z/deploy.json`): 0.6 s across stages. Every stage was skipped or reused, and publish found v1 already registered.
   - **TensorRT recipes, Mac stages run in advance** (`deploy run --stage export|convert|validate`, runs `20261017T1852*Z`). Each resolves to the C5 artifact it is meant to deploy: DeepLab `0fc604c5e1e0` (INT8+FP16, stem FP16), SegFormer `e15dc3063aac` (FP16), DeepLab runner-up `d3dcca5f82e9` (C3 INT8+FP32), SegFormer fault `4031ccefacfb` (INT8+FP16, no exclusions). `--dry-run` of these recipes can only say every GPU gate runs: there is no earlier GPU run.
 - [x] Airflow DAG (`pipelines/airflow/dags/deploy_model.py`), import test (`tests/test_airflow_dag.py`, CI job `airflow-dag`), and two local runs (`airflow dags test`, Airflow 3.3.2, Mac):
   - **`deeplabv3plus_mbv2__ort_cpu`.** All nine tasks succeeded in one pipeline run (`deploy/deeplabv3plus_mbv2__ort_cpu/20261017T185619Z/deploy.json`). Every stage was skipped or reused, and v1 was already registered.
@@ -62,7 +86,7 @@ GPU session (2026-10-17, 19:16–21:44 UTC, 2.47 GPU-hours; plan ~2):
     - golden parity 55.9 s, −0.360 points;
     - accuracy 413.2 s: full val 66.758, a drop of 0.328 against the 1.0 budget, the same as C5. The FP32 reference eval (67.086) was reused from the INT8 run, since it uses the same FP32 engine and the same key;
     - perf 861.3 s: `infer` p99 6.486 ms (≤ 33.3), 179 MiB.
-- [x] **Warm rerun, one command** (`…/20261017T213611Z/deploy.json`): 19.6 s across stages (20 s wall), against 1351.7 s cold.
+- [x] **Warm rerun, one command** (`…/20261017T213611Z/deploy.json`): 19.6 s across stages, against 1351.7 s cold.
   - Every stage was skipped or reused, and publish found v2 already registered.
   - 14.0 s of it is the build stage: two remote calls that confirm the engines exist. One `remote.sh run` costs about 7 s of sync and pull-back (SegFormer's single build call took 7.1 s; push took 3.7–6.3 s) (D-038).
 - [x] **SegFormer final** (FP16) → **v1 `production`** (`deploy/segformer_b0/20261017T211841Z/deploy.json`).
@@ -74,7 +98,7 @@ GPU session (2026-10-17, 19:16–21:44 UTC, 2.47 GPU-hours; plan ~2):
   - One cold command, 1807.8 s (`deploy/deeplabv3plus_mbv2__int8/20261017T201932Z/deploy.json`): golden parity −0.306; full val FP32 67.086, INT8 66.875, a drop of 0.211 (as in C5); `infer` p99 6.950 ms, 203 MiB.
   - Republished after the reset by a rerun that reused every gate, 20.0 s (`…/20261017T213412Z/deploy.json`).
 - [x] **Rollback** `production` v3 → v2 (`registry/rollback__deeplabv3plus_mbv2__production__20261017T213644Z.json`). It checked v2's engine sha256 on the instance first (`remote.sh sha256`), and `deploy status` shows v3 "rolled back from production".
-- [x] **Airflow DAG on the TensorRT target** (`airflow dags test deploy_model -c '{"recipe": "segformer_b0"}'`, Mac → instance). All nine tasks succeeded in 15 s (`deploy/segformer_b0/20261017T213659Z/deploy.json`, 11.0 s across stages, every stage skipped or reused).
+- [x] **Airflow DAG on the TensorRT target** (`airflow dags test deploy_model -c '{"recipe": "segformer_b0"}'`, Mac → instance). All nine tasks succeeded (`deploy/segformer_b0/20261017T213659Z/deploy.json`, 11.0 s across stages, every stage skipped or reused).
 - [ ] **Next GPU session, before any `remote.sh` call:** delete those four run directories on the instance (`scripts/remote.sh host 'cd ~/edgeinfer/artifacts/reports/deploy && rm -r …'`), or the first sync's pull brings them back.
 - [x] `deploy status` printed `vNone` for an alias's first move; it now prints `-`.
 
@@ -82,7 +106,7 @@ GPU session (2026-10-17, 19:16–21:44 UTC, 2.47 GPU-hours; plan ~2):
 - **One command deploys end to end with gates.**
   - `deploy run --recipe configs/deploy/deeplabv3plus_mbv2__int8.yaml` ran every gate cold and exited 0 with the version in `production` (`…__int8/20261017T201932Z`). So did the ORT CPU run, to `dev` (`…__ort_cpu/20261017T182358Z`).
   - The two finals ran the same stages one at a time (`20261017T205607Z`, `20261017T211841Z`), which is also what the Airflow tasks do.
-- **Fast and idempotent.** DeepLab final rerun 19.6 s vs 1351.7 s, every stage skipped or reused (`20261017T213611Z`). ORT CPU 1.1 s vs 27 min 49 s.
+- **Fast and idempotent.** DeepLab final rerun 19.6 s vs 1351.7 s, every stage skipped or reused (`20261017T213611Z`). ORT CPU 0.6 s vs 1668.6 s (27 min 49 s).
 - **A broken model is blocked.** SegFormer fault on the T4 and the BGR fault on ORT CPU: both exit 1 with `DEPLOY_GATE_FAILED` where = `parity`, nothing published. In CI: `test_preprocessing_fault_is_blocked_at_parity`.
 - **Rollback works.** v3 → v2 after the sha check; `deploy status` above.
 - **The Airflow DAG runs.** Locally on ORT CPU (pass, and the BGR fault blocked) and on the TensorRT target (pass). The import test passes in CI (`airflow-dag` job).
