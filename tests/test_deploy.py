@@ -2,6 +2,7 @@
 (runs in CI): a passing run is published to `dev`, a rerun skips or reuses every stage,
 a preprocessing fault is blocked at the parity gate, and rollback moves the alias back."""
 
+import dataclasses
 import json
 import subprocess
 
@@ -238,3 +239,86 @@ def test_cli_stage_needs_a_run_id(cli):
     path = paths.reports_dir.parent / "recipes" / "tiny_fp32.yaml"
     assert main(["deploy", "run", "--recipe", str(path), "--stage", "parity"]) == 2
     assert main(["deploy", "run", "--recipe", str(path), "--run-id", "../x"]) == 2
+
+
+class StubGpu:
+    """Stands in for the instance: answers build, parity, eval and perf with valid reports,
+    so the runner's TensorRT path is tested without a GPU. Engines are named after the
+    ONNX file they come from; the FP32 reference scores 0.70 mIoU, the candidate 0.695."""
+
+    remote = True
+
+    def __init__(self):
+        self.pushed, self.host_commands, self.commands = [], [], []
+        self.precision = {}  # engine -> precision, from its build
+
+    def dataset_args(self):
+        return []
+
+    def push(self, paths):
+        self.pushed.append(paths)
+        return 0
+
+    def host(self, command):
+        self.host_commands.append(command)
+        return 0
+
+    def run(self, argv):
+        from pathlib import Path
+
+        from edgeinfer.artifacts import load_sidecar
+        from edgeinfer.reports import make_report, write_report
+
+        self.commands.append(argv[0])
+        args = dict(zip(argv[1::2], argv[2::2], strict=False))
+        out = Path(args["--out"])
+        if argv[0] == "build":
+            onnx = load_sidecar(Path(args["--artifact"]))
+            engine = f"e_{onnx['artifact_id'][:8]}"
+            metrics = {"file": f"{engine}.engine", "sha256": f"sha_{engine}",
+                       "reused": engine in self.precision}  # fmt: skip
+            self.precision[engine] = onnx["precision"]
+            meta = {"artifact_id": engine, "precision": onnx["precision"]}
+            inputs = {}
+        else:
+            engine = Path(args["--artifact"]).stem
+            meta = {"artifact_id": engine, "precision": "x"}
+            inputs = {"artifact_sha256": f"sha_{engine}"}
+            metrics = {"miou": 0.70 if self.precision[engine] == "fp32" else 0.695,
+                       "n_images": 500}  # fmt: skip
+        report = make_report(tool=argv[0], model="tiny_fixture",
+                             backend_meta={"backend": "trt", "device": "stub", **meta},
+                             inputs=inputs, metrics=metrics)  # fmt: skip
+        write_report(report, out)
+        return 0
+
+
+def test_trt_target_with_a_stub_gpu(env):
+    paths, recipe = env
+    r = dataclasses.replace(recipe("tiny_int8"), target="trt", build="build")
+    gpu = StubGpu()
+    run = Run(r, "20261017T000007Z", paths, gpu=gpu)
+    assert run.run_all() == 0
+    # The candidate and the FP32 reference (for the accuracy gate) go to the instance...
+    onnx = [run.artifacts[a]["path"] for a in ("onnx", "fp32")]
+    assert gpu.pushed == [sorted(onnx + [p.replace(".onnx", ".meta.json") for p in onnx])]
+    # ...both are built there, and every gate measures the engine, not the ONNX model.
+    assert gpu.commands == ["build", "build", "parity", "eval", "eval", "perf"]
+    engine = run.artifacts["engine"]
+    assert engine["path"].startswith("artifacts/engines/tiny_fixture/e_")
+    assert run.stages["parity"]["checks"][0]["key"]["artifact"]["id"] == engine["id"]
+    assert run.stages["accuracy"]["verdict"]["drop_points"] == pytest.approx(0.5)
+    assert gpu.host_commands == []  # the gates file's perf config locks no clock
+    # Every gate was enforced, so the deployment reaches production, at its instance path.
+    assert run.metrics["published"]["alias"] == "production"
+    (v1,) = registry.load("tiny_fixture", paths.registry_dir)["versions"]
+    assert v1["location"] == f"instance:{engine['path']}" and v1["sha256"] == engine["sha256"]
+
+    again = Run(r, "20261017T000008Z", paths, gpu=gpu)
+    gpu.commands.clear()
+    assert again.run_all() == 0
+    assert gpu.commands == ["build", "build"]  # builds reuse their engines; gates reuse reports
+    assert again.stages["build"]["status"] == "skipped"
+    assert {again.stages[g]["status"] for g in ("validate", "parity", "accuracy", "perf")} == {
+        "reused"
+    }

@@ -40,6 +40,12 @@ Mac:
   - **`deeplabv3plus_mbv2__ort_cpu`.** All nine tasks succeeded in one pipeline run (`deploy/deeplabv3plus_mbv2__ort_cpu/20261017T185619Z/deploy.json`). Every stage was skipped or reused, and v1 was already registered.
   - **`faults/deeplabv3plus_mbv2__bgr_ort_cpu`** (DeepLab FP32 with BGR preprocessing). Export ran (4.2 s, a new id `06beefdf8b6a` with a BGR contract) and validate passed, because the contract matches the config. **Parity failed**: `PARITY_INPUT_MISMATCH` ("channels are reversed… check input.channel_order"), and mIoU on the golden images fell from 67.53 to 56.26. Then accuracy, perf and publish were `upstream_failed`, the DAG run failed, and the registry was unchanged (`deploy/deeplabv3plus_mbv2__bgr_ort_cpu/*/deploy.json`).
 - [x] `scripts/rsync-excludes.txt` excluded only the root `.venv/`, so `remote.sh` copied `tools/modelopt/.venv` (929 MB), and now would copy `tools/airflow/.venv`, to the instance. It now excludes `.venv/` at any depth.
+- [x] The TensorRT path of the runner tested on the Mac with a stub GPU executor (`test_trt_target_with_a_stub_gpu`). It checks that:
+  - the candidate and FP32 ONNX models are pushed with their sidecars, and both are built;
+  - the gates measure the engine;
+  - the deployment reaches `production` at its `instance:` location;
+  - a rerun only re-invokes the builds, which reuse their engines.
+- [x] Decision records D-037–D-040; `docs/ideas.md`: persistent engine store, MLflow mirror, Temporal
 
 GPU session:
 - [ ] Both final recipes → `production` (cold), rerun (reused), SegFormer fault blocked, v2 + rollback, one DAG run on `trt`

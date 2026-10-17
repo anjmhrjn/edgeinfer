@@ -494,3 +494,92 @@ Gates: apply the gates and golden parity before the D-033 rule / apply only the 
 **Rationale:** The comparison is about placement, so both models of a pair must differ only in placement. On ORT that holds for both models. On TensorRT it holds for DeepLab, which fuses every quantized node. For SegFormer, any TensorRT difference would mix placement with the D-034 defect. The TensorRT scores still show whether ModelOpt's placement runs into the same defect.
 **Evidence:** `quantize__segformer_b0__int8_minmax_fp16__{ort__3064e28,modelopt__2507a9e}.json` (no exclusions); D-034.
 **Consequences / revisit if:** SegFormer's placement result is an ORT CPU result: it compares accuracy, not TensorRT speed. Revisit with a TensorRT version that computes unfused INT8 Convs in FP16 networks correctly, or if the ModelOpt wrapper gains node exclusions.
+
+## D-037: Model registry — our own file registry with `production` and `dev` aliases; rollback checks the artifact first  (C6, 2026-10-17)
+**Context:** C6's publish stage has to record which gated artifact a consumer should load and support rollback to the previous passing version. Engines exist only on the GPU instance (D-023); reports and ONNX models are on the Mac.
+**Options:**
+1. Our own file registry, `artifacts/registry/<model>.json`, committed. No dependency, and every rule is visible / no UI and no locking (single user).
+2. MLflow model registry (aliases such as `@champion`), in an isolated environment with a database backend. The industry standard, with a UI / a large dependency tree, and it would only hold pointers to engines it can't reach on the instance.
+3. Our registry as the source of truth, mirrored to MLflow for the UI. Both / the most work.
+**Decision:** Option 1 (Anuj, 2026-10-17). `pipeline/registry.py`:
+- **Versions.** A version is a deployed artifact that passed every gate. It is keyed by artifact id, file sha256 and target, so publishing the same artifact again keeps its version.
+- **Aliases.** `production` and `dev`. Only a run where every gate was enforced may move `production`. Perf isn't enforced on a development host (D-026), so an `ort_cpu` deployment reaches only `dev`. Every alias move is recorded in the history.
+- **Rollback.** `edgeinfer deploy rollback` moves the alias to the version it held before the current one, skipping versions already rolled back from. It first checks that the artifact exists with its published sha256: locally, or through `remote.sh sha256` on the instance. It writes a `rollback` report.
+**Rationale:** The registry's job here is small: record which gated artifact each alias points at, and move it back safely. About 150 lines do that with every rule visible, in line with D-008. MLflow's advantages are a UI and access for several users, and neither applies to a one-person project. It would also store pointers to files on an instance it can't reach. The check before rollback matters more than the storage format. An engine lost with a terminated instance, or replaced by a rebuild with new bytes, must never quietly become production.
+**Evidence:** `tests/test_registry.py`; `tests/test_deploy.py` (publish to `dev`, CLI rollback and status).
+**Consequences / revisit if:**
+- **The registry doesn't count toward a dirty tree.** `reports.git_state` leaves `artifacts/registry/` out of the dirty check. After a publish, the index is a modified tracked file. On the instance, where it isn't synced, git would see it as deleted. Either way every later report would be marked `git_dirty`. The registry records results and is never an input to a measurement.
+- **Engines live only on the instance.** Terminating it makes their versions impossible to roll back to (`REGISTRY_ARTIFACT_MISSING`) until they are rebuilt and gated again. Persistent engine storage is in `docs/ideas.md`.
+- **No locking.** One writer at a time.
+- **Revisit** with several users or a real fleet: MLflow, or a database.
+
+## D-038: Orchestration — a Python runner; Airflow 3.3.2 wraps it, one task per stage; GPU stages through `remote.sh`  (C6, 2026-10-17)
+**Context:**
+- **The roadmap** asks for an Airflow DAG wrapping the CLI, with GPU stages run through the CLI on the instance or an SSH operator.
+- **The stages cross machines.**
+  - Export needs torch, and quantize needs the calibration train images. The container has neither (D-020), and only val is on the instance.
+  - Build, parity, eval and perf need the T4.
+  - Publish writes the registry on the Mac.
+**Options:**
+Orchestrator:
+1. Airflow. The common choice for batch ML pipelines / a heavy dependency, and only development use is supported on a Mac.
+2. Temporal. Durable workflow state and retries defined in code / a server to run, and a better fit for long-lived stateful workflows than for a chain of batch steps.
+3. None: the runner alone / drops a roadmap task.
+GPU stages:
+1. One `remote.sh run` per stage. Reuses the existing sync, image build and report pull-back / sync overhead on every stage.
+2. The whole GPU half in one remote call. Less overhead / a second runner inside the container.
+3. Airflow's SSH operator. Realistic for a remote fleet / reimplements `remote.sh` inside Airflow.
+**Decision:** A Python runner, wrapped by Airflow; one `remote.sh run` per GPU stage (Anuj, 2026-10-17).
+- **Runner.** `edgeinfer deploy run --recipe <r>` runs on the Mac. Local stages run in-process through the CLI's entry point, and GPU stages go through `remote.sh run` with repo-relative paths.
+- **State.** The run's state is its deploy report, `artifacts/reports/deploy/<recipe>/<run_id>/deploy.json`, rewritten after every stage. `--stage <s> --run-id <id>` runs one stage of an existing run.
+- **Airflow.** Airflow 3.3.2 runs in `tools/airflow`, with the official constraints as `constraint-dependencies`. `pipelines/airflow/dags/deploy_model.py` has one BashOperator per stage, the same run id for every task (the DAG run's start time), no XCom and `retries=0`.
+**Rationale:**
+- **Testable without a scheduler.** The pipeline's logic (ids, gates, reuse, registry) has to run as one command and be tested in CI without a scheduler. Airflow adds scheduling, a UI and per-task logs on top of it.
+- **Replaceable.** As a wrapper, Airflow can be replaced, for example by Temporal, without touching pipeline code. The triage tool calls the same CLI.
+- **No second copy of the remote logic.** `remote.sh` already does what an SSH operator would have to reimplement.
+- **No retries.** A failed gate is a verdict, so retrying it would only delay the answer. Rerunning the DAG reuses every stage that passed (D-040).
+**Evidence:** Spike findings in `docs/progress.md` (C6, 2026-10-17); `tests/test_airflow_dag.py`; the local DAG run (C6 results).
+**Consequences / revisit if:**
+- Each GPU stage pays `remote.sh`'s code sync and report pull-back; measured in the GPU session.
+- The DAG carries a copy of the stage list, checked against the runner by a test.
+- Revisit Temporal if stages need durable state across failures or retries defined in code, for example a fleet of devices rather than one instance.
+
+## D-039: Gates — validate and golden parity for every precision, full-val accuracy for INT8, perf against the budgets  (C6, 2026-10-17)
+**Context:** A deployment must be blocked when the optimized model is wrong or misses a budget. The accuracy budget is defined on full val (500 images, D-017). Golden parity's mIoU check on 32 images is only a proxy for it (D-018). Each full-val eval takes about 7 minutes on the T4.
+**Options:**
+Accuracy:
+1. Full val for INT8 and INT8+FP16. About 14 minutes of GPU time per INT8 deployment the first time (candidate and FP32 reference).
+2. Full val for every precision, FP16 included.
+3. Golden parity only. The fastest / a deployment could pass while violating the real budget.
+Parity inputs: golden input tensors (model only) / raw images preprocessed by the config (end to end).
+**Decision:** Accuracy option 1 (Anuj, 2026-10-17). Parity on raw images (Claude, while writing the gates file). `configs/gates.yaml` names the checks and their images and contains no numbers. Thresholds come from `budgets.yaml` and `tolerances.yaml`. Validation is always on, and any validator error blocks the deployment.
+**Rationale:** For INT8, the budget's own definition is the only check that can't pass while the budget fails. FP16 is already held to golden-parity tolerances 10× its measured drift (D-030), so another 7 minutes of full val would add no information. Raw-image parity also tests preprocessing. A changed preprocessing config gets its own export, whose embedded contract matches it, so the validator can't see the change. Comparing preprocessed images with the golden inputs can (`PARITY_INPUT_MISMATCH`, shown by the BGR test).
+**Evidence:** `tests/test_deploy.py::test_preprocessing_fault_is_blocked_at_parity`; C6 GPU-session results.
+**Consequences / revisit if:** The FP32 reference eval is reused across recipes by its key (D-040). An INT8 deployment pays for it once per FP32 engine. Revisit FP16's exemption if an FP16 engine ever comes near its parity tolerances.
+
+## D-040: Gate reuse — a passing check is reused only when its artifact, settings, input files and code are unchanged  (C6, 2026-10-17)
+**Context:** "Fast rollouts" means not paying again for checks whose answer can't have changed: the perf probe is about 15 minutes, a full-val eval about 7. A stale result would defeat the gate, though.
+**Options:**
+1. Reuse when a key matches: the artifact (id and sha256), the gate settings, the content hash of every file the check reads, and unchanged code since the report's commit. A rerun with nothing changed costs nothing; any change reruns the check.
+2. Reuse artifacts but always rerun the gates. Simple to trust / about 25 GPU-minutes per rerun.
+3. Key on the artifact alone. Fastest / a fixed bug in a gate wouldn't rerun it.
+**Decision:** Option 1 (Anuj, 2026-10-17). `pipeline/reuse.py`.
+- **Key.** Each check's key is recorded in the deploy report next to its report:
+  - the check name
+  - artifact id and file sha256
+  - the gate settings
+  - the sha256 of each config, manifest and golden-hash file the check reads
+- **Reuse conditions.** A later check with the same key reuses the report if all of these hold:
+  - it passed and comes from a clean tree
+  - it measured the same artifact id and sha256
+  - `git diff --quiet <report sha> -- src/edgeinfer ':(exclude)src/edgeinfer/pipeline' uv.lock` finds no change against the working tree
+- **Never reused:** failed checks.
+- **Producing stages** (export, convert, build) are skipped by the commands themselves, when an artifact with the same content-addressed id exists. Their reports now say `reused`.
+**Rationale:**
+- **The key is the check's inputs.** Every input that can change a check's answer is in the key or behind the code check. If any of them changes, the check runs again.
+- **Engines are keyed by bytes as well as id.** An engine's id hashes its build inputs, but a rebuild can pick different kernels and change latency, so the file's sha256 is in the key too.
+- **The code check compares against the working tree,** so an uncommitted edit to a tool reruns its gates.
+- **The pipeline package is excluded from the code check,** because it only decides which report to use and can't change what a check measures.
+- **Failures are never reused,** so a transient failure gets a fresh measurement.
+**Evidence:** `tests/test_reuse.py`; `tests/test_deploy.py` (rerun reused; changed code reruns; failed never reused); cold vs warm runs in the C6 results.
+**Consequences / revisit if:** The key's file list is maintained by hand. If a tool starts reading a new file, the code change reruns its gates once, but later edits to that file go unnoticed until the file is added to the key. Review the key whenever a tool gets a new input.
