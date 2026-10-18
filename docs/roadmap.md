@@ -136,10 +136,12 @@ Tasks:
 ---
 
 ## Definition of done
-- [ ] C1–C7 exit criteria met and recorded in `docs/progress.md`
-- [ ] Every number in README/results traces to a report with git SHA + env
-- [ ] Both models have a final engine and an explained trade-off
-- [ ] The pipeline blocks a broken model; CI green
-- [ ] No Cityscapes data or derived tensors in git
-- [ ] `docs/decisions.md` complete, with no TODO markers
-- [ ] GPU instance stopped
+- [x] C1–C7 exit criteria met and recorded in `docs/progress.md`
+- [x] Every number in README/results traces to a report with git SHA + env
+- [x] Both models have a final engine and an explained trade-off
+- [x] The pipeline blocks a broken model; CI green
+- [x] No Cityscapes data or derived tensors in git
+- [x] `docs/decisions.md` complete, with no TODO markers
+- [x] GPU instance stopped (terminated after C7, D-044)
+
+Checked 2026-10-17, each item with its output: `docs/progress.md`, C7.

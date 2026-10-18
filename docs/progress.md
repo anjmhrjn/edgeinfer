@@ -1,7 +1,7 @@
 # Progress
 
-**Current checkpoint:** C7 — Results and write-up
-**Next step:** C7: push and record the CI run id, then Anuj's edits to the resume bullets and sign-off. The clean clone reproduced the committed ORT results byte for byte (D-043); the GPU instance is terminated (D-044).
+**Current checkpoint:** none: C1–C7 complete and signed off (2026-10-17)
+**Next step:** none planned. Follow-ups are in `docs/ideas.md`. The GPU instance is terminated (D-044): a new instance rebuilds the TensorRT engines with one `deploy run` per recipe before any rollback to them.
 
 ## C7 — Results and write-up
 Plan agreed 2026-10-17:
@@ -55,11 +55,15 @@ Mac:
   - **No Cityscapes data or derived tensors in git, in any commit.** `git log --all --name-only` filtered for `.npz .npy .png .jpg .jpeg .cache .calib .engine .plan .onnx .pt .pth`, `leftImg8bit` and `gtFine` finds only `docs/figures/pareto__deeplabv3plus_mbv2.png` and `pareto__segformer_b0.png`, the plots drawn from reports.
   - **`docs/decisions.md` complete.** D-001 to D-044 with no gaps, each with Context, Options, Rationale and Consequences. The pre-push grep for TODO markers in `docs/` finds nothing.
   - **GPU instance.** Terminated (D-044, below).
-- [ ] CI green after the C7 push (run id)
+- [x] CI green after the C7 push: GitHub Actions run 39094745035 (`1c1b0da`), `lint-and-test` on 3.11 and 3.12 and `airflow-dag`, including `make_results.py --check`.
 - [x] GPU instance terminated (D-044, 2026-10-17): `gpu-destroy.sh` dry run, then `--yes`. `gpu-status.sh` finds no instance; no EBS volumes or snapshots remain in us-east-1. The project used 11.60 GPU-hours of the ~25 budgeted.
 - [x] Resume bullets drafted (`private/resume-bullets.md`, numbers only from `docs/results.md`; Anuj edits)
 - [x] Final mock interview: model answers in `private/mock-interview-C7.md` (Anuj's request, instead of a live Q&A)
-- [ ] Sign-off (Anuj)
+- [x] Sign-off (Anuj)
+
+**Mock interview:** model answers in `private/mock-interview-C7.md`.
+
+**Sign-off:** Anuj, 2026-10-17
 
 ## C6 — Gated deployment pipeline
 Plan agreed 2026-10-17:
